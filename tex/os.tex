@@ -1,0 +1,84 @@
+\section{Operating System Support}
+\label{sec:os}
+
+\javier{Points to come across:
+
+\begin{itemize}
+  \item We need to remove the table. We need to write in a positive way that our changes are very simple and to prove it we managed to build a prototype. We need to explain the modifications with maybe pseudocode. Then, we can have a paragraph on the limitations of the prototype and talk about the memory-mapped files and explain what we would need to make it work, and why it is feasable. Maybe we can also talk about the COWs in SpryVM.
+\end{itemize}
+
+}
+
+\begin{table*}[t]
+%\small
+\centering
+\caption{Modifications required for OS mechanisms and policies to support spryVM.}
+\label{tab:table_modifications}
+\begin{tabular}{|c|l|}
+\hline
+Mechanism/Policy               & \multicolumn{1}{c|}{Modifications}                                                                                                                                                                                                                   \\ \hline
+\multirow{2}{*}{Page Placement}   & \multirow{2}{*}{\begin{tabular}[c]{@{}l@{}}The policy needs to map a virtual page and its associated page frame to the same memory set. \\ FreeBSB implements a similar policy for cache sets~\cite{mckusick:design}, it should be extended to the memory.\end{tabular}} \\
+                                  &                                                                                                                                                                                                                                                      \\ \hline
+\multirow{2}{*}{Page Replacement} & \multirow{2}{*}{\begin{tabular}[c]{@{}l@{}} Global policies such as LRU or CLOCK do not require modifications as pages from all sets are\\eviction candidates. For dramatically low-memory cases, evictions prioritized by set are interesting.\end{tabular}} \\
+                                  &                                                                 \\ \hline
+\multirow{2}{*}{Page Tables} & \multirow{2}{*}{\begin{tabular}[c]{@{}l@{}}The OS needs to set up and manage two page tables: native and spryVM. Linux HMM patch deals \\on setting up and maintaining multiple page tables consistent upon any changes to the mappings~\cite{glisse:hmm}.\end{tabular}}                  \\ 
+                                  &                                                                                                                                                                                                                                                      \\ \hline
+Page Cache                        & \begin{tabular}[c]{@{}l@{}}Page allocation due to reads \& writes to block devices or swap files do not require modifications. A\\ page allocated of a memory-mapped file requires virtual and physical pages mapping to the same set.\end{tabular}                  \\ \hline
+\multirow{2}{*}{Synonyms}         & \multirow{2}{*}{\begin{tabular}[c]{@{}l@{}}All synonyms of a virtual page need to map to the same memory set. Prior systems included this policy\\ for cache sets~\cite{cheng:virtual}, it should be extended to memory. COW works as is as virtual pages are identical.\end{tabular}} \\
+                                  &                                                                                                                                                                                                                                                      \\ \hline
+\end{tabular}
+\end{table*}
+
+\begin{table*}[t]
+\centering
+%\small
+\caption{Operating system overheads for spryVM support.}
+\label{tab:table_overheads}
+\begin{tabular}{|c|l|}
+\hline
+Mechanism/Policy               & \multicolumn{1}{c|}{Overheads}                                                                                                                                                                                                                   \\ \hline
+\multirow{2}{*}{Page Placement}   & \multirow{2}{*}{\begin{tabular}[c]{@{}l@{}}Though a few ways per process evenly distributes pages across memory sets for our workloads, there\\ could be cases where an excess of page faults arises due to underutilized memory sets.\end{tabular}} \\
+                                  &                                                                                                                                                                                                                                                      \\ \hline
+\multirow{2}{*}{Page Replacement} & \multirow{2}{*}{\begin{tabular}[c]{@{}l@{}} If evictions prioritized by set is implemented, page reclamation is more costly as traversing the\\ inactive list of pages needs now to consider only pages of a particular memory set.\end{tabular}} \\
+                                  &                                                                 \\ \hline
+\multirow{2}{*}{Page Tables} & \multirow{2}{*}{\begin{tabular}[c]{@{}l@{}}TLB shootdowns and page table updates~\cite{black:translation} need to span spryVM's TLBs and page table. Though\\ we expect a low overhead as a virtual page maps to one set, and hence one MMU \& page table slice.\end{tabular}}                  \\ 
+                                  &                                                                                                                                                                                                                                                      \\ \hline
+Page Cache                        & \begin{tabular}[c]{@{}l@{}}Having different allocation policies in the page cache complicates the design and adds overhead.\\ Alternatively, we could use one policy for all pages: virtual \& physical pages map to the same set. \end{tabular}                  \\ \hline
+\multirow{2}{*}{Synonyms}         & \multirow{2}{*}{\begin{tabular}[c]{@{}l@{}} Communication between processes through shared memory employs the page cache layer, and hence\\ the overheads would be similar to the previous case: an increase in code complexity in the page cache.\\ \end{tabular}} \\
+                                  &                                                                                                                                                                                                                                                      \\ \hline
+\end{tabular}
+\end{table*}
+
+SpryVM requires a number of operating system (OS) modifications. The OS must assign page frames to virtual pages so that both pages map to the same memory set. Furthermore, the OS must create and manage spryVM's inverted page table, and synchronize it with the native page table. Although end-to-end performance evaluation requires a full implementation of spryVM in a modern OS (e.g., Linux, FreeBSD), like prior work which require OS changes \cite{talluri:surpassing, talluri:tradeoffs, talluri:pagetable}, we note that such implementation is a multi-man-year project. Consequently, like those studies, we instead inspect an open-source OS (i.e., Linux) and qualitatively discuss our proposed modifications.  
+
+Fortunately, our two main modifications (i.e., memory-set matching and managing multiple page tables) are currently implemented in modern OS's. For instance, FreeBSD implements page coloring to avoid consecutive virtual pages mapping to the same cache set. FreeBSB does this with a free list of pages per cache set~\cite{mckusick:design}, guaranteeing that two consecutive virtual pages map to different cache sets. We can similarly extend the page placement policy to make both the VPN and PFN map to the same memory set. Further, the Linux Heterogeneous Memory Management (HMM) patch sets up multiple page tables and maintains the consistency~\cite{glisse:hmm}. We can leverage the lessons learned from these patches.
+
+Table~\ref{tab:table_modifications} and Table~\ref{tab:table_overheads} shed more light on the OS changes and the potential overheads respectively. Although set associative VM is beneficial for a wide range of workloads, there might be cases for which full associative VM is required. Hence, we envision spryVM to be an optional optimization (i.e., a process, set of processes, or the whole system can fall back to the conventional translation). This is conceptually similar to the way OSes support superpages, for which large portions of the OS required modifications along with their associated overheads with respect to supporting a single page size~\cite{talluri:surpassing, navarro:practical, kwon:coordinated}. Analogously, when super pages are not beneficial or impossible to generate, processes fall back to base pages. 
+ 
+ %MIPS OS searched the free list of pages to find a page frame that maps to the same first-level cache set as the virtual page (i.e., page coloring)~\cite{taylor:tlb}.
+
+%We could basically say that what we're doing uses known techniques to leverage a novel observation (set-associativity). 
+
+%As a specific example, take the fact that we're setting up multiple page tables. Well, the latest Linux HMM patch does exactly this, so Linux developers already tackled all the challenges of syncing up two page tables. We could basically say that what we're doing uses known techniques to leverage a novel observation (set-associativity). 
+
+%RMM requires modest operating system (OS) modifications.The OS must create and manage range table entries in softwareand coordinate them with the page table. We modify the OS to increase the size of ranges with an eager paging allocation mechanism. We prototype these changes in Linux, but thedesign is applicable to other OSes.
+
+%The really big concern that we have to hit out of the park is the last MICRO reviewer's concern of OS changes. I agree that fully implementing this in Linux/FreeBSD/sv6/etc. would instill more confidence that spryVM/spryVM works effectively. However, I also don't think that this is a reasonable bar for an academic paper. To address this, my first instinct is to go the following route:
+
+\subsection{Support spryVM with NUMA page allocation policy}
+In practice,  mapping only a subset of physical pages to given virtual addresses is very similar to a scenario existing in NUMA systems — binding the memory of a process to a specific NUMA nodes. With NUMA memory bind policy (i.e. \textit{membind}), a process is only able to get physical pages coming from the NUMA node assigned by the policy, where, with spryVM, each subset of a process’s virtual address space can be seen as being bound to a certain NUMA node. As a result, to implement spryVM in operating systems, we are able to reuse most of existing NUMA-related code. In a spryVM system, each memory set can be treated as a NUMA node and all processes have membind as their default memory allocation policy. Whenever a page fault happens, during the process of physical page allocation, the operating system calculates the corresponding NUMA node id from the faulting virtual address with our hash function, then obtains a free page from that NUMA node and finishes the page fault process. Taking Linux as an example, \verb|alloc_pages_vma()| is the entry point of each user space  page allocation, thus, we simply calculate a memory set index (stored in a NUMA node mask variable) out of the faulting address, derive the corresponding zone list, and pass them to the page allocation function — \verb|__alloc_pages_nodemask()|. Linux is able to handle the rest of page fault work without any problem.
+
+For inverted page tables, x86 systems do not have them, but they are very commonly used in IBM Power systems as hashed page tables. Thus, we follow the same operation model as hashed page tables in IBM Power systems: reserving memory for each inverted page table in individual NUMA node and inserting/invalidating/updating inverted page table entries whenever CPU page tables change in the same hook functions (e.g. \verb|update_mmu_cache()|). To guarantee the translation information is coherent between CPUs and accelerators, each inverted page table entry has a valid bit, which is atomically accessed by both CPUs (for inverted page table modification) and accelerators (for reading). Alternatively, if accelerators, e.g. GPUs, want to maintain their own page tables instead of using the inverted page table, additional hook functions, like  \verb|mmu_notifier| mechanism in Linux, could be used to keep the page tables of accelerators coherent with CPU page tables.
+
+Both modifications are very simple and not intrusive to operating systems. We only add around 200 lines of code in Linux to achieve the required functionality for spryVM. 
+
+\begin{algorithm}
+  \caption{Memory set indexing algorithm}\label{alg:index}
+  \begin{algorithmic}[1]
+    \Procedure{alloc\_pages\_vma}{\textbf{addr\_t} vaddr}
+    \State $\textit{mem\_set\_id} \gets \verb|MEM_SET_INDEX_HASH|(\mbox{vaddr})$
+    \State $\textit{page} \gets \verb|alloc_pages_node|(\mbox{vaddr}, \mbox{mem\_set\_id})$
+    \State \textbf{return} \textit{page}
+    \EndProcedure
+  \end{algorithmic}
+\end{algorithm}

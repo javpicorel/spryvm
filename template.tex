@@ -1,0 +1,79 @@
+\documentclass[pageno]{jpaper}
+
+%replace XXX with the submission number you are given from the ASPLOS submission site.
+\newcommand{\asplossubmissionnumber}{329}
+
+\usepackage{mathptmx} % This is Times font
+\usepackage[table,xcdraw]{xcolor}
+
+\usepackage{fancyhdr}
+\usepackage[normalem]{ulem}
+%\usepackage[hyphens]{url}
+\usepackage[sort,nocompress]{cite}
+%\usepackage[final]{microtype}
+\usepackage{flushend}
+\usepackage{subfig}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+
+\def\UrlBreaks{\do\/\do-\do_}
+\usepackage[hyphenbreaks]{breakurl}
+\usepackage{hyperref}
+
+% Always include hyperref last
+%\usepackage[bookmarks=true,breaklinks=true,letterpaper=true,colorlinks,linkcolor=black,citecolor=blue,urlcolor=black]{hyperref}
+
+\newcommand\javier[1]{\noindent{\color{cyan} {\bf \fbox{Javier}} {\it#1}}}
+\newcommand\abhishek[1]{\noindent{\color{green} {\bf \fbox{Abhishek}} {\it#1}}}
+\newcommand\babak[1]{\noindent{\color{magenta} {\bf \fbox{Babak}} {\it#1}}}
+\newcommand\djordje[1]{\noindent{\color{purple} {\bf \fbox{Djordje}} {\it#1}}}
+\newcommand\chart[1]{\noindent{\color{cyan} {\bf \fbox{Chart}} {\it#1}}}
+
+
+
+\usepackage{booktabs}
+\usepackage{multirow}
+
+\sloppy
+
+
+
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{
+            \node[shape=circle,draw,inner sep=0.5pt] (char) {#1};}}
+
+\begin{document}
+
+%\title{
+%Instructions for Submission to ASPLOS 2018}
+
+\title{Set-Associative Virtual Memory Regions for Near-Memory Processing}
+
+\date{}
+\maketitle
+
+\thispagestyle{empty}
+
+\input{tex/abstract}
+\input{tex/introduction}
+\input{tex/background}
+\input{tex/associativity}
+\input{tex/design}
+\input{tex/os}
+\input{tex/discussion}
+\input{tex/methodology}
+\input{tex/evaluation}
+\input{tex/relatedwork}
+\input{tex/conclusion}
+
+
+
+\bibliographystyle{plain}
+\bibliography{references}
+%\bibliographystyle{IEEEtranS}
+%\bibliography{refs}
+
+
+\end{document}
+
