@@ -108,6 +108,7 @@ While we propose using set-associative VM to tackle the address translation chal
 % If you use beamer only pass "xcolor=table" option, i.e. \documentclass[xcolor=table]{beamer}
 \begin{table*}[]
 \centering
+\caption{Comparison of SpryVM with previous approaches for reducing virtual memory overhead.}
 \begin{tabular}{
 >{\columncolor[HTML]{FFFFFF}}l |
 >{\columncolor[HTML]{FFFFFF}}c |
@@ -115,13 +116,13 @@ While we propose using set-associative VM to tackle the address translation chal
 >{\columncolor[HTML]{FFFFFF}}c |
 >{\columncolor[HTML]{FFFFFF}}c |}
 \cline{2-5}
-\multicolumn{1}{c|}{\cellcolor[HTML]{FFFFFF}}                           & Programmability & Area and Power/Performance & Flexibility & Safety \\ \hline
-\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Multi-page mappings}       & V               & X                          & V           & V      \\ \hline
-\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Transparent Huge Pages}    & V               & X                          & V           & V      \\ \hline
-\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}libhugetlbfs}              & X               & X                          & V           & V      \\ \hline
-\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Direct Segments}           & X               & V                          & X           & V      \\ \hline
-\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Redundant Memory Mappings} & V               & X                          & X           & V      \\ \hline
-\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Direct Mapped Mappings}    & V               & V                          & X           & V      \\ \hline
-\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}SpryVM}                    & V               & V                          & V           & V      \\ \hline
+\multicolumn{1}{c|}{\cellcolor[HTML]{FFFFFF}}                           & Programmability & Area and Power & Flexibility & Safety \\ \hline
+\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Multi-page mappings~\cite{pham:colt, pham:increasing}}       & \cmark               & \xmark                          & \cmark           & \cmark      \\ \hline
+\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Transparent Huge Pages~\cite{transparenthugepages}}    & \cmark               & \xmark                          & \cmark           & \cmark      \\ \hline
+\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}libhugetlbfs~\cite{lighugetlbfs}}              & \xmark               & \xmark                          & \cmark           & \cmark      \\ \hline
+\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Direct Segments~\cite{basu:efficient}}           & \xmark               & \cmark                          & \xmark           & \cmark      \\ \hline
+\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Redundant Memory Mappings~\cite{karakostas:redundant}} & \cmark               & \xmark                          & \cmark           & \cmark      \\ \hline
+\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Direct-mapped Mappings~\cite{picorel:near-memory, haria:devirtualizing}}    & \cmark               & \cmark                          & \xmark           & \cmark      \\ \hline
+\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}SpryVM}                    & \cmark               & \cmark                          & \cmark           & \cmark      \\ \hline
 \end{tabular}
 \end{table*}
