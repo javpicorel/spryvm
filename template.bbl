@@ -1,0 +1,480 @@
+\begin{thebibliography}{10}
+
+\bibitem{facebook:linkbench}
+{Facebook LinkBench Benchmark}.
+\newblock \url{https://github.com/facebook/linkbench}.
+
+\bibitem{google:tcmalloc}
+{Google Performance Tools}.
+\newblock \url{https://code.google.com/p/gperftools/}.
+
+\bibitem{intel:architectures}
+{Intel 64 and IA-32 Architectures Software Developer's Manual}.
+\newblock
+  \url{http://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-system-programming-manual-325384.pdf}.
+
+\bibitem{3dxpoint}
+{Intel, Micron reveal Xpoint, a new memory architecture that could outclass
+  DDR4 and NAND}.
+\newblock
+  \url{http://www.extremetech.com/extreme/211087-intel-micron-reveal-xpoint-a-new-memory-architecture-that-claims-to-outclass-both-ddr4-and-nand}.
+
+\bibitem{facebook:rocksdb}
+{RocksDB In Memory Workload Performance Benchmarks}.
+\newblock
+  \url{https://github.com/facebook/rocksdb/wiki/RocksDB-In-Memory-Workload-Performance-Benchmarks}.
+
+\bibitem{ahn:revising}
+Jeongseob Ahn, Seongwook Jin, and Jaehyuk Huh.
+\newblock Revisiting hardware-assisted page walks for virtualized systems.
+\newblock In {\em Proceedings of the 2012 International Symposium on Computer
+  Architecture}, 2012.
+
+\bibitem{ahn:scalable}
+Junwhan Ahn, Sungpack Hong, Sungjoo Yoo, Onur Mutlu, and Kiyoung Choi.
+\newblock A scalable processing-in-memory accelerator for parallel graph
+  processing.
+\newblock In {\em Proceedings of the 2015 International Symposium on Computer
+  Architecture}, 2015.
+
+\bibitem{ahn:pim-enabled}
+Junwhan Ahn, Sungjoo Yoo, Onur Mutlu, and Kiyoung Choi.
+\newblock {PIM}-enabled instructions: a low-overhead, locality-aware
+  processing-in-memory architecture.
+\newblock In {\em Proceedings of the 2015 International Symposium on Computer
+  Architecture}, 2015.
+
+\bibitem{arm:cortex-a7}
+ARM.
+\newblock {Cortex-A7 Processor}.
+\newblock \url{http://www.arm.com/products/ processors/cortex-a/cortex-a7.php}.
+
+\bibitem{barr:translation}
+Thomas~W. Barr, Alan~L. Cox, and Scott Rixner.
+\newblock Translation caching: skip, don't walk (the page table).
+\newblock In {\em Proceedings of the 2010 International Symposium on Computer
+  Architecture}, 2010.
+
+\bibitem{barr:spectlb}
+Thomas~W. Barr, Alan~L. Cox, and Scott Rixner.
+\newblock {SpecTLB}: A mechanism for speculative address translation.
+\newblock In {\em Proceedings of the 2011 International Symposium on Computer
+  Architecture}, 2011.
+
+\bibitem{basu:efficient}
+Arkaprava Basu, Jayneel Gandhi, Jichuan Chang, Mark~D. Hill, and Michael~M.
+  Swift.
+\newblock Efficient virtual memory for big memory servers.
+\newblock In {\em Proceedings of the 2013 International Symposium on Computer
+  Architecture}, 2013.
+
+\bibitem{basu:reducing}
+Arkaprava Basu, Mark~D. Hill, and Michael~M. Swift.
+\newblock Reducing memory reference energy with opportunistic virtual caching.
+\newblock In {\em Proceedings of the 2012 International Symposium on Computer
+  Architecture}, 2012.
+
+\bibitem{bhattacharjee:large-reach}
+Abhishek Bhattacharjee.
+\newblock Large-reach memory management unit caches.
+\newblock In {\em Proceedings of the 2013 International Symposium on
+  Microarchitecture}, 2013.
+
+\bibitem{bhattacharjee:shared}
+Abhishek Bhattacharjee, Daniel Lustig, and Margaret Martonosi.
+\newblock Shared last-level {TLB}s for chip multiprocessors.
+\newblock In {\em Proceedings of the 2011 International Conference on
+  High-Performance Computer Architecture}, 2011.
+
+\bibitem{bhattacharjee:characterizing}
+Abhishek Bhattacharjee and Margaret Martonosi.
+\newblock Characterizing the {TLB} behavior of emerging parallel workloads on
+  chip multiprocessors.
+\newblock In {\em Proceedings of the 2009 International Conference on Parallel
+  Architectures and Compilation Techniques}, 2009.
+
+\bibitem{black:translation}
+David~L. Black, Richard~F. Rashid, David~B. Golub, Charles~R. Hill, and
+  Robert~V. Baron.
+\newblock Translation lookaside buffer consistency: {A} software approach.
+\newblock In {\em Proceedings of the 1989 International Conference on
+  Architectural Support for Programming Languages and Operating Systems}, 1989.
+
+\bibitem{boncz:breaking}
+Peter~A. Boncz, Martin~L. Kersten, and Stefan Manegold.
+\newblock Breaking the memory wall in monetdb.
+\newblock {\em Commun. ACM}, 51(12), December 2008.
+
+\bibitem{cantin:cache}
+Jason~F. Cantin.
+\newblock {Cache Performance for SPEC CPU2000 Benchmarks}, 2003.
+
+\bibitem{cheng:virtual}
+Ray Cheng.
+\newblock Virtual address cache in unix.
+\newblock In {\em Proceedings of the Summer 1987 USENIX Technical Conf.}, 1987.
+
+\bibitem{chiueh:eliminating}
+Tzi{-}cker Chiueh and Randy~H. Katz.
+\newblock Eliminating the address translation bottleneck for physical address
+  cache.
+\newblock In {\em Proceedings of the 1992 International Conference on
+  Architectural Support for Programming Languages and Operating Systems}, 1992.
+
+\bibitem{chou:cameo}
+Chia{-}Chen Chou, Aamer Jaleel, and Moinuddin~K. Qureshi.
+\newblock {CAMEO:} {A} two-level memory organization with capacity of main
+  memory and flexibility of hardware-managed cache.
+\newblock In {\em Proceedings of the 2014 International Symposium on
+  Microarchitecture}, 2014.
+
+\bibitem{intel:tlbs}
+Intel Corporation.
+\newblock Tlbs, paging-structure caches and their invalidation, 2008.
+
+\bibitem{dong:optimizing}
+Siying Dong, Mark Callaghan, Leonidas Galanis, Dhruba Borthakur, Tony Savor,
+  and Michael Strum.
+\newblock Optimizing space amplification in rocksdb.
+\newblock In {\em {Proceedings of the 8th Conference on Innovative Data Systems
+  Research}}, 2017.
+
+\bibitem{ferdman:clearing}
+Michael Ferdman, Almutaz Adileh, Yusuf~Onur Ko{\c{c}}berber, Stavros Volos,
+  Mohammad Alisafaee, Djordje Jevdjic, Cansu Kaynak, Adrian~Daniel Popescu,
+  Anastasia Ailamaki, and Babak Falsafi.
+\newblock Clearing the clouds: a study of emerging scale-out workloads on
+  modern hardware.
+\newblock In {\em Proceedings of the 2012 International Conference on
+  Architectural Support for Programming Languages and Operating Systems}, 2012.
+
+\bibitem{gandhi:range}
+Jayneel Gandhi, Vasileios Karakostas, Furkan Ayar, Adri{\'{a}}n Cristal,
+  Mark~D. Hill, Kathryn~S. McKinley, Mario Nemirovsky, Michael~M. Swift, and
+  Osman~S. Unsal.
+\newblock Range translations for fast virtual memory.
+\newblock {\em {IEEE} Micro}, 36(3):118--126, 2016.
+
+\bibitem{gantz:hybrid}
+John Gantz and David Reinsel.
+\newblock {White Paper: 5-Level Paging and 5-Level EPT}, 2016.
+
+\bibitem{gao:practical}
+Mingyu Gao, Grant Ayers, and Christos Kozyrakis.
+\newblock Practical near-data processing for in-memory analytics frameworks.
+\newblock In {\em Proceedings of the 2015 International Conference on Parallel
+  Architecture and Compilation}, 2015.
+
+\bibitem{glisse:hmm}
+Jerome Glisse.
+\newblock {HMM (Heterogeneous Memory Management) v22}, 2017.
+
+\bibitem{gustafson:ibm}
+R.~N. Gustafson and Frank~J. Sparacio.
+\newblock {IBM} 3081 processor unit: Design considerations and design process.
+\newblock {\em {IBM} Journal of Research and Development}, 26(1):12--21, 1982.
+
+\bibitem{mammarlund:4th}
+Per Hammarlund.
+\newblock {4th Generation Intel~\textregistered~Core~\texttrademark~Processor,
+  codenamed Haswell}.
+\newblock
+  \url{http://www.hotchips.org/wp-content/uploads/hc_archives/hc25/HC25.80-Processors2-epub/HC25.27.820-Haswell-Hammarlund-Intel.pdf},
+  2013.
+
+\bibitem{haria:devirtualizing}
+Swapnil Haria, Mark~D. Hill, and Michael~M. Swift.
+\newblock Devirtualizing memory in heterogeneous systems.
+\newblock In {\em Proceedings of the 2018 International Conference on
+  Architectural Support for Programming Languages and Operating Systems}, 2018.
+
+\bibitem{hill:case}
+Mark~D. Hill.
+\newblock A case for direct-mapped caches.
+\newblock {\em Computer}, 21(12), December 1988.
+
+\bibitem{hill:aspects}
+Mark~Donald Hill.
+\newblock {\em Aspects of Cache Memory and Instruction Buffer Performance}.
+\newblock PhD thesis, University of California, Berkeley, 1987.
+\newblock AAI8813907.
+
+\bibitem{hp:hp}
+{HP}.
+\newblock {HP to Transform Server Market with Single Platform for
+  Mission-critical Computing}.
+\newblock
+  \url{http://www8.hp.com/us/en/hp-news/press-release.html?id=1147777#.WRs0sbyGOL4}.
+
+\bibitem{jacob:look}
+Bruce~L. Jacob and Trevor~N. Mudge.
+\newblock A look at several memory management units, tlb-refill mechanisms, and
+  page table organizations.
+\newblock In {\em Proceedings of the 1998 International Conference on
+  Architectural Support for Programming Languages and Operating Systems}, 1998.
+
+\bibitem{transparenthugepages}
+{Jonathan Corbet}.
+\newblock {Transparent huge pages in 2.6.38}.
+\newblock \url{https://lwn.net/Articles/423584/}.
+
+\bibitem{jouppi:architectural}
+Norman~P. Jouppi.
+\newblock Architectural and organizational tradeoffs in the design of the
+  multititan cpu.
+\newblock In {\em Proceedings of the 1989 International Symposium on Computer
+  Architecture}, 1989.
+
+\bibitem{kanter:cavium}
+David Kanter.
+\newblock {Cavium Thunders Into Servers: Specialized Silicon Rivals Xeon for
+  Specific Workloads}, 2016.
+
+\bibitem{karakostas:redundant}
+Vasileios Karakostas, Jayneel Gandhi, Furkan Ayar, Adri\'{a}n Cristal, Mark~D.
+  Hill, Kathryn~S. McKinley, Mario Nemirovsky, Michael~M. Swift, and Osman
+  \"{U}nsal.
+\newblock Redundant memory mappings for fast access to large memories.
+\newblock In {\em Proceedings of the 2015 International Symposium on Computer
+  Architecture}, 2015.
+
+\bibitem{kocberber:meet}
+Yusuf~Onur Ko{\c{c}}berber, Boris Grot, Javier Picorel, Babak Falsafi, Kevin~T.
+  Lim, and Parthasarathy Ranganathan.
+\newblock Meet the walkers: accelerating index traversals for in-memory
+  databases.
+\newblock In {\em Proceedings of the 2013 International Symposium on
+  Microarchitecture}, 2013.
+
+\bibitem{kwon:coordinated}
+Youngjin Kwon, Hangchen Yu, Simon Peter, Christopher~J. Rossbach, and Emmett
+  Witchel.
+\newblock Coordinated and efficient huge page management with ingens.
+\newblock In {\em Proceedings of the 2016 {USENIX} Symposium on Operating
+  Systems Design and Implementation}, 2016.
+
+\bibitem{lim:thin}
+Kevin~T. Lim, David Meisner, Ali~G. Saidi, Parthasarathy Ranganathan, and
+  Thomas~F. Wenisch.
+\newblock Thin servers with smart pipes: designing soc accelerators for
+  memcached.
+\newblock In {\em Proceedings of the 2013 International Symposium on Computer
+  Architecture}, 2013.
+
+\bibitem{luk:pin}
+Chi{-}Keung Luk, Robert~S. Cohn, Robert Muth, Harish Patil, Artur Klauser,
+  P.~Geoffrey Lowney, Steven Wallace, Vijay~Janapa Reddi, and Kim~M. Hazelwood.
+\newblock Pin: building customized program analysis tools with dynamic
+  instrumentation.
+\newblock In {\em Proceedings of the 2005 Conference on Programming Language
+  Design and Implementation}, 2005.
+
+\bibitem{mauerer:professional}
+Wolfgang Mauerer.
+\newblock {\em Professional Linux Kernel Architecture}.
+\newblock Wrox Press Ltd., Birmingham, UK, UK, 2008.
+
+\bibitem{mckusick:design}
+Marshall~Kirk McKusick, George Neville-Neil, and Robert~N.M. Watson.
+\newblock {\em The Design and Implementation of the FreeBSD Operating System}.
+\newblock Addison-Wesley Professional, 2nd edition, 2014.
+
+\bibitem{micron:hmc}
+Micron.
+\newblock {Hybrid Memory Cube Specification 2.1}, 2014.
+
+\bibitem{navarro:practical}
+Juan Navarro, Sitaram Iyer, Peter Druschel, and Alan~L. Cox.
+\newblock Practical, transparent operating system support for superpages.
+\newblock In {\em Proceedings of the 2002 Symposium on Operating System Design
+  and Implementation}, 2002.
+
+\bibitem{ning:open}
+Jia Ning.
+\newblock {Open Compute Project: Facebook Server Intel Motherboard V3.1 Rev
+  1.00}.
+\newblock
+  \url{https://www.circleb.eu/wp-content/uploads/2016/04/Open_Compute_Project_FB_Server_Intel_Motherboard_v3.1_rev1.00.pdf},
+  2016.
+
+\bibitem{huawei:kunlun}
+{Oracle}.
+\newblock {SPARC M7-16 Server}.
+\newblock \url{https://www.oracle.com/servers/sparc/m7-16/index.html}.
+
+\bibitem{oskin:active}
+Mark Oskin, Frederic~T. Chong, and Timothy Sherwood.
+\newblock Active pages: {A} computation model for intelligent memory.
+\newblock In {\em Proceedings of the 1998 International Symposium on Computer
+  Architecture}, 1998.
+
+\bibitem{papadopoulou:prediction-based}
+Misel{-}Myrto Papadopoulou, Xin Tong, Andr{\'{e}} Seznec, and Andreas Moshovos.
+\newblock Prediction-based superpage-friendly {TLB} designs.
+\newblock In {\em Proceedings of the 2015 International Symposium on High
+  Performance Computer Architecture}, 2015.
+
+\bibitem{park:hybrid}
+Chang~Hyun Park, Taekyung Heo, Jungi Jeong, and Jaehyuk Huh.
+\newblock Hybrid tlb coalescing: Improving tlb translation coverage under
+  diverse fragmented memory allocations.
+\newblock In {\em Proceedings of the 2017 International Symposium on Computer
+  Architecture}, 2017.
+
+\bibitem{park:efficient}
+Hang~H. Park, Heo Taekyung, and Jaehyuk Huh.
+\newblock Efficient synonym filtering and scalable delayed translation for
+  hybrid virtual caching.
+\newblock In {\em Proceedings of the 2016 International Symposium on Computer
+  Architecture}, 2016.
+
+\bibitem{pham:increasing}
+Binh Pham, Abhishek Bhattacharjee, Yasuko Eckert, and Gabriel~H. Loh.
+\newblock Increasing {TLB} reach by exploiting clustering in page translations.
+\newblock In {\em Proceedings of the 2014 International Symposium on High
+  Performance Computer Architecture}, 2014.
+
+\bibitem{pham:colt}
+Binh Pham, Viswanathan Vaidyanathan, Aamer Jaleel, and Abhishek Bhattacharjee.
+\newblock Colt: Coalesced large-reach {TLB}s.
+\newblock In {\em Proceedings of the 2012 International Symposium on
+  Microarchitecture}, 2012.
+
+\bibitem{pichai:architectural}
+Bharath Pichai, Lisa Hsu, and Abhishek Bhattacharjee.
+\newblock Architectural support for address translation on gpus: designing
+  memory management units for cpu/gpus with unified address spaces.
+\newblock In {\em Proceedings of the 2014 International Conference on
+  Architectural Support for Programming Languages and Operating Systems}, 2014.
+
+\bibitem{picorel:near-memory}
+Javier Picorel, Djordje Jevdjic, and Babak Falsafi.
+\newblock Near-memory address translation.
+\newblock In {\em Proceedings of the 2017 International Conference on Parallel
+  Architectures and Compilation Techniques}, 2017.
+
+\bibitem{power:supporting}
+Jason Power, Mark~D. Hill, and David~A. Wood.
+\newblock Supporting x86-64 address translation for 100s of {GPU} lanes.
+\newblock In {\em Proceedings of the 2014 International Symposium on High
+  Performance Computer Architecture}, 2014.
+
+\bibitem{pugsley:ndc}
+Seth~H. Pugsley, Jeffrey Jestes, Huihui Zhang, Rajeev Balasubramonian,
+  Vijayalakshmi Srinivasan, Alper Buyuktosunoglu, Al~Davis, and Feifei Li.
+\newblock {NDC:} analyzing the impact of 3d-stacked memory+logic devices on
+  mapreduce workloads.
+\newblock In {\em Proceedings of the 2014 International Symposium on
+  Performance Analysis of Systems and Software}, 2014.
+
+\bibitem{lighugetlbfs}
+{Red Hat Inc.}
+\newblock {\em {libHugeTLBFS}}.
+
+\bibitem{reinders:knights}
+James Reinders.
+\newblock {Knights Corner: Your Path to Knights Landing}.
+\newblock
+  \url{https://software.intel.com/sites/default/files/managed/e9/b5/Knights-Corner-is-your-path-to-Knights-Landing.pdf},
+  2014.
+
+\bibitem{saulsbury:recently-based}
+Ashley Saulsbury, Fredrik Dahlgren, and Per Stenstr\"{o}m.
+\newblock Recency-based {TLB} preloading.
+\newblock In {\em Proceedings of the 2000 International Symposium on Computer
+  Architecture}, 2000.
+
+\bibitem{shevgoor:quantifying}
+Manjunath Shevgoor, Jung-Sik Kim, Niladrish Chatterjee, Rajeev Balasubramonian,
+  Al~Davis, and Aniruddha~N. Udipi.
+\newblock Quantifying the relationship between the power delivery network and
+  architectural policies in a 3d-stacked memory device.
+\newblock In {\em Proceedings of the 2013 International Symposium on
+  Microarchitecture}, 2013.
+
+\bibitem{smith:comparative}
+Alan~Jay Smith.
+\newblock A comparative study of set associative memory mapping algorithms and
+  their use for cache and main memory.
+\newblock {\em {IEEE} Trans. Software Eng.}, 4(2):121--130, 1978.
+
+\bibitem{sun:ultrasparc}
+{Sun Microsystems}.
+\newblock {UltraSPARC T2 Supplement to the UltraSPARC Architecture 2007}.
+\newblock
+  \url{http://www.oracle.com/technetwork/systems/opensparc/t2-13-ust2-uasuppl-draft-p-ext-1537760.html},
+  2007.
+
+\bibitem{talluri:surpassing}
+Madhusudhan Talluri and Mark~D. Hill.
+\newblock Surpassing the {TLB} performance of superpages with less operating
+  system support.
+\newblock In {\em Proceedings of the 1994 International Conference on
+  Architectural Support for Programming Languages and Operating Systems}, 1994.
+
+\bibitem{talluri:pagetable}
+Madhusudhan Talluri, Mark~D. Hill, and Yousef~A. Khalidi.
+\newblock A new page table for 64-bit address spaces.
+\newblock In {\em Proceedings of the 1995 Symposium on Operating Systems
+  Principles}, 1995.
+
+\bibitem{talluri:tradeoffs}
+Madhusudhan Talluri, Shing Kong, Mark~D. Hill, and David~A. Patterson.
+\newblock Tradeoffs in supporting two page sizes.
+\newblock In {\em Proceedings of the 1992 Annual International Symposium on
+  Computer Architecture}, 1992.
+
+\bibitem{taylor:tlb}
+George Taylor, Peter Davies, and Michael Farmwald.
+\newblock The tlb slice---a low-cost high-speed address translation mechanism.
+\newblock In {\em Proceedings of the 1990 International Symposium on Computer
+  Architecture}, 1990.
+
+\bibitem{towles:unifying}
+Brian Towles, J.~P. Grossman, Brian Greskamp, and David~E. Shaw.
+\newblock Unifying on-chip and inter-node switching within the anton 2 network.
+\newblock In {\em Proceedings of the 2014 International Symposium on Computer
+  Architecture}, 2014.
+
+\bibitem{vesely:observation}
+J{\'{a}}n Vesel{\'{y}}, Arkaprava Basu, Mark Oskin, Gabriel~H. Loh, and
+  Abhishek Bhattacharjee.
+\newblock Observations and opportunities in architecting shared virtual memory
+  for heterogeneous systems.
+\newblock In {\em Proceedings of the 2016 International Symposium on
+  Performance Analysis of Systems and Software}, 2016.
+
+\bibitem{villavieja:didi}
+Carlos Villavieja, Vasileios Karakostas, Llu{\'{\i}}s Vilanova, Yoav Etsion,
+  Alex Ram{\'{\i}}rez, Avi Mendelson, Nacho Navarro, Adri{\'{a}}n Cristal, and
+  Osman~S. Unsal.
+\newblock Didi: Mitigating the performance impact of {TLB} shootdowns using a
+  shared {TLB} directory.
+\newblock In {\em Proceedings of the 2011 International Conference on Parallel
+  Architectures and Compilation Techniques}, 2011.
+
+\bibitem{volos:fat}
+Stavros Volos, Djordje Jevdjic, Babak Falsafi, and Boris Grot.
+\newblock Fat caches for scale-out servers.
+\newblock {\em {IEEE} Micro}, 37(2):90--103, 2017.
+
+\bibitem{wenisch:simflex}
+Thomas~F. Wenisch, Roland~E. Wunderlich, Michael Ferdman, Anastassia Ailamaki,
+  Babak Falsafi, and James~C. Hoe.
+\newblock Simflex: Statistical sampling of computer system simulation.
+\newblock {\em {IEEE} Micro}, 26(4):18--31, 2006.
+
+\bibitem{xi:beyond}
+Sam~(Likun) Xi, Oreoluwa Babarinsa, Manos Athanassoulis, and Stratos Idreos.
+\newblock Beyond the wall: Near-data processing for databases.
+\newblock In {\em Proceedings of the 2015 International Workshop on Data
+  Management on New Hardware}, 2015.
+
+\bibitem{yoon:revisiting}
+Hongil Yoon and Gurindar~S. Sohi.
+\newblock Revisiting virtual {L1} caches: {A} practical design using dynamic
+  synonym remapping.
+\newblock In {\em Proceedings of the 2016 International Symposium on High
+  Performance Computer Architecture}, 2016.
+
+\end{thebibliography}

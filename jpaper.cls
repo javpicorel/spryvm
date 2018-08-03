@@ -64,11 +64,10 @@
 \RequirePackage{titling}
 \setlength{\droptitle}{-3.5em}
 
-\pretitle{\begin{center}\vspace{-.5in}
-ASPLOS Submission \#\asplossubmissionnumber -- Confidential Draft -- Do Not Distribute!!\\
-\vspace{.35in}
-\normalfont\Large\bfseries}
-\posttitle{\par\end{center}}
+\pretitle{\begin{center}
+\Large\bfseries}
+\posttitle{\\ \normalfont\small ASPLOS Submission \#\asplossubmissionnumber -- Confidential Draft -- Do Not Distribute!
+\par\end{center}}
 \preauthor{\begin{center}\normalfont\large%
     \begin{tabular}[t]{c}}
 \postauthor{\end{tabular}\par\end{center}}
