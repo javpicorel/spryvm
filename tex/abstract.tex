@@ -1,9 +1,29 @@
 \begin{abstract}
 
+As the computing industry embraces heterogeneity, a key research
+challenge is the question of how to integrate hardware accelerators in
+modern platforms without impacting the conventional virtual memory
+abstractions modern complex software stacks rely on. Unfortunately, VM
+support for accelerators is fundamentally different from CPU's due to
+prohibitive TLB reach requirements, long-latency page table walks and
+tight budgets for silicon resources and footprints. Moreover, recent
+proposals for accelerator VM support break conventional VM
+abstractions with intrusive solutions to software stack to facilitate
+address translation.
 
-With the slowdown in  silicon efficiency and density scaling, near-memory accelerators are emerging as a promising solution to bridging the logic/memory gap in online analytic workloads and services. The key challenge in incorporating accelerators into a modern platform, however, is doing so without impacting the conventional virtual memory abstractions modern complex software stacks rely on. Unfortunately, VM support for accelerators is fundamentally different from CPU's due to prohibitive TLB reach requirements, long-latency page table walks and tight budgets for silicon resources and footprints. Moreover, recent proposals for accelerator VM support break the conventional VM abstractions with intrusive solutions to software stack to facilitate address translation.
-
-In this paper, we propose spryVM, a set-associate VM for in-memory workloads. We show that maintaining the portion of the address space accelerators operate on set-associatively in practice has little impact on page fault traffic but dramatically reduces both the VM hardware support requirements and preserves demand paging to minimize the impact on existing software stacks. We observe that address translation overheads arise not just because TLBs miss frequently, but also because page table walks must complete {\it before} data access can proceed. SpryVM mitigates this translation-data access serialization by dividing memory into set-associative accelerator-local partitions which can mapped and walked locally. By overlapping page walks and data fetch operations almost entirely, SpryVM achieves within 1.2\% and 0.6\% of ideal translation in scenarios where working sets are memory-resident and exceed the available memory capacity, respectively. 
+We propose spryVM, a set-associate VM for in-memory workloads. We show
+that maintaining the portion of the address space accelerators operate
+on set-associatively has little impact on page fault traffic, but
+reduces address translation hardware requirements. SpryVM leverages
+this observation to improve TLB hit rates by desigining TLBs targeted
+to accelerator-local partitions, and by breaking page table walk-data
+fetch serialization upon TLB misses. SpryVM achieves within 1.2\% and
+0.6\% of ideal translation in scenarios where working sets are
+memory-resident and exceed the available memory capacity,
+respectively. Finally, we implement spryVM in stock Linux, showing
+that these benefits are achievable while reatining conventional VM
+abstractions and with only modest changes to existing VM software
+stacks.
 
 
 
