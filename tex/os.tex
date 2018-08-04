@@ -77,33 +77,51 @@ In Linux, there are two types of pages, anonymous pages and file-backed pages. T
 is generally private to each process and the latter can be shared between different processes.
 Thus, they need to handled differently.
 
-\textbf{Anonymous pages} Whenever a page fault happens, during the process of physical page allocation, the operating system calculates the corresponding NUMA node id from the faulting virtual address with our hash function, then obtains a free page from that NUMA node and finishes the page fault process. Linux uses \verb|alloc_pages_vma()| as the entry point of each user space  page allocation, thus, we simply calculate a memory set index (stored in a NUMA node mask variable) out of the faulting address, derive the corresponding zone list, and pass them to the page allocation function (\verb|__alloc_pages_nodemask()|). Linux is able to handle the rest of page fault work without any problem. The basic operations are shown in Algorithm~\ref{alg:index}.
+\textbf{Anonymous pages} Whenever a page fault happens, during the process of physical page allocation, the operating system calculates the corresponding NUMA node id from the faulting virtual address with our hash function, then obtains a free page from that NUMA node and finishes the page fault process. Linux uses \verb|alloc_pages_vma()| as the entry point of each user space  page allocation, thus, we simply calculate a memory set index (stored in a NUMA node mask variable) out of the faulting address, derive the corresponding zone list, and pass them to the page allocation function (\verb|__alloc_pages_nodemask()|). Linux is able to handle the rest of page fault work without any problem. The basic operations are shown in Algorithm~\ref{alg:anonymous}.
 
 \textbf{File-backed pages} File-backed pages can be shared among different processes but
 allocating file-backed pages based on faulting virtual addresses only works when they belong to
 only one process. Because there is no guarantee that other processes will map a file-backed page
 with the same virtual address or an virtual address having the same memory index as the first
-virtual address mapping to the page. To solve this, we use page index in a file as the memory set
-id for each page. A page index tells the position of the page residing in the file it maps to.
-For example, for a 64KB file, there will be 8 pages mapping to it and first page gets page index
-0, second gets page index 1, and so on. Thus, all file-backed pages are allocated from different
+virtual address mapping to the page. To solve this, we use page offset in a file as the memory set
+id for each page. A page offset tells the position of the page residing in the file to which it maps.
+For example, for a 64KB file, there will be 8 pages mapping to it and first page gets page offset
+0, second gets page offset 1, and so on. Thus, all file-backed pages are allocated from different
 memory sets based on our index scheme. On the other hand, we need to adjust virtual address 
 assignment in the kernel, which comes from \verb|get_unmapped_area()|. All we need to do
 is aligning the beginning of the given virtual address to match memory set 0's index. Thus,
-each process maps a file all starting from memory set 0.
+each process maps a file all starting from memory set 0. Both algorithms are shown in 
+Algorithm~\ref{alg:file-backed}.
 
 
 \textbf{Inverted page table} Not all architectures use inverted page tables, but they are commonly used in IBM Power systems as hashed page tables. Thus, we adopt the same operation model as hashed page tables in IBM Power systems: reserving memory for each inverted page table in individual NUMA node and inserting/invalidating/updating inverted page table entries whenever CPU page tables change in the same hook functions (e.g. \verb|update_mmu_cache()|). To guarantee the translation information is coherent between CPUs and accelerators, each inverted page table entry has a valid bit, which is atomically accessed by both CPUs (for inverted page table modification) and accelerators (for reading). Alternatively, if accelerators, e.g. GPUs, want to maintain their own page tables instead of using the inverted page table, additional hook functions, like  \verb|mmu_notifier| mechanism in Linux, could be used to keep the page tables of accelerators coherent with CPU page tables.
 
-Both modifications are very simple and not intrusive to operating systems. We only add around 270 lines of code in Linux to achieve the required functionality for spryVM. 
+All these modifications are very simple and not intrusive to operating systems. \verb|git diff| shows the summary of our changes, \texttt{20 files changed, 266 insertions(+), 43 deletions(-)}, in Linux to achieve the required functionality for spryVM. 
 
 \begin{algorithm}
-  \caption{Memory set indexing algorithm}\label{alg:index}
+  \caption{Anonymous page allocation scheme}\label{alg:anonymous}
   \begin{algorithmic}[1]
     \Procedure{alloc\_pages\_vma}{\textbf{addr\_t} vaddr}
     \State $\textit{mem\_set\_id} \gets \verb|MEM_SET_INDEX_HASH|(\mbox{vaddr})$
     \State $\textit{page} \gets \verb|alloc_pages_node|(\mbox{vaddr}, \mbox{mem\_set\_id})$
     \State \textbf{return} \textit{page}
+    \EndProcedure
+  \end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+  \caption{File-backed page allocation scheme}\label{alg:file-backed}
+  \begin{algorithmic}[1]
+    \Procedure{alloc\_page\_cache}{\textbf{pgoff\_t} page\_offset}
+    \State $\textit{mem\_set\_id} \gets \mbox{page\_offset}$
+    \State $\textit{page} \gets \verb|alloc_pages_node|(\mbox{vaddr}, \mbox{mem\_set\_id})$
+    \State \textbf{return} \textit{page}
+    \EndProcedure
+
+    \Procedure{get\_unmapped\_area}{\textbf{size\_t} mmap\_size, \textbf{pgoff\_t} page\_offset}
+    \State $\textit{vaddr} \gets \verb|FIND_HOLE_IN_VSPACE|(\mbox{mmap\_size})$
+    \State $\textit{vaddr} \gets \verb|ALIGN_TO_OFFSET|(\mbox{vaddr}, \mbox{page\_offset})$
+    \State \textbf{return} \textit{vaddr}
     \EndProcedure
   \end{algorithmic}
 \end{algorithm}
