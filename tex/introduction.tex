@@ -108,6 +108,7 @@ almost-perfect zero-overhead address translation.
 \begin{table*}[]
 \centering
 \caption{Comparison of SpryVM with previous approaches for reducing virtual memory overhead.}
+\label{table:vms}
 \begin{tabular}{
 >{\columncolor[HTML]{FFFFFF}}l |
 >{\columncolor[HTML]{FFFFFF}}c |
@@ -120,7 +121,7 @@ almost-perfect zero-overhead address translation.
 \multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Transparent Huge Pages~\cite{transparenthugepages}}    & \cmark               & \xmark                          & \cmark           & \cmark      \\ \hline
 \multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}libhugetlbfs~\cite{lighugetlbfs}}              & \xmark               & \xmark                          & \cmark           & \cmark      \\ \hline
 \multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Direct Segments~\cite{basu:efficient}}           & \xmark               & \cmark                          & \xmark           & \cmark      \\ \hline
-\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Redundant Memory Mappings~\cite{karakostas:redundant}} & \cmark               & \xmark                          & \cmark           & \cmark      \\ \hline
+\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Redundant Memory Mappings~\cite{karakostas:redundant}} & \cmark               & \xmark                          & \xmark           & \cmark      \\ \hline
 \multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Direct-mapped Mappings~\cite{picorel:near-memory, haria:devirtualizing}}    & \cmark               & \cmark                          & \xmark           & \cmark      \\ \hline
 \multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}SpryVM}                    & \cmark               & \cmark                          & \cmark           & \cmark      \\ \hline
 \end{tabular}

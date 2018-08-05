@@ -20,22 +20,75 @@
 \end{figure*}
 
 %\section{Associativity in Virtual Memory}
-\section{Set-associative Virtual Memory}
+\section{SpryVM}
 \label{sec:associativity}
 
-\javier{ Points to come across:
+%\javier{ Points to come across:
+%
+%\begin{itemize}
+%  \item We can have a first subsection to talk about the 4 points of the intro's table (i.e., programmability, power/perf, flexibility, safety). What we would like to have, the goal. 
+%  \item We can have second subsection to talk about the problems of full associativity, and the idea of set associativity, which is essentially partitioning the memory and translation information and knowing to which memory set to go, and how that can help at the aforesaid 4 points. We can have a high-level figure on how the memory and the translation information is partitioned. 
+%  NOTE: This section has to be short, maximum one page, and zero results! It has to be high level!!!
+%\end{itemize}
+
+%}
+
+In this section, we provide a high-level description of the SpryVM scheme. We start by enumerating the set of goals of an ideal memory management mechanism, continue with prior work and how it falls short of achieving all the aforesaid goals, and finally we introduce SpryVM and how our approach is able to achieve all the desired requirements.
+
+\subsection{Ideal goals for memory management}
+
+For the list of goals, we decided to follow prior work's classification~\cite{haria:devirtualizing} for an homologated comparison.
 
 \begin{itemize}
-  \item We can have a first subsection to talk about the 4 points of the intro's table (i.e., programmability, power/perf, flexibility, safety). What we would like to have, the goal. 
-  \item We can have second subsection to talk about the problems of full associativity, and the idea of set associativity, which is essentially partitioning the memory and translation information and knowing to which memory set to go, and how that can help at the aforesaid 4 points. We can have a high-level figure on how the memory and the translation information is partitioned. 
-  NOTE: This section has to be short, maximum one page, and zero results! It has to be high level!!!
+	\item \textbf{Programmability.} The widespread adoption of heterogeneous architectures depends on the usability of their programming models. A crucial step in addressing this challenge is to enable unified VM across CPUs and accelerators. This model makes any pointer equally valid everywhere~\cite{hsa}, simplifying data sharing, and eliminating the need for explicit data copies and manual data consistency maintenance. Additionally, VM enables transparent memory allocation and protection, providing the familiar programming environment that programmers expect.
+	\item \textbf{Area and Power.} An ideal memory management mechanism should provide near-zero overhead with any working set size and data locality characteristics under tight area and power constraints. In the context of accelerators, these area and power budgets are even tighter because custom hardware is only integrated if it provides large performance benefits with minimal resources. 
+	\item \textbf{Flexibility.} Memory management schemes should not overly restrict the VM mappings to become efficient. This way they are widely applicable to any levels of fragmentation and application multi-tenancy. Furthermore, schemes should not break traditional OS mechanisms such as demand-paging and copy-on-write (COW), which prevent the use of well-established optimization techniques.  
+		
+	\item \textbf{Safety.} Direct access to physical memory is generally not acceptable nor desirable. Such memory management approaches cannot prevent malicious or erroneous memory accesses and prohibits sharing accelerators across different processes with proper isolation.
 \end{itemize}
 
-}
+\subsection{Memory management mechanisms}
 
-In modern page-based VM, a virtual page is mapped on demand into a page frame. Modern systems place no restrictions on the virtual-to-physical mapping; a virtual page can potentially map to any page frame. Though flexible, this fully associative approach places translation on the critical path of every memory access, because a memory access cannot begin until the translation operation finishes.
+This part and Table~\ref{table:vms} overviews all prior work in memory management mechanism in terms of the aforesaid four goals presented before. 
 
-One potential way to break translation-memory access serialization is to completely eliminate associativity and enforce a direct mapping between virtual pages and page frames. Since a virtual page can now only map to a single page frame, address translation and data fetch are independent and can proceed in parallel. Conventional wisdom dictates that direct mapping creates an excess of page faults, due to conflicts from multiple virtual pages mapping to the same page frame. However, this is merely intuition, as there exists no study on VM associativity, unlike caches, which are similar in some organizational aspects and for which such a study has existed for three decades~\cite{hill:aspects}. 
+\noindent\textbf{Multi-page mappings.} Several studies exploited
+the contiguity naturally generated by the buddy allocator and the
+memory compactor. CoLT~\cite{pham:colt} and clustered~\cite{pham:increasing} TLBs coalesce 4-8 page translations into a single TLB entry, as long as their physical locations are contiguously in memory. Although the TLB reach improves, it is still unable to cover the entirety of a large memory system of tens or hundreds of GBs~\cite{gandhi:range}, requiring large, deep, and power-hungry TLB hierarchies to cover all the memory. 
+
+\noindent\textbf{Huge pages.} The most common approach to increase the TLB reach is the introduction of larger page sizes by using Transparent Huge Pages (THP)~\cite{transparenthugepages} and libhugetlbfs~\cite{lighugetlbfs}. In commercial x86 and ARM architectures, 2MB and 1GB pages are supported in addition to the traditional 4KB page size. Unfortunately, the OS can only allocate huge pages when the available physical memory is size-aligned and contiguous, which is not possible when the system is under memory pressure. Furthermore, supporting multiple page sizes heavily increases the TLB hardware complexity, making huge pages unsuitable for area and power efficient accelerators.
+
+\noindent\textbf{Segments.} More innovative ways of improving TLB coverage is the usage of variable-size segments instead of fixed page-based translations~\cite{karakostas:redundant, park:hybrid, basu:efficient}. Unfortunately, the effectiveness of all these techniques relies on heavy changes to the OS's allocation path with at-allocation contiguity generation (i.e., eager paging). Furthermore, direct segments requires applications to explicitly allocate a segment at startup, while redundant memory mappings (RMMs)~\cite{karakostas:redundant} requires highly associative power-hungry TLBs, both very unattractive from the programmability and hardware-efficiency perspectives. 
+
+\noindent\textbf{Direct-mapped mappings.} These techniques deliver almost near-zero overhead as they completely overlap translation with data fetch. Unfortunately, these techniques severely restrict the OS's memory allocation mechanism by either using identify mapping~\cite{haria:devirtualizing} or direct-mapped page-level allocation~\cite{picorel:near-memory}. The allocation restrictions limit the performance of such techniques with fragmented and application multi-tenancy scenarios, and complicate traditional OS mechanisms such as copy-on-write (COW) and the widely used fork system call optimization.
+
+\subsection{Reducing associativity in Virtual Memory}
+
+As shown before, there is no single memory management mechanism that achieves all the desired goals. Most importantly, we have seen that there is a tradeoff between VM flexibility and hardware complexity; the more restricted the OS's memory allocation path is, the lower the hardware complexity required to achieve competitive performance is. More specifically, we observe that traditional VM require large TLBs because it is fully associative (i.e., a virtual page can potentially map to any physical frame). In contrast, VM techniques that exhibit minimal TLB requirements by creating vast virtual-to-physical contiguity~\cite{basu:efficient, gandhi:range, haria:devirtualizing} impose strong restrictions on which page frames to assign to a virtual page, reminiscent of the notion of direct-mapping. 
+
+Alternatively to all prior work, our approach is to find a middle-ground between these techniques and propose set-associative VM, where a virtual page can map to one among a set of page frames. We name this approach spryVM (Set-Associative Regions of Your Virtual Memory). SpryVM slightly restricts VM associativity so that a virtual address uniquely
+identifies the region of the physical address space (e.g., a socket and memory channel)
+that holds the data and performs translation using per-region TLBs. This insight
+facilitates area-efficient TLBs with high hit rates (because separate
+TLBs are responsible for disjoint parts of the physical address space)
+and fast miss penalties (because spryVM can co-colate both translation
+and data in TLB's physical partition, their lookup can be
+overlapped). Importantly, we show that the OS support necessary to
+achieve this approach is compatible with existing OSes and does not
+sacrifice flexibility like in prior work. \javier{I need a figure to explain SpryVM in a little more detail.}
+
+\noindent\textbf{Programmability.} SpryVM enables a unified Virtual Memory layer for CPUs and accelerators has many benefits: a simpler programming model, enabling "a pointer is a pointer everywhere" semantics~\cite{pichai:architectural, power:supporting, vesely:observation}, extending memory protection to accelerators, and obviating the need for manual inter-CPU-accelerator data marshalling.  
+
+\noindent\textbf{Area and Power.} SpryVM performs address translation using per-region TLBs. Our TLBs are area-efficient due to both high hit rates and a fast miss penalty. The high hit rates are because of having seperate TLBs being responsible for disjoint parts of the physical memory, increasing TLB reach and locality. SpryVM achieves fast TLB miss penalty by having each region holding the data and translation information, which allows to overlap most of the translation and data fetch time.
+
+
+\noindent\textbf{Flexibility.} SpryVM slightly restricts the VM associativity so that a virtual page uniquely identifies a region in the physical memory space (e.g., a socket and a memory channel). This mapping delivers great flexibility as current systems integrate 10s to 100s of GB of memory, translating into a flexibility of 10s to 100s of millions of page frames that a virtual page can potentially map to. More importantly, we show that the OS support necessary to achieve this approach is compatible with existing OSes and does not sacrifice flexibility, allowing demand-paging and COW optimizations~\footnote{The number of COW pages is limited by the size of the memory partition.}.
+
+\noindent\textbf{Safety.} In SpryVM, accelerators require address translation to access the target page frame and check the permissions, like in conventional VM. Hence, SpryVM provides protection for malicious and erroneous data accesses and facilitates sharing accelerators across multiple processes.
+
+ 
+%In modern page-based VM, a virtual page is mapped on demand into a page frame. Modern systems place no restrictions on the virtual-to-physical mapping; a virtual page can potentially map to any page frame. Though flexible, this fully associative approach places translation on the critical path of every memory access, because a memory access cannot begin until the translation operation finishes.
+
+%One potential way to break translation-memory access serialization is to completely eliminate associativity and enforce a direct mapping between virtual pages and page frames. Since a virtual page can now only map to a single page frame, address translation and data fetch are independent and can proceed in parallel. Conventional wisdom dictates that direct mapping creates an excess of page faults, due to conflicts from multiple virtual pages mapping to the same page frame. However, this is merely intuition, as there exists no study on VM associativity, unlike caches, which are similar in some organizational aspects and for which such a study has existed for three decades~\cite{hill:aspects}. 
 
 %%%%%%%%%%% Table: Methodology %%%%%%%%%%%
 \begin{table}
@@ -84,26 +137,22 @@ One potential way to break translation-memory access serialization is to complet
 \end{table}
 %%%%%%%%%%% END Table: Methodology %%%%%%%%%%%%
 
-To fill this research void, we employ the 3C model---initially developed for caches~\cite{hill:aspects}---to study VM associativity. In this context, associativity means the number of possible locations (page frames) a given virtual page can map to. This model classifies misses (i.e., page faults) into three categories: conflict misses (when too many active pages map to a fraction of the sets), capacity misses (due to limited memory size), and compulsory misses (upon the first access to a page). 
+%To fill this research void, we employ the 3C model---initially developed for caches~\cite{hill:aspects}---to study VM associativity. In this context, associativity means the number of possible locations (page frames) a given virtual page can map to. This model classifies misses (i.e., page faults) into three categories: conflict misses (when too many active pages map to a fraction of the sets), capacity misses (due to limited memory size), and compulsory misses (upon the first access to a page). 
 
-To simulate real-world scenarios, we select a set of representative server workloads, summarized in Table~\ref{table:workload}. We include two cloud workloads from CloudSuite~\cite{ferdman:clearing}, Cassandra and Memcached, an online transaction processing (OLTP) workload~\cite{facebook:linkbench}, MySQL, two online analytical processing (OLAP) workloads~\cite{boncz:breaking}, TPC-H and TPC-DS, and a widely-used storage system workload~\cite{dong:optimizing}, RocksDB. We collect long memory traces of several 10s of billions of instructions of the server workloads using Pin~\cite{luk:pin}. We extract the virtual address and address space identifier (ASID) of each memory reference and use it to probe a set-associative memory structure, varying the associativity to observe and classify the misses. A detailed description of our methodology is found in Section~\ref{sec:methodology}.
+%To simulate real-world scenarios, we select a set of representative server workloads, summarized in Table~\ref{table:workload}. We include two cloud workloads from CloudSuite~\cite{ferdman:clearing}, Cassandra and Memcached, an online transaction processing (OLTP) workload~\cite{facebook:linkbench}, MySQL, two online analytical processing (OLAP) workloads~\cite{boncz:breaking}, TPC-H and TPC-DS, and a widely-used storage system workload~\cite{dong:optimizing}, RocksDB. We collect long memory traces of several 10s of billions of instructions of the server workloads using Pin~\cite{luk:pin}. We extract the virtual address and address space identifier (ASID) of each memory reference and use it to probe a set-associative memory structure, varying the associativity to observe and classify the misses. A detailed description of our methodology is found in Section~\ref{sec:methodology}.
 
-\subsection{Single-Process In-Memory}
+%\subsection{Single-Process In-Memory}
 
-Fig.~\ref{fig:miss_ratio} shows results for three single-process workloads: Memcached, RocksDB, and Cassandra. The y-axis breaks down the total misses into the three distinct miss classes. Each category on the x-axis corresponds to the ratio between the size of the physical memory and the size of the application's working set. For example,  $8\times$ indicates that the memory is eight times larger than the application's working set. Similarly, $1/2\times$ means that the application's working set is twice the size of the memory. We collapse results for $8\times$ to $1\times$ because they are similar and visually identical; each case represents a fully in-memory scenario. Furthermore, within each working set category, the x-axis sweeps through different VM associativities, from direct-mapped to 32-way associative. 
+%Fig.~\ref{fig:miss_ratio} shows results for three single-process workloads: Memcached, RocksDB, and Cassandra. The y-axis breaks down the total misses into the three distinct miss classes. Each category on the x-axis corresponds to the ratio between the size of the physical memory and the size of the application's working set. For example,  $8\times$ indicates that the memory is eight times larger than the application's working set. Similarly, $1/2\times$ means that the application's working set is twice the size of the memory. We collapse results for $8\times$ to $1\times$ because they are similar and visually identical; each case represents a fully in-memory scenario. Furthermore, within each working set category, the x-axis sweeps through different VM associativities, from direct-mapped to 32-way associative. 
 
 \begin{figure*}[t]
 \centering
  \subfloat[Memcached --- 2 Processes]{
   \label{fig:memcached_2p_assoc}
-%  \includegraphics[width=.32\textwidth,clip,trim = 18mm 213mm 117mm 20mm]{figs/eps/sim-rread-lat.eps}}
   \includegraphics[width=.36\textwidth,clip]{graphs/memcached_assoc_2p-bw.pdf}}
-%  \hspace{.001in}
  \subfloat[Memcached --- 4 Processes]{
   \label{fig:memcached_4p_assoc}
-%  \includegraphics[width=.32\textwidth,clip,trim = 18mm 213mm 115mm 20mm]{figs/eps/sim-rread-bw.eps}}
  \includegraphics[width=.31\textwidth,clip]{graphs/memcached_assoc_4p-bw.pdf}}
-%  \hspace{.01in}
  \subfloat[Memcached --- 8 Processes]{
   \label{fig:memcached_8p}
   \includegraphics[width=.31\textwidth,clip]{graphs/memcached_assoc_8p-bw.pdf}}
@@ -111,30 +160,22 @@ Fig.~\ref{fig:miss_ratio} shows results for three single-process workloads: Memc
  \subfloat[RocksDB --- 2 Processes]{
   \label{fig:rocksdb_2p}
 \includegraphics[width=.36\textwidth,clip]{graphs/rocksdb_assoc_2p-bw.pdf}}
-%   \hspace{.01in}
   \subfloat[RocksDB --- 4 Processes]{
   \label{fig:rocksdb_4p}
 \includegraphics[width=.305\textwidth,clip]{graphs/rocksdb_assoc_4p-bw.pdf}}
-%   \hspace{.01in}
   \subfloat[RocksDB --- 8 Processes]{
   \label{fig:rocksdb_8p}
 \includegraphics[width=.31\textwidth,clip]{graphs/rocksdb_assoc_8p-bw.pdf}}
   \hspace{.01in}
  \subfloat[Cassandra --- 2 Processes]{
   \label{fig:cassandra_2p}
-%  \includegraphics[width=.32\textwidth,clip,trim = 28mm 217mm 115mm 20mm]{figs/eps/emu-rread-lat_cropped.eps}}
   \includegraphics[width=.355\textwidth,clip]{graphs/cassandra_assoc_2p-bw.pdf}}
-%   \hspace{.01in}
   \subfloat[Cassandra --- 4 Processes]{
   \label{fig:cassandra_4p}
-%  \includegraphics[width=.32\textwidth,clip,trim = 28mm 217mm 115mm 20mm]{figs/eps/emu-rread-lat_cropped.eps}}
   \includegraphics[width=.31\textwidth,clip]{graphs/cassandra_assoc_4p-bw.pdf}}
-%   \hspace{.01in}
   \subfloat[Cassandra --- 8 Processes]{
   \label{fig:cassandra_8p}
-%  \includegraphics[width=.32\textwidth,clip,trim = 28mm 217mm 115mm 20mm]{figs/eps/emu-rread-lat_cropped.eps}}
   \includegraphics[width=.31\textwidth,clip]{graphs/cassandra_assoc_8p-bw.pdf}}
-%   \hspace{.01in}
 
 
 \caption{Overall miss ratio broken down into compulsory, capacity, and conflict misses.
@@ -142,29 +183,29 @@ Fig.~\ref{fig:miss_ratio} shows results for three single-process workloads: Memc
 \end{figure*}
 
 
-Even with a simple direct-mapped translation, compulsory misses represent $99.9\%$ of all the misses. There are no capacity misses as the working set fully fits in memory. Conflict misses are scarce. For example, Memcached using direct-mapped translation achieves a conflict miss rate in the order of one miss per $10^{8}$ memory accesses. Using $2$ ways removes all the conflicts for the $8\times$, $4\times$, and $2\times$ cases, while $4$ ways are required for the $1\times$ case (where the memory size is equal to the size of the working set). For in-memory scenarios, page conflicts arise because the virtual address space of server applications is particularly sparse; there are many virtual segments scattered all over the address space. For example, Java processes exhibit many virtual segments due to the dynamic nature of the JVM. This is best observed in the case of Cassandra, which exhibits direct-mapped conflict miss rates in the order of one miss per $10^{7}$ and $10^{6}$ memory accesses for the $8\times$--$2\times$ cases and the $1\times$ case respectively. However, conflict misses drop rapidly as associativity increases and using 4 ways removes all conflicts for the $4\times$ and $2\times$ cases, while virtually eliminating conflicts for the $1\times$ case. The observation that conflict misses drop rapidly with associativity has also been shown for caches~\cite{hill:aspects, cantin:cache}. We elide the results for TPC-H, TPC-DS, and MySQL as they follow identical trends.
+%Even with a simple direct-mapped translation, compulsory misses represent $99.9\%$ of all the misses. There are no capacity misses as the working set fully fits in memory. Conflict misses are scarce. For example, Memcached using direct-mapped translation achieves a conflict miss rate in the order of one miss per $10^{8}$ memory accesses. Using $2$ ways removes all the conflicts for the $8\times$, $4\times$, and $2\times$ cases, while $4$ ways are required for the $1\times$ case (where the memory size is equal to the size of the working set). For in-memory scenarios, page conflicts arise because the virtual address space of server applications is particularly sparse; there are many virtual segments scattered all over the address space. For example, Java processes exhibit many virtual segments due to the dynamic nature of the JVM. This is best observed in the case of Cassandra, which exhibits direct-mapped conflict miss rates in the order of one miss per $10^{7}$ and $10^{6}$ memory accesses for the $8\times$--$2\times$ cases and the $1\times$ case respectively. However, conflict misses drop rapidly as associativity increases and using 4 ways removes all conflicts for the $4\times$ and $2\times$ cases, while virtually eliminating conflicts for the $1\times$ case. The observation that conflict misses drop rapidly with associativity has also been shown for caches~\cite{hill:aspects, cantin:cache}. We elide the results for TPC-H, TPC-DS, and MySQL as they follow identical trends.
 
-\subsection{Single-Process Out-of-Memory}
+%\subsection{Single-Process Out-of-Memory}
 
-In contrast to in-memory scenarios, when the working sets do not fit in memory ($1/2\times$, $1/4\times$, $1/8\times$ cases), capacity misses grow with the working set size, while the fraction of compulsory misses drops. Although conflict misses are more significant than in the in-memory scenarios, conflicts drop sharply after 2-4 ways. In the worst case, 16 ways are required to drive conflict misses down to $\sim1\%$ of all the misses. Note that Cassandra has an active working set that fits in a memory of $1/4\times$ the data size, and capacity misses start to rise at the $1/8\times$ case and beyond. Fundamentally, all these results corroborate the seminal work on caches~\cite{hill:aspects, cantin:cache}. 
+%In contrast to in-memory scenarios, when the working sets do not fit in memory ($1/2\times$, $1/4\times$, $1/8\times$ cases), capacity misses grow with the working set size, while the fraction of compulsory misses drops. Although conflict misses are more significant than in the in-memory scenarios, conflicts drop sharply after 2-4 ways. In the worst case, 16 ways are required to drive conflict misses down to $\sim1\%$ of all the misses. Note that Cassandra has an active working set that fits in a memory of $1/4\times$ the data size, and capacity misses start to rise at the $1/8\times$ case and beyond. Fundamentally, all these results corroborate the seminal work on caches~\cite{hill:aspects, cantin:cache}. 
 
-\subsection{Multi-programming In-Memory}
-Fig.~\ref{fig:miss_ratio_procs} presents results for multi-programming. We take each of the three workloads, Memcached, RocksDB, and Cassandra, and increase the number of processes, keeping the overall working set size the same with respect to the single process scenarios. For example, for the $1\times$ case in Fig.~\ref{fig:miss_ratio}, the working set of a single process equals the size of the memory. In Fig.~\ref{fig:miss_ratio_procs}, for two processes sharing the same physical memory, the per-process working set is half the size of the physical memory. Similarly, with four processes, per-process working sets consume a quarter of the physical memory. We thus guarantee that only the increase in the number of processes has an impact on the associativity. 
+%\subsection{Multi-programming In-Memory}
+%Fig.~\ref{fig:miss_ratio_procs} presents results for multi-programming. We take each of the three workloads, Memcached, RocksDB, and Cassandra, and increase the number of processes, keeping the overall working set size the same with respect to the single process scenarios. For example, for the $1\times$ case in Fig.~\ref{fig:miss_ratio}, the working set of a single process equals the size of the memory. In Fig.~\ref{fig:miss_ratio_procs}, for two processes sharing the same physical memory, the per-process working set is half the size of the physical memory. Similarly, with four processes, per-process working sets consume a quarter of the physical memory. We thus guarantee that only the increase in the number of processes has an impact on the associativity. 
 
-For in-memory scenarios ($8\times$--$1\times$ cases), once the associativity equals the number of processes, compulsory misses represent $99.9\%$ of all the misses for all the workloads. Increasing the associativity further makes conflicts virtually disappear after a few additional ways. For instance, for Memcached, with 8, 16, and 32 ways, the conflicts are in the order of a single miss per $10^{9}$ accesses for 2, 4, and 8 processes, respectively. Cassandra requires 4, 8, and 8 ways to achieve a miss conflict rate of one miss per $10^{9}$ accesses for 2, 4, and 8 processes, respectively. Again, the trends are identical for TPC-H, TPC-DS, and MySQL. Overall, conflict misses become virtually zero with a few ways (i.e., 2-4) per process.
+%For in-memory scenarios ($8\times$--$1\times$ cases), once the associativity equals the number of processes, compulsory misses represent $99.9\%$ of all the misses for all the workloads. Increasing the associativity further makes conflicts virtually disappear after a few additional ways. For instance, for Memcached, with 8, 16, and 32 ways, the conflicts are in the order of a single miss per $10^{9}$ accesses for 2, 4, and 8 processes, respectively. Cassandra requires 4, 8, and 8 ways to achieve a miss conflict rate of one miss per $10^{9}$ accesses for 2, 4, and 8 processes, respectively. Again, the trends are identical for TPC-H, TPC-DS, and MySQL. Overall, conflict misses become virtually zero with a few ways (i.e., 2-4) per process.
 
 %%%% THINK WHETHER TO ADD THIS
 %Although Fig.~\ref{fig:miss_ratio} and \ref{fig:miss_ratio_procs} show results that use the standard method of computing the index by using the least-significant bits of the VPN, we also studied an alternative proposal whose strength is distributing address more evenly over sets~\cite{qureshi:fundamental}. It did not reduce conflicts significantly due to the fact that page conflicts arise when many pages map to the same memory set, even when assuming a uniform page distribution. Changing the index function uniformly changes the distribution, and therefore does not mitigate the issue. Once again this behavior corroborates prior work on caches~\cite{hill:aspects}.
 
-\subsection{Multi-programming Out-of-Memory}
+%\subsection{Multi-programming Out-of-Memory}
 
-For the cases where the working sets do not fit in memory, the trends are similar to the single-process scenarios. Capacity misses become more significant as the working set sizes grow, making conflict and compulsory misses less important. Similar to the in-memory case, once the associativity equals the number of processes, the fraction of conflict misses matches the single-process results. Conflicts drop rapidly as in the other cases and with 4 ways per process, conflict misses remain within $1\%$ of the total misses for all the workloads. The results for TPC-H, TPC-DS, and MySQL are identical.
+%For the cases where the working sets do not fit in memory, the trends are similar to the single-process scenarios. Capacity misses become more significant as the working set sizes grow, making conflict and compulsory misses less important. Similar to the in-memory case, once the associativity equals the number of processes, the fraction of conflict misses matches the single-process results. Conflicts drop rapidly as in the other cases and with 4 ways per process, conflict misses remain within $1\%$ of the total misses for all the workloads. The results for TPC-H, TPC-DS, and MySQL are identical.
 
-\subsection{Observations \& Implications}
+%\subsection{Observations \& Implications}
 
-Our results show that fully associative VM is unnecessary for many modern server workloads. This observation holds across scenarios that span single process, multi-programming, in-memory and out-of-memory working sets. Compulsory and capacity misses dominate, and conflict misses, which associativity alleviates, drop rapidly as the associativity increases. Specifically, for in-memory scenarios, compulsory misses dominate when associativity equals the number of processes. For out-of-the-memory scenarios, capacity misses dominate and become more important as working set sizes increase. In this case, conflict misses become scarce once associativity matches the number of processes, and virtually disappear after a few extra ways. These trends match prior literature on caches~\cite{hill:aspects, cantin:cache, hill:case}---just as set-associative (or direct-mapped) caches can often provide nearly all the benefits of full associativity with faster access times, set-associative VM can provide nearly all the benefits of full associativity with faster translation. 
+%Our results show that fully associative VM is unnecessary for many modern server workloads. This observation holds across scenarios that span single process, multi-programming, in-memory and out-of-memory working sets. Compulsory and capacity misses dominate, and conflict misses, which associativity alleviates, drop rapidly as the associativity increases. Specifically, for in-memory scenarios, compulsory misses dominate when associativity equals the number of processes. For out-of-the-memory scenarios, capacity misses dominate and become more important as working set sizes increase. In this case, conflict misses become scarce once associativity matches the number of processes, and virtually disappear after a few extra ways. These trends match prior literature on caches~\cite{hill:aspects, cantin:cache, hill:case}---just as set-associative (or direct-mapped) caches can often provide nearly all the benefits of full associativity with faster access times, set-associative VM can provide nearly all the benefits of full associativity with faster translation. 
 
-To put the associativity requirements into perspective, a commodity server today integrates $256$GB of memory~\cite{ning:open}. Assuming $4$KB pages, fully associative VM provides $64M$ ways. As there are around $100$ processes concurrently running after booting~\cite{ahn:revising}, even when assuming a system with 128 processes and an associativity of 16 per process---which is extreme as we have seen that an associativity of 2--4 per process is sufficient---the total associativity requirements does not exceed $2K$ ways. Even for a commodity server, the $2K$ requirement is $32K\times$ less than what full associativity provides. A server with a larger memory capacity (e.g., large NUMA machines~\cite{hp:hp, huawei:kunlun}) or with emerging non-volatile memories (e.g., 3D XPoint~\cite{3dxpoint}) would supply even more ways, widening the gap between the required and provided associativity. 
+%To put the associativity requirements into perspective, a commodity server today integrates $256$GB of memory~\cite{ning:open}. Assuming $4$KB pages, fully associative VM provides $64M$ ways. As there are around $100$ processes concurrently running after booting~\cite{ahn:revising}, even when assuming a system with 128 processes and an associativity of 16 per process---which is extreme as we have seen that an associativity of 2--4 per process is sufficient---the total associativity requirements does not exceed $2K$ ways. Even for a commodity server, the $2K$ requirement is $32K\times$ less than what full associativity provides. A server with a larger memory capacity (e.g., large NUMA machines~\cite{hp:hp, huawei:kunlun}) or with emerging non-volatile memories (e.g., 3D XPoint~\cite{3dxpoint}) would supply even more ways, widening the gap between the required and provided associativity. 
 
 
 
