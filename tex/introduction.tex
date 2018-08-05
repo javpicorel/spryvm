@@ -4,7 +4,7 @@ As the computing industry embraces hardware specialization, research
 questions pertaining to the system integration of accelerators in
 modern platforms are becoming increasingly important. One such
 question is that of how to expose the virtual memory (VM) abstraction
-to accelerators. While initial designs permit accelerators to have
+to accelerators. While initial solutions allow accelerators to have
 direct physical access to memory, the consequent lack of protection,
 isolation and paging significantly complicates the software
 stack. More recent studies have argued that the conventional VM
@@ -15,11 +15,11 @@ semantics~\cite{pichai:architectural, power:supporting,
 extending memory protection to accelerators, and obviating the need
 for manual inter-CPU-accelerator data marshalling.
 
-Unfortunately, it is challenging to simply extend conventional VM to
+Unfortunately, it is challenging to extend conventional VM to
 accelerators in an efficient manner. While general-purpose cores rely
-on large TLBs implemented in deep hierarchies to implement VM
-efficiently, these large structures can be ill-suited to more
-area-constrained accelerators. This is true for a wide spectrum of
+on large hiearchical TLBs to implement VM
+efficiently, such large structures are ill-suited to area-constrained 
+accelerators. This is true for a wide spectrum of
 accelerators ranging from programmable GPGPUs
 \cite{pichai:architectural, power:supporting} to graph processing
 hardware \cite{haria:devirtualizing} to even more area-contrained
@@ -31,15 +31,14 @@ address translation and page management on accelerators
 \cite{pichai:architectural, power:supporting,
   ausavarungnirun:mosaic}. Among the most promising are techniques
 that obviate the need for large TLBs by relying on the concept of
-translation contiguity, situations where large ranges of
-spatially-adjacent virtual pages are mapped to a corresponding range
+translation contiguity, situations where large contiguous 
+ranges of virtual pages are mapped to a corresponding range
 of spatially-adjacent physical pages. The idea is that TLBs would
 compress or coalesce these ranges of translations into a single
 hardware entry, greatly reducing address translation pressure. While
 some of these techniques rely on translation contiguity that OSes may
-serendipitously generate without explicitly trying to \cite{pham:colt,
-  bhattacharjee:large-reach, cox:efficient, pham:increasing}, the ones
-most successful at mitigating the need for large TLBs are those that
+serendipitously generate \cite{pham:colt, bhattacharjee:large-reach, 
+cox:efficient, pham:increasing}, the most successful ones are those that
 rely on changes to the OS's memory allocation path so that it produces
 vast swaths of translation contiguity
 \cite{haria:devirtualizing}. Unfortunately, these techniques (and
@@ -47,8 +46,8 @@ similar ones proposed for CPUs \cite{basu:efficient, gandhi:range})
 sacrifice OS flexibility to generate translation contiguity by
 requiring, for example, identity mapping (which can be difficult to
 achieve in real-world cloud settings where many applications utilize a
-machine), at-allocation contiguity generation (which can be difficult
-to achieve in real-world systems with fragmentet memory). For all
+machine), or at-allocation contiguity generation (which can be difficult
+to achieve in real-world systems with fragmented memory). %For all
 these reasons, these techniques have the option of falling back on
 traditional paging.
 
@@ -61,12 +60,12 @@ strong restrictions on which physical frames to assign to a virtual
 page, reminiscent of the notion of {\it direct-mapping}. Our approach
 is to find a middle-ground between these techniques and propose {\it
   set-associative} VM, where a virtual page can map to one among a set
-of page frames. We dub this approach spryVM (Set-Associatively Regions
+of page frames. We dub this approach spryVM (Set-Associative Regions
 of Your Virtual Memory). 
 
-SpryVM restricts VM associativity so that a virtual address uniquely
-identifies the region of the physical address space (i.e., whether it
-is a memory partition or chip) that holds the data. This insight
+SpryVM slightly restricts VM associativity so that a virtual address uniquely
+identifies the region of the physical address space (e.g., a memory chip or  partition)
+ that holds the data and performs translation using per-region TLBs. This insight
 facilitates area-efficient TLBs with high hit rates (because separate
 TLBs are responsible for disjoint parts of the physical address space)
 and fast miss penalties (because spryVM can co-colate both translation
@@ -94,7 +93,7 @@ retain cross-compatibility with existing systems.
 
 \noindent $\bullet$ SpryVM, a translation mechanism which restricts VM
 associativity so that a virtual address uniquely identifies a memory
-chip and partition, allowing MMUs to access the memory as soon as the
+chip and partition, allowing MMUs to initiate a memory access as soon as the
 virtual address is known. Each memory partition features an MMU, which
 includes a page table and TLB hierarchy to localize address
 translation and data fetch, thus minimizing the overhead. Each MMU's

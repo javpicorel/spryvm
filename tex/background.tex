@@ -1,15 +1,27 @@
 \section{Background}
 \label{sec:background}
 
-\begin{figure}
-	\centering
-	\includegraphics[width=.85\columnwidth]{graphs/e2elatency-pattern.pdf}
-	\caption{End-to-end latency of memory accesses.}
-	\label{fig:e2elat}
+\begin{figure}[t]
+   \centering
+   \includegraphics[width=1.0\columnwidth]{graphs/pagewalks.pdf}
+   \caption{Frequency of page walks as a function of memory size.}
+   \label{fig:pagewalks}
 \end{figure}
 
+Today's systems embrace ever increasing mamory sizes, particularly in the server domain where large portions of data are often kept in memory for latency reasons~\cite{}. Such a trend, together with the slowdown in silicon density scaling, forces the system designers to adopt the scale-out approach not only to compute resources, but also to memory resources. This has two major implications on virtual memory: reduced TLB effectiveness and increased page walk latency. 
 
-%\subsection{3D Memories}
+\subsection{TLB ineffectiveness}
+As the memory capacity keeps increasing, TLB hit ratios decrease sharply~\cite{} resulting in significantly higher frequency of page walks. This effect is further exacerbated by increasingly irregular access patterns of modern big data applications that lack spatial and temporal locality~\cite{}. Figure~\ref{fig:pagewalks} shows the number of page walks per memory access as a function of the memory footprint for a set of data traversal benchmarks running on an Intel Broadwell chip (for methodology details, please refer to Section~{sec:methodology}). As expected, the frequency of page walks sharply increases with the size of the data. This result corroborates a prior study on TLB ineffetiveness~\cite{}, which also observed similar trends with larger pages sizes, whose use can only provide one-time reliefs and cannot change the unpromising trend. 
+
+In response, modern systems have embraced larger and more complex TLB hierarchies in an effort to increase the TLB reach. However, increasing the TLB size beyond a few dozen entries provides diminishing returns when accessing hundreds of gigabytes of memory, especially in the absence of spatial and temporal locality~\cite{}. Moreover, the area and power overheads of the TLB hardware become particularly concerning and impractical in heterogeneous systems with a large number of tiny, highly customized accelerators~\cite{}, where the overheads of the translation hardware can greatly surpass the power and area of the rest of the functional parts of the accelerator. Given the increasing gap between the memory growth and practical TLB capacity growth, the TLB performance is certainly not on a promising trajectory.
+
+The underlying reason for poor TLB performance is that TBLs cache translation on the execution side. Because of that, every execution unit (be it a core or accelerator) must have a TLB unit, each of which caches translations that cover the entire physical memory. This is impractical for two reasons. First, the total amount of translation hardware in the system grows linearly with the number of execution units, and second, the memory growth makes each TLB ineffective. In contrast, if we were able to design a system where TLBs would act as memory-side translation caches, each serving one memory partition, then the number of TLBs would not depend on the number of execution units. More importantly, such TLBs would only need to cover a fraction of the dataset, which would significantly increase their TLB hit ratios, as per Figure~\ref{fig:pagewalks}.
+
+\subsubsection{Increasing page walk latency}
+
+As the average distance between compute and memory elements keeps increasing, the latency of page walks, which in the best case (i.e., perfect MMU caches) comprise of one access to a random memory element, increases proportionately.  
+
+
 
 \javier{Points to come across:
 
@@ -22,24 +34,6 @@
 
 
 }
-
-%3D memory enables vertical stacks of multiple DRAM dies on top of a logic layer within a single package, leveraging low-latency/high-bandwidth through-silicon vias (TSVs). Two well-known incarnations of 3D memory technology are Micron's Hybrid Memory Cube (HMC)~\cite{hmc} and JEDEC's High Bandwidth Memory (HBM)~\cite{jedec:high}. Fig.~\ref{fig:overview}a illustrates the anatomy of a 3D memory chip. The chip consists of multiple vertical memory partitions, called vaults. Each vault is independent and similar to a conventional DDR channel, with its own DRAM controller and signals. Each DRAM controller connects to all the DRAM dies through a TSV bus. Similar to previous studies, MPUs are scattered across the vaults~\cite{ahn:scalable, gao:practical, pugsley:ndc, kim:neurocube}, while a network-on-chip (NoC) connects the vaults to each other and to the off-package links.
-
-%Architectures that deploy 3D memories consist of a pool of CPUs and memory chips. Fig.s~\ref{fig:overview}b,~\ref{fig:overview}c,~and~\ref{fig:overview}d show the memory organizations considered in this paper. The CPU is connected to multiple memory chips using high-speed point-to-point SerDes links and a packet-based communication protocol. Fig.~\ref{fig:overview}b depicts a star topology where the CPU is connected to a small number of memory chips~\cite{fujitsu:while, reinders:knights}. Larger memory systems interconnect dozens of chips in a daisy chain (Fig.~\ref{fig:overview}c), which minimizes the number of links~\cite{gao:practical, pugsley:ndc}, or a mesh (Fig.~\ref{fig:overview}d), which minimizes the number of hops~\cite{ahn:scalable, kim:memory-centric}. 
-
-%Memory accesses within the local partition are much cheaper than accesses to remote partitions, as the latter involves traversing expensive NoC and/or cross-chip interconnects. Fig.~\ref{fig:e2elat} compares the average end-to-end memory access latency depending on the target data's location: 1) same partition, 2) different partition, same chip, and 3) any chip in the network. The three cases are labeled as \textit{Partition}, \textit{Chip}, and \textit{Network} respectively. Unsurprisingly, the location of the data significantly affects latency. A data access in the local partition is the fastest; accessing a remote partition within the same chip is around $1.4\times$ slower, while accessing remote memory chips increases the latency by $3.5$--$10\times$, depending on the network and memory chip count. In summary, %these results indicate that optimizing for memory access latency requires MPUs to localize memory accesses within their partitions.
-
-%\subsection{Unified Virtual Memory}
-%\label{sec:uvm}
-
-No prior proposal for virtually addressed MPUs is both general and efficient. The simplest approaches offload the address translation task to the CPU cores or an IOMMU~\cite{oskin:active, vesely:observation, gao:practical, xi:beyond}. Though simple, the fact that the MPUs and CPUs are on different chips means that sending translation requests to the CPU results in expensive chip-to-chip communication. Alternatively, one can integrate a traditional MMU with a TLB hierarchy per MPU. However, due to the limited reach of modern TLBs, page walks occur frequently, resulting in costly cross-chip traffic, as the multiple levels of the page table~\cite{gantz:hybrid} are arbitrarily scattered across the memory chips. All of these existing techniques create excessive cross-chip traffic, either to reach the CPU or to perform page walks, which could account for latencies of hundreds of nanoseconds, dramatically increasing the translation overhead.
-
-Several recent proposals seek to improve the TLB reach. The most common approach is the introduction of larger page sizes~\cite{transparenthugepages, lighugetlbfs}. Similarly, CoLT~\cite{pham:colt} and Clustered TLBs~\cite{pham:increasing} coalesce 4-8 page translations into a single TLB entry, as long as their physical locations are contiguously in memory. Although the TLB reach improves, it is still unable to cover the entirety of a large memory system with tens or hundreds of GBs~\cite{gandhi:range}. More innovative ways of improving TLB coverage employ variable-size segments instead of fixed page-based translations~\cite{karakostas:redundant, park:hybrid, basu:efficient}. Unfortunately, the effectiveness of these techniques relies on the OS to allocate contiguous chunks of physical memory, which is not possible when the system is under memory pressure. Hence, page walks are still common in some scenarios, accounting for translation overheads of hundreds of nanoseconds. 
-
-To summarize, there is no single approach capable of providing a unified VM that is suitable for all use cases. Prior work attempts to exploit contiguity in the physical memory, which is not always available. In contrast, our study focuses on sidestepping the need for fewer TLB misses by overlapping them with data fetch.
-
-
-
 
 
 
