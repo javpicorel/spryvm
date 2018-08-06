@@ -121,12 +121,13 @@ have poor NUMA support \cite{gaud:large}, and they require complex TLB
 hardware for concurrent page size support \cite{cox:efficient}. For
 all these reasons, transparent support for large pages in OSes like
 Linux only apply to 2MB pages (and not other sizes like 1GB) even
-after decades of research on large pages \cite{arcangeli:transparent}
-and practically, vendors size TLBs for the worst-case scenario when
-base 4KB pages dominate. For the successful adoption, we concur with
-recent work \cite{pham:colt, basu:efficient, karakostas:redundant,
-  haria:devirtualizing} that alternate approaches (complementary to
-large pages) to scalable TLB design are needed.
+after decades of research \cite{arcangeli:transparent}.  Practically,
+vendors implement multi-thousand-entry TLBs for the worst-case
+scenario when base 4KB pages dominate. For the successful adoption, we
+concur with recent work \cite{pham:colt, basu:efficient,
+  karakostas:redundant, haria:devirtualizing} that alternate
+approaches (complementary to large pages) to scalable TLB design are
+needed.
 
 \begin{comment}
 As the memory capacity keeps increasing, TLB hit ratios decrease
