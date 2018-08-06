@@ -31,14 +31,55 @@
 \end{tabular}
 \end{table*}
 
-\subsection{Goals for VM in heterogeneous systems}
-For a homologated comparison, we follow prior work's classification~\cite{haria:devirtualizing} of the VM goals in heterogeneous systems, which incldue:
+\subsection{Goals for VM in Heterogeneous Systems}
+When buiding VM support for accelerators, it is important to identify
+design goals for the its operation. Like prior work
+\cite{haria:devirtualizing}, we identify the following as key goals in
+our design:
 
 \begin{itemize}
-        \item \textbf{Programmability.} The widespread adoption of heterogeneous architectures depends on the usability of their programming models. A crucial step in addressing this challenge is to enable unified VM across CPUs and accelerators. This model makes any pointer equally valid everywhere~\cite{hsa}, simplifying data sharing, and eliminating the need for explicit data copies and manual data consistency maintenance. Additionally, VM enables transparent memory allocation and protection, providing the familiar programming environment that programmers expect.
-        \item \textbf{Performance and Efficiency.} An ideal memory management mechanism should provide near-zero performance overhead regardless of the working set size and data locality characteristics, and it must do so under tight area and power constraints. In the context of accelerators, the area and power budgets are even tighter because custom hardware is only integrated if it provides large performance benefits with minimal resources.
-        \item \textbf{Flexibility.} Memory management schemes should not overly restrict the address mappings to become efficient. Instead, they should be flexible enough to handle any levels of fragmentation and application multi-tenancy. Furthermore, schemes should not break traditional OS mechanisms such as demand-paging and copy-on-write (COW), which prevent the use of well-established optimization techniques, and should not be restricted only to scenarios where the entire dataset fits in memory.
-        \item \textbf{Safety and Security.} Direct access to physical memory is generally not acceptable nor desirable. Such memory management approaches cannot prevent malicious or erroneous memory accesses and prohibits sharing accelerators across different processes with proper isolation~\cite{haria:devirtualizing}. Furthermore, the entropy in address mapping must be as high as possible to reduce the vulnerability to security attacks.
+        \item \textbf{Programmability.} The widespread adoption of
+          accelerators rests on the usability of and familiarity of
+          their programming models. Unified virtual memory between
+          CPUs and accelerators are one way of achieving this in a
+          manner that simplifies data sharing, eliminating the need
+          for hand-managed data copying and marshaling. Ideally, we
+          wish to preserve all the benefits typically associated with
+          VM like memory protection and isolation, and flexibility of
+          sharing parts of the address space among processes, in a
+          manner that is transparent and familiar to programmers.
+
+        \item \textbf{Flexibility.} Traditional VM imposes no
+          restrictions on virtual-to-physical page mapping
+          relationships. This is valuable to support any level of
+          system memory fragmentation, application multi-tenancy,
+          memory allocation strategies transparent to programmers, as
+          well as the integration of features such as demand-paging
+          and copy-on-write (CoW). We wish to continue supporting this
+          flexibility.
+
+        \item \textbf{Safety and Security.} Direct access to physical
+          memory is generally not acceptable nor desirable. Such
+          memory management approaches cannot prevent malicious or
+          erroneous memory accesses and prohibits sharing accelerators
+          across different processes with proper
+          isolation~\cite{haria:devirtualizing}. Furthermore, the
+          entropy in address mapping must be as high as possible to
+          reduce the vulnerability to security attacks.
+
+        \item \textbf{Performance and Efficiency.} Crucially, all the
+          goals listed thus far must be achievable without excessive
+          performance or area overheads in hardware. In other words,
+          address translation, the central mechanism on which VM's
+          benefits rest, must provide near-zero performance overheads
+          regardless of application working set and locality patterns,
+          and must do so under tight area and power constraints. In
+          the context of accelerators, the area and power budgets are
+          even tighter because custom hardware is only integrated if
+          it provides large performance benefits with minimal
+          resources.
+
+
 \end{itemize}
 
 
