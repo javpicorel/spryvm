@@ -7,7 +7,7 @@ question is that of how to expose the virtual memory (VM) abstraction
 to accelerators. While initial solutions allow accelerators to have
 direct physical access to memory, the consequent lack of protection,
 isolation and paging significantly complicates the software
-stack. More recent studies have argued that the conventional VM
+stack and creates vulnerabilities. More recent studies have argued that the conventional VM
 abstraction and a global address space programming model is best for
 software development enabling "a pointer is a pointer everywhere"
 semantics~\cite{pichai:architectural, power:supporting,
@@ -15,23 +15,23 @@ semantics~\cite{pichai:architectural, power:supporting,
 extending memory protection to accelerators, and obviating the need
 for manual inter-CPU-accelerator data marshalling.
 
-Unfortunately, it is challenging to extend conventional VM to
+Unfortunately, it is challenging to extend the conventional VM to
 accelerators in an efficient manner. While general-purpose cores rely
-on large hiearchical TLBs to implement VM
-efficiently, such large structures are ill-suited to area-constrained 
+on large hiearchical TLBs to achieve satisfactory VM performance, 
+such large structures are ill-suited to resource-constrained 
 accelerators. This is true for a wide spectrum of
 accelerators ranging from programmable GPGPUs
 \cite{pichai:architectural, power:supporting} to graph processing
 hardware \cite{haria:devirtualizing} to even more area-contrained
-processing in/close-to memory techniques \cite{picorel:near-memory}.
+processing in/near memory techniques \cite{picorel:near-memory}.
 
 In response, several recent studies propose changes to conventional
 TLB hardware and the memory allocation/management stack for efficient
 address translation and page management on accelerators
 \cite{pichai:architectural, power:supporting,
-  ausavarungnirun:mosaic}. Among the most promising are techniques
-that obviate the need for large TLBs by relying on the concept of
-translation contiguity, situations where large contiguous 
+  ausavarungnirun:mosaic}. Among the most promising techniques are those
+that obviate the need for large TLBs by relying on 
+translation contiguity, i.e., the situations where large contiguous 
 ranges of virtual pages are mapped to a corresponding range
 of spatially-adjacent physical pages. The idea is that TLBs would
 compress or coalesce these ranges of translations into a single
@@ -41,36 +41,41 @@ serendipitously generate \cite{pham:colt, bhattacharjee:large-reach,
 cox:efficient, pham:increasing}, the most successful ones are those that
 rely on changes to the OS's memory allocation path so that it produces
 vast swaths of translation contiguity
-\cite{haria:devirtualizing}. Unfortunately, these techniques (and
-similar ones proposed for CPUs \cite{basu:efficient, gandhi:range})
+\cite{haria:devirtualizing}. Unfortunately, these techniques, along with
+the similar ones proposed for CPUs \cite{basu:efficient, gandhi:range},
 sacrifice OS flexibility to generate translation contiguity by
-requiring, for example, identity mapping (which can be difficult to
+requiring, for example, identity mapping where virtual and physical 
+addresses must be identical (which can be difficult to
 achieve in real-world cloud settings where many applications utilize a
 machine), or at-allocation contiguity generation (which can be difficult
 to achieve in real-world systems with fragmented memory). %For all
 these reasons, these techniques have the option of falling back on
 traditional paging.
 
-In contrast, we observe the following. Traditional VM requires large
+In contrast, we observe that traditional VM requires large
 TLBs because it is {\it fully-associative}; i.e., a virtual page can
-map to any physical frame. On the other hand, techniques that cut TLB
+map to any physical frame, without restrictions. On the other hand, techniques that cut TLB
 requirements by creating massive translation contiguity
 \cite{basu:efficient, gandhi:range, haria:devirtualizing} impose
 strong restrictions on which physical frames to assign to a virtual
 page, reminiscent of the notion of {\it direct-mapping}. Our approach
-is to find a middle-ground between these techniques and propose {\it
+is to find the sweet spot between these techniques and propose {\it
   set-associative} VM, where a virtual page can map to one among a set
 of page frames. We dub this approach spryVM (Set-Associative Regions
 of Your Virtual Memory). 
 
-SpryVM slightly restricts VM associativity so that a virtual address uniquely
-identifies the region of the physical address space (e.g., a memory chip or  partition)
- that holds the data and performs translation using per-region TLBs. This insight
-facilitates area-efficient TLBs with high hit rates (because separate
-TLBs are responsible for disjoint parts of the physical address space)
-and fast miss penalties (because spryVM can co-colate both translation
-and data in TLB's physical partition, their lookup can be
-overlapped). Importantly, we show that the OS support necessary to
+SpryVM {\it slightly} restricts VM associativity so that a virtual address uniquely
+identifies the region of the physical address space (a memory chip or  partition)
+that holds the data. Once the target memory region is identified, SpryVM performs 
+translation on the memory side, using local per-region TLBs situated next the corresponding memory region. 
+In doing so, SpryVM solves two key problems. First, it facilitates area-efficient 
+TLBs with high hit rates, because separate TLBs are responsible for disjoint 
+parts of the physical address space, reducing their reach requirements. Second, 
+it dramatically cuts miss penalties by co-locating translation and data in TLB's 
+physical partition, overlapping most of the translation with data fetch.
+
+
+Importantly, we show that the OS support necessary to
 achieve this approach is compatible with existing OSes and does not
 sacrifice flexibility in the mould of prior work \cite{basu:efficient,
   haria:devirtualizing}. To showcase spryVM's effectiveness, we
@@ -79,7 +84,7 @@ contribute the following:
 \noindent $\bullet$ A study of the VM associativity needs of modern
 server workloads. We are inspired by previous work on caches, which
 shows how associativity affects capacity, conflict, and compulsory
-misses \cite{hill:case}.  We find that full VM associativity is often
+misses \cite{hill:case}. We find that full VM associativity is often
 unnecessary, as most misses---page faults---are either compulsory or
 capacity, and are hence insensitive to associativity. 
 
@@ -93,36 +98,14 @@ retain cross-compatibility with existing systems.
 
 \noindent $\bullet$ SpryVM, a translation mechanism which restricts VM
 associativity so that a virtual address uniquely identifies a memory
-chip and partition, allowing MMUs to initiate a memory access as soon as the
-virtual address is known. Each memory partition features an MMU, which
-includes a page table and TLB hierarchy to localize address
-translation and data fetch, thus minimizing the overhead. Each MMU's
+chip/partition, allowing memory accesses to be issued as soon as the
+virtual address is known. Each memory partition features an MMU with a
+TLB hierarchy, whose location next to the data allows data fetch and translation 
+to be almost entirely overlapped, for both TLB hits and misses. Each MMU's
 TLB hierarchy serves only its memory partition, makings its TLB
-performance robust across any memory chip and partition counts.
+performance  robust across any memory chip and partition counts.
 
 \noindent $\bullet$ A comparison of spryVM with well-known translation
 mechanisms. SpryVM improves performance by up to $26\%$ and $15\%$ for
 in-memory and out-of-memory scenarios respectively, achieving
 almost-perfect zero-overhead address translation.
-
-\begin{table*}[]
-\centering
-\caption{Comparison of SpryVM with previous approaches for reducing virtual memory overhead.}
-\label{table:vms}
-\begin{tabular}{
->{\columncolor[HTML]{FFFFFF}}l |
->{\columncolor[HTML]{FFFFFF}}c |
->{\columncolor[HTML]{FFFFFF}}c |
->{\columncolor[HTML]{FFFFFF}}c |
->{\columncolor[HTML]{FFFFFF}}c |}
-\cline{2-5}
-\multicolumn{1}{c|}{\cellcolor[HTML]{FFFFFF}}                           & Programmability  & Performance and Efficiency & Flexibility & Safety and Security \\ \hline
-\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Multi-page mappings~\cite{pham:colt, pham:increasing}}       & \cmark              & \xmark                          & \cmark           & \cmark      \\ \hline
-\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Transparent Huge Pages~\cite{transparenthugepages}}    & \cmark               & \xmark                          & \cmark           & \cmark      \\ \hline
-\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}libhugetlbfs~\cite{lighugetlbfs}}              & \xmark                & \xmark                          & \cmark           & \cmark      \\ \hline
-\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Direct Segments~\cite{basu:efficient}}           & \xmark              & \cmark                          & \xmark           & \cmark      \\ \hline
-\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Redundant Memory Mappings~\cite{karakostas:redundant}}  & \cmark             & \xmark                          & \xmark           & \cmark      \\ \hline
-\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Direct-mapped Mappings~\cite{picorel:near-memory, haria:devirtualizing}}         & \cmark       & \cmark                          & \xmark           & \cmark      \\ \hline
-\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}SpryVM}                    & \cmark                       & \cmark               & \cmark           & \cmark      \\ \hline
-\end{tabular}
-\end{table*}
