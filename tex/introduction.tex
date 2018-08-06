@@ -1,5 +1,13 @@
 \section{Introduction}
 \label{sec:intro}
+
+\begin{figure*}
+\centering
+ \includegraphics[width=1\textwidth,clip]{graphs/overview.pdf}
+ \caption{Overview of conventional (left) and SpryVM system (right).}
+\label{fig:overview}
+\end{figure*}
+
 As the computing industry embraces hardware specialization, research
 questions pertaining to the system integration of accelerators in
 modern platforms are becoming increasingly important. One such
@@ -93,7 +101,7 @@ that these changes are readily implementable. Moreover, we selectively
 apply set associativity to {\it regions} of the virtual address space
 that benefit from this approach. In so doing, we leave
 full-associativity for regions where it is better for performance, and
-retain cross-compatibility with existing systems.
+retain cross-compatibility with existing systems \djordje{we don't actually talk about how to implement this selective associativity reduction. And it doesn't sound trivial IMO}.
 
 \noindent $\bullet$ SpryVM, a translation mechanism which restricts VM
 associativity so that a virtual address uniquely identifies a memory

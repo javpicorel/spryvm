@@ -1,23 +1,5 @@
 
-\begin{figure*}
-\centering
- \subfloat[Memcached --- 1 Process]{
-  \label{fig:memcached_1p}
-%  \includegraphics[width=.32\textwidth,clip,trim = 18mm 213mm 117mm 20mm]{figs/eps/sim-rread-lat.eps}}
-   \includegraphics[width=.365\textwidth,clip]{graphs/memcached_assoc_1p-bw.pdf}}
-%  \hspace{.01in}
- \subfloat[RocksDB --- 1 Process]{
-  \label{fig:rocksdb_1p}
-%  \includegraphics[width=.32\textwidth,clip,trim = 18mm 213mm 115mm 20mm]{figs/eps/sim-rread-bw.eps}}
-\includegraphics[width=.31\textwidth,clip]{graphs/rocksdb_assoc_1p-bw.pdf}}
-%   \hspace{.01in}
- \subfloat[Cassandra --- 1 Process]{
-  \label{fig:cassandra_1p}
-%  \includegraphics[width=.32\textwidth,clip,trim = 28mm 217mm 115mm 20mm]{figs/eps/emu-rread-lat_cropped.eps}}
-  \includegraphics[width=.31\textwidth,clip]{graphs/cassandra_assoc_1p-bw.pdf}}
-\caption{Overall miss ratio broken down into compulsory, capacity, and conflict misses.
- \label{fig:miss_ratio}}
-\end{figure*}
+
 
 %\section{Associativity in Virtual Memory}
 \section{SpryVM}
@@ -38,77 +20,69 @@
 
 As shown before, there is no single memory management mechanism that achieves all the desired goals. Most importantly, we have seen that there is a tradeoff between VM flexibility and hardware complexity; the more restricted the OS's memory allocation path is, the lower the hardware complexity required to achieve competitive performance is. More specifically, we observe that traditional VM require large TLBs because it is fully associative (i.e., a virtual page can potentially map to any physical frame). In contrast, VM techniques that exhibit minimal TLB requirements by creating vast virtual-to-physical contiguity~\cite{basu:efficient, gandhi:range, haria:devirtualizing} impose strong restrictions on which page frames to assign to a virtual page, reminiscent of the notion of direct-mapping. 
 
-Alternatively to all prior work, our approach is to find a middle-ground between these techniques and propose set-associative VM, where a virtual page can map to one among a set of page frames. We name this approach spryVM (Set-Associative Regions of Your Virtual Memory). SpryVM slightly restricts VM associativity so that a virtual address uniquely
-identifies the region of the physical address space (e.g., a socket and memory channel)
-that holds the data and performs translation using per-region TLBs. This insight
-facilitates area-efficient TLBs with high hit rates (because separate
-TLBs are responsible for disjoint parts of the physical address space)
-and fast miss penalties (because spryVM can co-colate both translation
-and data in TLB's physical partition, their lookup can be
-overlapped). Importantly, we show that the OS support necessary to
-achieve this approach is compatible with existing OSes and does not
-sacrifice flexibility like in prior work. \javier{I need a figure to explain SpryVM in a little more detail.}
+Alternatively to all prior work, our approach is to find a middle-ground between these techniques and propose set-associative VM, where a virtual page can map to one among a set of page frames. 
+Our approach, SpryVM (Set-Associative Regions of Your Virtual Memory), slightly restricts associativity in VM so that a virtual address uniquely identifies the region of physical memory (e.g., a socket and memory channel) that holds the data. In doing so, we are able to perform translation of a narrower space (i.e., the region) using per-region TLBs. Our insight facilitates area-efficient TLBs with high hit rates, as separate TLBs are responsible for covering disjoint parts of physical memory) and fast miss penalties, as spryVM co-locates both translation information and data, allowing to overlap the lookup time of both. More importantly, we show that the OS support necessary to achieve this approach is compatible with existing OSes and does not sacrifice flexibility like in prior work. A high-level comparison between a conventional translation mechanism and SpryVM is shown in Figure 1.
 
 \noindent\textbf{Programmability.} SpryVM enables a unified Virtual Memory layer for CPUs and accelerators has many benefits: a simpler programming model, enabling "a pointer is a pointer everywhere" semantics~\cite{pichai:architectural, power:supporting, vesely:observation}, extending memory protection to accelerators, and obviating the need for manual inter-CPU-accelerator data marshalling.  
 
 \noindent\textbf{Area and Power.} SpryVM performs address translation using per-region TLBs. Our TLBs are area-efficient due to both high hit rates and a fast miss penalty. The high hit rates are because of having seperate TLBs being responsible for disjoint parts of the physical memory, increasing TLB reach and locality. SpryVM achieves fast TLB miss penalty by having each region holding the data and translation information, which allows to overlap most of the translation and data fetch time.
 
 
-\noindent\textbf{Flexibility.} SpryVM slightly restricts the VM associativity so that a virtual page uniquely identifies a region in the physical memory space (e.g., a socket and a memory channel). This mapping delivers great flexibility as current systems integrate 10s to 100s of GB of memory, translating into a flexibility of 10s to 100s of millions of page frames that a virtual page can potentially map to. More importantly, we show that the OS support necessary to achieve this approach is compatible with existing OSes and does not sacrifice flexibility, allowing demand-paging and COW optimizations~\footnote{The number of COW pages is limited by the size of the memory partition.}.
+\noindent\textbf{Flexibility.} SpryVM slightly restricts the VM associativity so that a virtual page uniquely identifies a region in the physical memory space (e.g., a socket and a memory channel). This mapping delivers great flexibility as current systems integrate 10s to 100s of GB of memory, translating into a flexibility of 1s to 10s of millions of page frames that a virtual page can potentially map to. More importantly, we show that the reduced associativity has negligible impact on the page fault rates and that the OS support necessary to achieve this approach is compatible with existing OSes and does not sacrifice flexibility, allowing demand-paging and COW optimizations~\footnote{The number of COW pages is limited by the size of the memory partition.}.
 
 \noindent\textbf{Safety.} In SpryVM, accelerators require address translation to access the target page frame and check the permissions, like in conventional VM. Hence, SpryVM provides protection for malicious and erroneous data accesses and facilitates sharing accelerators across multiple processes.
+
+\subsection{Implementation details}
+
+After presenting the high-level overview of SpryVM, we now dive in its implementation details. To ease the explanation, we first walk the reader through a translation operation in a conventional memory management mechanism and then we present the same operation in SpryVM.
+
+\subsubsection{Baseline's translation.}
+
+In a conventional memory management mechanism, every accelerator integrates a TLB. In this case, this single TLB is responsible to translate virtual addresses accessing any of the page frames in the physical memory, and hence, in the common case, TLB accesses result in TLB misses or page walks. Figure~\ref{fig:pagewalk_base} shows the timeline of events of a page walk in conventional translation. Upon the accelerator issuing a memory reference which results in a TLB miss, the page walk operation involves referencing the location of the page table entry that contains the physical address of the page frame. For illustration purposes, we assume that page walks involve a single memory reference, which is not the case in reality, as conventional ARM and x86 hierarchies implement hierarchical page tables of four levels, involving four memory references per page walk in the worst case. Note that the location can be anywhere in the memory system, requiring traversing NoC and off-chip interconnects to locate the memory channel that hosts the aforesaid page table entry. Once the memory channel is the located, its memory controller access the page table entry's location in DRAM, and then page table entry, which holds the virtual-to-physical translation information is found. The page table entry has to return to the accelerator, and hence it requires again to return it by traversing through the same NoC and off-chip interconnects. Once the page table entries returns to the accelerators the TLB fill occurs. This part of the timeline constitutes th translation path. 
+
+Now with the appropriate page table entry in the TLB, the accelerator knows the exact location of the data, including the appropriate memory channel channel and location in DRAM. A set of NoC and off-chip interconnects are traversed to locate the memory channel that holds the piece of data, and its memory controller access DRAM. Once the memory controller receives the data, the data has to traverse the same NoC and off-chip interconnects to return to the accelerator. This part of the timeline constitutes the data fetch.
+
+As show in the figure, the reason the overheads of conventional translation are significant is because TLB miss often, and the translation and data path do not overlap at all. Hence, all the timeline of the translation path is exposed to the cost of accessing memory in a virtually address accelerator. Note that in an ideal translation mechanism, the only cost of a memory reference is the data path.
+
+\subsubsection{SpryVM's translation.}
+
+In SpryVM, instead of integrating a TLB per accelerator, we integrate a TLB per region of physical memory a virtual address is able to uniquely identify. In our case, we restrict the associativity so that each TLB is responsible to translating the virtual addresses mapped to a memory channel (check Figure 1). Hence, each TLB is responsible of a narrower part of the physical memory, increasing the hit rates of the TLBs. Figure~\ref{fig:pagewalk_partition_hit} shows the timeline of events when an accelerator issues a memory reference which hits in one of SpryVM's TLBs. In SpryVM, as a virtual address uniquely identifies a memory region, the virtual address is used as a memory request, requiring traversing NoC and off-chip interconnect to locate the appropriate memory channel. Then, a simple multiplexer (not shown in the figure) distinguishes between virtual and physical address requiests, and sends the aforesaid required to the memory channel's TLB. The TLB holds the translation information and hence the page frame and the physical address of the data is known. This set of events constitute the translation path. 
+
+Now since the appropriate page table entry is in the TLB and the page frame is located in the memory channel, the data path begins by the memory controller accessing the DRAM arrays to fetch the data. Once the data returns to the memory controller, the data is sent back to the accelerator traversing the same NoC and off-ship interconnects. This set of events constitute the data path.
+
+As shown in the figure, TLB hits completely overlap the translation with the data path, because the time to locate the memory channel takes part of both paths at the same time. Hence, the translation overhead is exactly zero, equal to an ideal translation mechanism. Furthermore, we make sure that TLB hits are more often than in the conventional translation as TLB are responsible of translation of a narrow part of the physical memory space.
+
+Although SpryVM significantly reduce the frequency of TLB misses, page walks can still occur. Figure~\ref{fig:pagewalk_partition_miss} shows the timeline of events when an accelerator issues a memory reference that misses in one of SpryVM's TLBs. In such cases, and similar to the previous case, the virtual address is used to arrive at the appropriate memory controller traversing the NoC and off-chip interconnects. Then, upon a TLB miss, a page table, similarly to the TLBs, only responsible for holding page table entries that map to the region of physical memory, is referenced. Note that unlike in the conventional translation mechanism, there is no need to traverse the NoC and off-chip interconnects for the page walk operation. Once the page table entry arrives from the DRAM arrays and the TLB fill operation completes, the translation path finishes. Then, memory controller issues the complete physical address to locate the target piece of data. Then, when data returns from the DRAM array, it is sent back to the accelerator by traversing the networks, finishing the data path.
+
+In this case, page walks are still much cheaper than in conventional translation as the time to locate the appropriate memory channel is part of both the translation path and data path, essentially removing this part of the cost of address translation. Furthermore, page walks do not further involve network communication as the page table entries are all locate in the same memory channel. Note that the larger the latency of the network is with respect to the DRAM accesses, the lower overhead of page walks in SpryVM. This behavior benefits large memory systems, as the need for scaling out the memory for large-memory machines increase the average distance to the memory channels. 
+
+\subsubsection{Overview.} Overall, we show that SpryVM makes the cases where its performance overhead is zero more frequent (i.e., TLB hits), but also reduces the penalty of TLB misses when they occur. 
+
+\begin{figure*}
+	\includegraphics[width=\textwidth]{figures/time_event_base.pdf}
+	\caption{Timeline of events of an accelerator's memory reference that misses in the TLB on conventional translation.}
+	\label{fig:pagewalk_base}
+\end{figure*}
+
+\begin{figure*}
+	\includegraphics[width=\textwidth]{figures/time_event_partition_hit.pdf}
+	\caption{Timeline of events of an accelerator's memory reference that hits in the TLB on SpryVM.}
+	\label{fig:pagewalk_partition_hit}
+\end{figure*}
+
+\begin{figure*}
+	\includegraphics[width=\textwidth]{figures/time_event_partition_miss.pdf}
+	\caption{Timeline of events of an accelerator's memory reference that misses in the TLB on SpryVM.}
+	\label{fig:pagewalk_partition_miss}
+\end{figure*}
+
 
  
 %In modern page-based VM, a virtual page is mapped on demand into a page frame. Modern systems place no restrictions on the virtual-to-physical mapping; a virtual page can potentially map to any page frame. Though flexible, this fully associative approach places translation on the critical path of every memory access, because a memory access cannot begin until the translation operation finishes.
 
 %One potential way to break translation-memory access serialization is to completely eliminate associativity and enforce a direct mapping between virtual pages and page frames. Since a virtual page can now only map to a single page frame, address translation and data fetch are independent and can proceed in parallel. Conventional wisdom dictates that direct mapping creates an excess of page faults, due to conflicts from multiple virtual pages mapping to the same page frame. However, this is merely intuition, as there exists no study on VM associativity, unlike caches, which are similar in some organizational aspects and for which such a study has existed for three decades~\cite{hill:aspects}. 
 
-%%%%%%%%%%% Table: Methodology %%%%%%%%%%%
-\begin{table}
- \begin{center}
-  \caption{Workload description.}
-  \scalebox{0.7}
-  \small
-  \vspace{0.01in}
-  \label{table:workload}
-  \renewcommand{\arraystretch}{1.0}
-   {\scriptsize
-    \begin{tabular}{ l  l }
-     %\hline
-     \toprule
-      {\bf Workload}                  & {\bf Description}  \\
-     	%\hline
-     	%\hline
-     	\toprule
-      	\multirow{1}{*}{Cassandra}                       &  NoSQL data store running Yahoo's YCSB. \\
-     	%\hline
-     	\cmidrule{2-2}
-      	\multirow{1}{*}{Memcached}                      & Cache store running Twitter-like workload~\cite{lim:thin}. \\
-     	%\hline
-	\cmidrule{2-2}
-        %\multirow{2}{*}{Core Types}    & In-order (Cortex A8-like): 2-wide \\
-	%		                               &  OoO (Xeon-like): 4-wide, 128-entry ROB \\
-	%\hline
-		\multirow{1}{*}{TPC-H}	& TPC-H on MonetDB column store (Q1-Q21). \\
-	\cmidrule{2-2}
-		\multirow{1}{*}{TPC-DS}	& TPC-DS on MonetDB column store (Queries of~\cite{kocberber:meet}). \\
-		\cmidrule{2-2}
-	%\multirow{2}{*}{L1-I/D Caches}	&	32KB, split, 2 ports, 64B blocks, 10 MSHRs, \\
-	%							& 2-cycle load-to-use latency \\
-	 	\multirow{1}{*}{MySQL} 			& SQL DBMS running Facebook's LinkBench~\cite{facebook:linkbench}. \\
-	%\hline
-     \cmidrule{2-2}
-      \multirow{1}{*}{RocksDB}                             &  Store engine running Facebook benchmarks~\cite{facebook:rocksdb}. \\ %a canonical uniform request distribution. \\
-      %\hline
 
-     \bottomrule
-     %\hline
-    \end{tabular}
-   } %small
- \end{center}
-  \vspace{-0.1in}
-\end{table}
-%%%%%%%%%%% END Table: Methodology %%%%%%%%%%%%
 
 %To fill this research void, we employ the 3C model---initially developed for caches~\cite{hill:aspects}---to study VM associativity. In this context, associativity means the number of possible locations (page frames) a given virtual page can map to. This model classifies misses (i.e., page faults) into three categories: conflict misses (when too many active pages map to a fraction of the sets), capacity misses (due to limited memory size), and compulsory misses (upon the first access to a page). 
 
@@ -118,42 +92,6 @@ sacrifice flexibility like in prior work. \javier{I need a figure to explain Spr
 
 %Fig.~\ref{fig:miss_ratio} shows results for three single-process workloads: Memcached, RocksDB, and Cassandra. The y-axis breaks down the total misses into the three distinct miss classes. Each category on the x-axis corresponds to the ratio between the size of the physical memory and the size of the application's working set. For example,  $8\times$ indicates that the memory is eight times larger than the application's working set. Similarly, $1/2\times$ means that the application's working set is twice the size of the memory. We collapse results for $8\times$ to $1\times$ because they are similar and visually identical; each case represents a fully in-memory scenario. Furthermore, within each working set category, the x-axis sweeps through different VM associativities, from direct-mapped to 32-way associative. 
 
-\begin{figure*}[t]
-\centering
- \subfloat[Memcached --- 2 Processes]{
-  \label{fig:memcached_2p_assoc}
-  \includegraphics[width=.36\textwidth,clip]{graphs/memcached_assoc_2p-bw.pdf}}
- \subfloat[Memcached --- 4 Processes]{
-  \label{fig:memcached_4p_assoc}
- \includegraphics[width=.31\textwidth,clip]{graphs/memcached_assoc_4p-bw.pdf}}
- \subfloat[Memcached --- 8 Processes]{
-  \label{fig:memcached_8p}
-  \includegraphics[width=.31\textwidth,clip]{graphs/memcached_assoc_8p-bw.pdf}}
- \hspace{.01in}
- \subfloat[RocksDB --- 2 Processes]{
-  \label{fig:rocksdb_2p}
-\includegraphics[width=.36\textwidth,clip]{graphs/rocksdb_assoc_2p-bw.pdf}}
-  \subfloat[RocksDB --- 4 Processes]{
-  \label{fig:rocksdb_4p}
-\includegraphics[width=.305\textwidth,clip]{graphs/rocksdb_assoc_4p-bw.pdf}}
-  \subfloat[RocksDB --- 8 Processes]{
-  \label{fig:rocksdb_8p}
-\includegraphics[width=.31\textwidth,clip]{graphs/rocksdb_assoc_8p-bw.pdf}}
-  \hspace{.01in}
- \subfloat[Cassandra --- 2 Processes]{
-  \label{fig:cassandra_2p}
-  \includegraphics[width=.355\textwidth,clip]{graphs/cassandra_assoc_2p-bw.pdf}}
-  \subfloat[Cassandra --- 4 Processes]{
-  \label{fig:cassandra_4p}
-  \includegraphics[width=.31\textwidth,clip]{graphs/cassandra_assoc_4p-bw.pdf}}
-  \subfloat[Cassandra --- 8 Processes]{
-  \label{fig:cassandra_8p}
-  \includegraphics[width=.31\textwidth,clip]{graphs/cassandra_assoc_8p-bw.pdf}}
-
-
-\caption{Overall miss ratio broken down into compulsory, capacity, and conflict misses.
- \label{fig:miss_ratio_procs}}
-\end{figure*}
 
 
 %Even with a simple direct-mapped translation, compulsory misses represent $99.9\%$ of all the misses. There are no capacity misses as the working set fully fits in memory. Conflict misses are scarce. For example, Memcached using direct-mapped translation achieves a conflict miss rate in the order of one miss per $10^{8}$ memory accesses. Using $2$ ways removes all the conflicts for the $8\times$, $4\times$, and $2\times$ cases, while $4$ ways are required for the $1\times$ case (where the memory size is equal to the size of the working set). For in-memory scenarios, page conflicts arise because the virtual address space of server applications is particularly sparse; there are many virtual segments scattered all over the address space. For example, Java processes exhibit many virtual segments due to the dynamic nature of the JVM. This is best observed in the case of Cassandra, which exhibits direct-mapped conflict miss rates in the order of one miss per $10^{7}$ and $10^{6}$ memory accesses for the $8\times$--$2\times$ cases and the $1\times$ case respectively. However, conflict misses drop rapidly as associativity increases and using 4 ways removes all conflicts for the $4\times$ and $2\times$ cases, while virtually eliminating conflicts for the $1\times$ case. The observation that conflict misses drop rapidly with associativity has also been shown for caches~\cite{hill:aspects, cantin:cache}. We elide the results for TPC-H, TPC-DS, and MySQL as they follow identical trends.

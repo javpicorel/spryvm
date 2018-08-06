@@ -1,6 +1,111 @@
 \section{Evaluation}
 \label{sec:evaluation}
 
+\begin{figure*}
+	\centering
+	\subfloat[Memcached --- 1 Process]{
+		\label{fig:memcached_1p}
+		%  \includegraphics[width=.32\textwidth,clip,trim = 18mm 213mm 117mm 20mm]{figs/eps/sim-rread-lat.eps}}
+		\includegraphics[width=.365\textwidth,clip]{graphs/memcached_assoc_1p-bw.pdf}}
+	%  \hspace{.01in}
+	\subfloat[RocksDB --- 1 Process]{
+		\label{fig:rocksdb_1p}
+		%  \includegraphics[width=.32\textwidth,clip,trim = 18mm 213mm 115mm 20mm]{figs/eps/sim-rread-bw.eps}}
+		\includegraphics[width=.31\textwidth,clip]{graphs/rocksdb_assoc_1p-bw.pdf}}
+	%   \hspace{.01in}
+	\subfloat[Cassandra --- 1 Process]{
+		\label{fig:cassandra_1p}
+		%  \includegraphics[width=.32\textwidth,clip,trim = 28mm 217mm 115mm 20mm]{figs/eps/emu-rread-lat_cropped.eps}}
+		\includegraphics[width=.31\textwidth,clip]{graphs/cassandra_assoc_1p-bw.pdf}}
+	\caption{Overall miss ratio broken down into compulsory, capacity, and conflict misses.
+		\label{fig:miss_ratio}}
+\end{figure*}
+
+%%%%%%%%%%% Table: Methodology %%%%%%%%%%%
+\begin{table}
+	\begin{center}
+		\caption{Workload description.}
+		\scalebox{0.7}
+		\small
+		\vspace{0.01in}
+		\label{table:workload}
+		\renewcommand{\arraystretch}{1.0}
+		{\scriptsize
+			\begin{tabular}{ l  l }
+				%\hline
+				\toprule
+				{\bf Workload}                  & {\bf Description}  \\
+				%\hline
+				%\hline
+				\toprule
+				\multirow{1}{*}{Cassandra}                       &  NoSQL data store running Yahoo's YCSB. \\
+				%\hline
+				\cmidrule{2-2}
+				\multirow{1}{*}{Memcached}                      & Cache store running Twitter-like workload~\cite{lim:thin}. \\
+				%\hline
+				\cmidrule{2-2}
+				%\multirow{2}{*}{Core Types}    & In-order (Cortex A8-like): 2-wide \\
+				%		                               &  OoO (Xeon-like): 4-wide, 128-entry ROB \\
+				%\hline
+				\multirow{1}{*}{TPC-H}	& TPC-H on MonetDB column store (Q1-Q21). \\
+				\cmidrule{2-2}
+				\multirow{1}{*}{TPC-DS}	& TPC-DS on MonetDB column store (Queries of~\cite{kocberber:meet}). \\
+				\cmidrule{2-2}
+				%\multirow{2}{*}{L1-I/D Caches}	&	32KB, split, 2 ports, 64B blocks, 10 MSHRs, \\
+				%							& 2-cycle load-to-use latency \\
+				\multirow{1}{*}{MySQL} 			& SQL DBMS running Facebook's LinkBench~\cite{facebook:linkbench}. \\
+				%\hline
+				\cmidrule{2-2}
+				\multirow{1}{*}{RocksDB}                             &  Store engine running Facebook benchmarks~\cite{facebook:rocksdb}. \\ %a canonical uniform request distribution. \\
+				%\hline
+				
+				\bottomrule
+				%\hline
+			\end{tabular}
+		} %small
+	\end{center}
+	\vspace{-0.1in}
+\end{table}
+%%%%%%%%%%% END Table: Methodology %%%%%%%%%%%%
+
+\begin{figure*}[t]
+	\centering
+	\subfloat[Memcached --- 2 Processes]{
+		\label{fig:memcached_2p_assoc}
+		\includegraphics[width=.36\textwidth,clip]{graphs/memcached_assoc_2p-bw.pdf}}
+	\subfloat[Memcached --- 4 Processes]{
+		\label{fig:memcached_4p_assoc}
+		\includegraphics[width=.31\textwidth,clip]{graphs/memcached_assoc_4p-bw.pdf}}
+	\subfloat[Memcached --- 8 Processes]{
+		\label{fig:memcached_8p}
+		\includegraphics[width=.31\textwidth,clip]{graphs/memcached_assoc_8p-bw.pdf}}
+	\hspace{.01in}
+	\subfloat[RocksDB --- 2 Processes]{
+		\label{fig:rocksdb_2p}
+		\includegraphics[width=.36\textwidth,clip]{graphs/rocksdb_assoc_2p-bw.pdf}}
+	\subfloat[RocksDB --- 4 Processes]{
+		\label{fig:rocksdb_4p}
+		\includegraphics[width=.305\textwidth,clip]{graphs/rocksdb_assoc_4p-bw.pdf}}
+	\subfloat[RocksDB --- 8 Processes]{
+		\label{fig:rocksdb_8p}
+		\includegraphics[width=.31\textwidth,clip]{graphs/rocksdb_assoc_8p-bw.pdf}}
+	\hspace{.01in}
+	\subfloat[Cassandra --- 2 Processes]{
+		\label{fig:cassandra_2p}
+		\includegraphics[width=.355\textwidth,clip]{graphs/cassandra_assoc_2p-bw.pdf}}
+	\subfloat[Cassandra --- 4 Processes]{
+		\label{fig:cassandra_4p}
+		\includegraphics[width=.31\textwidth,clip]{graphs/cassandra_assoc_4p-bw.pdf}}
+	\subfloat[Cassandra --- 8 Processes]{
+		\label{fig:cassandra_8p}
+		\includegraphics[width=.31\textwidth,clip]{graphs/cassandra_assoc_8p-bw.pdf}}
+	
+	
+	\caption{Overall miss ratio broken down into compulsory, capacity, and conflict misses.
+		\label{fig:miss_ratio_procs}}
+\end{figure*}
+
+
 \javier{Points to come across:
 
 \begin{itemize}
