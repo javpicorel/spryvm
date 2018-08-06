@@ -83,11 +83,38 @@ our design:
 \end{itemize}
 
 
-\subsection{Shortcomings of modern MMU Hardware}
-Today's systems employ ever increasing mamory sizes, particularly in the server domain where large portions of data are often kept in memory for latency reasons. Such a trend, together with the slowdown in silicon density scaling, forces the system designers to adopt the scale-out approach not only to compute resources, but also to memory resources. This has two major implications on virtual memory: reduced TLB effectiveness and increased page walk latency. 
+\subsection{Shortcomings of Modern MMU Hardware}
+The ever-increasing memory needs of modern software has given rise to
+scale-out systems with large memories that give low-latency access to
+data \cite{ferdman:clearing, karakostas:performance, volos:fat,
+  basu:efficient}. The advent of increasing memory sizes is
+problematic for both address translation reach and latency, as we next
+discuss.
 
-\subsubsection{TLB inefficiencies}
-As the memory capacity keeps increasing, TLB hit ratios decrease sharply~\cite{basu:efficient} resulting in significantly higher frequency of page walks. This effect is further exacerbated by increasingly irregular access patterns of modern big data applications that lack spatial and temporal locality~\cite{haria:devirtualizing}. In response, modern systems have embraced larger and more complex TLB hierarchies in an effort to increase the TLB reach. However, increasing the TLB size beyond a few dozen entries provides diminishing returns when accessing hundreds of gigabytes of memory, especially in the absence of spatial and temporal locality. Figure~\ref{fig:pagewalks} shows the number of page walks per memory access as a function of the memory footprint for a set of data traversal benchmarks running on an Intel Broadwell chip (for methodology details, please refer to Section~{sec:methodology}). The first thing to note that even large and deep TLB hierchies with >1.5K TLB entries cannot deal with irregular traversals of large datasets. The second thing to note is that the frequency of page walks sharply increases with the size of the data. This result corroborates a prior study on TLB ineffetiveness~\cite{basu:efficient}, which also observed similar trends with larger pages sizes. While large pages are highly effective in reducing translation overheads, they may not be suitable for accelerators, and ultimately do not solve the problem as memory continues to scale~\cite{basu:efficient}.	
+\subsubsection{TLB Reach}
+As the memory capacity keeps increasing, TLB hit ratios decrease
+sharply~\cite{basu:efficient} resulting in significantly higher
+frequency of page walks. This effect is further exacerbated by
+increasingly irregular access patterns of modern big data applications
+that lack spatial and temporal
+locality~\cite{haria:devirtualizing}. In response, modern systems have
+embraced larger and more complex TLB hierarchies in an effort to
+increase the TLB reach. However, increasing the TLB size beyond a few
+dozen entries provides diminishing returns when accessing hundreds of
+gigabytes of memory, especially in the absence of spatial and temporal
+locality. Figure~\ref{fig:pagewalks} shows the number of page walks
+per memory access as a function of the memory footprint for a set of
+data traversal benchmarks running on an Intel Broadwell chip (for
+methodology details, please refer to Section~{sec:methodology}). The
+first thing to note that even large and deep TLB hierchies with >1.5K
+TLB entries cannot deal with irregular traversals of large
+datasets. The second thing to note is that the frequency of page walks
+sharply increases with the size of the data. This result corroborates
+a prior study on TLB ineffetiveness~\cite{basu:efficient}, which also
+observed similar trends with larger pages sizes. While large pages are
+highly effective in reducing translation overheads, they may not be
+suitable for accelerators, and ultimately do not solve the problem as
+memory continues to scale~\cite{basu:efficient}.
 
 The area and power overheads of the translation hardware become particularly concerning and impractical in heterogeneous systems with a large number of tiny, highly customized accelerators~\cite{haria:devirtualizing}, where the overheads of the translation hardware can greatly surpass the power and area of the rest of the functional parts of the accelerator. Given the increasing gap between the memory growth and practical TLB capacity growth~\cite{gandhi:badgertrap}, the TLB performance is certainly not on a promising trajectory.
 
