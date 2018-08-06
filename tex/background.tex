@@ -1,4 +1,4 @@
-\section{Background}
+\section{Background and Motivation}
 \label{sec:background}
 
 \begin{figure}[t]
@@ -8,19 +8,46 @@
    \label{fig:pagewalks}
 \end{figure}
 
-Today's systems embrace ever increasing mamory sizes, particularly in the server domain where large portions of data are often kept in memory for latency reasons~\cite{}. Such a trend, together with the slowdown in silicon density scaling, forces the system designers to adopt the scale-out approach not only to compute resources, but also to memory resources. This has two major implications on virtual memory: reduced TLB effectiveness and increased page walk latency. 
+\subsection{Goals for VM in heterogeneous systems}
+For a homologated comparison, we follow prior work's classification~\cite{haria:devirtualizing} of the goals for an ideal memory management system, which incldue:
 
-\subsection{TLB ineffectiveness}
-As the memory capacity keeps increasing, TLB hit ratios decrease sharply~\cite{} resulting in significantly higher frequency of page walks. This effect is further exacerbated by increasingly irregular access patterns of modern big data applications that lack spatial and temporal locality~\cite{}. Figure~\ref{fig:pagewalks} shows the number of page walks per memory access as a function of the memory footprint for a set of data traversal benchmarks running on an Intel Broadwell chip (for methodology details, please refer to Section~{sec:methodology}). As expected, the frequency of page walks sharply increases with the size of the data. This result corroborates a prior study on TLB ineffetiveness~\cite{}, which also observed similar trends with larger pages sizes, whose use can only provide one-time reliefs and cannot change the unpromising trend. 
+\begin{itemize}
+        \item \textbf{Programmability.} The widespread adoption of heterogeneous architectures depends on the usability of their programming models. A crucial step in addressing this challenge is to enable unified VM across CPUs and accelerators. This model makes any pointer equally valid everywhere~\cite{hsa}, simplifying data sharing, and eliminating the need for explicit data copies and manual data consistency maintenance. Additionally, VM enables transparent memory allocation and protection, providing the familiar programming environment that programmers expect.
+        \item \textbf{Area and Power.} An ideal memory management mechanism should provide near-zero overhead with any working set size and data locality characteristics under tight area and power constraints. In the context of accelerators, these area and power budgets are even tighter because custom hardware is only integrated if it provides large performance benefits with minimal resources.
+        \item \textbf{Flexibility.} Memory management schemes should not overly restrict the VM mappings to become efficient. Instead, they should be flexible enough to handle any levels of fragmentation and application multi-tenancy. Furthermore, schemes should not break traditional OS mechanisms such as demand-paging and copy-on-write (COW), which prevent the use of well-established optimization techniques, and should not be restricted only to scenarios where entire datasets fits in memory.
 
-In response, modern systems have embraced larger and more complex TLB hierarchies in an effort to increase the TLB reach. However, increasing the TLB size beyond a few dozen entries provides diminishing returns when accessing hundreds of gigabytes of memory, especially in the absence of spatial and temporal locality~\cite{}. Moreover, the area and power overheads of the TLB hardware become particularly concerning and impractical in heterogeneous systems with a large number of tiny, highly customized accelerators~\cite{}, where the overheads of the translation hardware can greatly surpass the power and area of the rest of the functional parts of the accelerator. Given the increasing gap between the memory growth and practical TLB capacity growth, the TLB performance is certainly not on a promising trajectory.
+        \item \textbf{Safety and Security.} Direct access to physical memory is generally not acceptable nor desirable. Such memory management approaches cannot prevent malicious or erroneous memory accesses and prohibits sharing accelerators across different processes with proper isolation. Furthermore, there must be sufficient opportunity for raddress space layout randomization to reduce the vulnerability to security attacks.
+\end{itemize}
 
-The underlying reason for poor TLB performance is that TBLs cache translation on the execution side. Because of that, every execution unit (be it a core or accelerator) must have a TLB unit, each of which caches translations that cover the entire physical memory. This is impractical for two reasons. First, the total amount of translation hardware in the system grows linearly with the number of execution units, and second, the memory growth makes each TLB ineffective. In contrast, if we were able to design a system where TLBs would act as memory-side translation caches, each serving one memory partition, then the number of TLBs would not depend on the number of execution units. More importantly, such TLBs would only need to cover a fraction of the dataset, which would significantly increase their TLB hit ratios, as per Figure~\ref{fig:pagewalks}.
+
+\subsection{Shortcomings of modern MMU Hardware}
+
+Today's systems employ ever increasing mamory sizes, particularly in the server domain where large portions of data are often kept in memory for latency reasons~\cite{}. Such a trend, together with the slowdown in silicon density scaling, forces the system designers to adopt the scale-out approach not only to compute resources, but also to memory resources. This has two major implications on virtual memory: reduced TLB effectiveness and increased page walk latency. 
+
+\subsubsection{TLB ineffectiveness}
+As the memory capacity keeps increasing, TLB hit ratios decrease sharply~\cite{basu:efficient} resulting in significantly higher frequency of page walks. This effect is further exacerbated by increasingly irregular access patterns of modern big data applications that lack spatial and temporal locality~\cite{}. Figure~\ref{fig:pagewalks} shows the number of page walks per memory access as a function of the memory footprint for a set of data traversal benchmarks running on an Intel Broadwell chip (for methodology details, please refer to Section~{sec:methodology}). As expected, the frequency of page walks sharply increases with the size of the data. This result corroborates a prior study on TLB ineffetiveness~\cite{basu:efficient}, which also observed similar trends with larger pages sizes, whose use can only provide one-time reliefs and cannot change the unpromising trend. 
+
+In response, modern systems have embraced larger and more complex TLB hierarchies in an effort to increase the TLB reach. However, increasing the TLB size beyond a few dozen entries provides diminishing returns when accessing hundreds of gigabytes of memory, especially in the absence of spatial and temporal locality~\cite{}. Moreover, the area and power overheads of the TLB hardware become particularly concerning and impractical in heterogeneous systems with a large number of tiny, highly customized accelerators~\cite{haria:devirtualizing}, where the overheads of the translation hardware can greatly surpass the power and area of the rest of the functional parts of the accelerator. Given the increasing gap between the memory growth and practical TLB capacity growth~\cite{gandhi:badgertrap}, the TLB performance is certainly not on a promising trajectory.
+
+The underlying reason for poor TLB performance is that TBLs cache translation on the execution side. Because of that, every execution unit (be it a core or accelerator) must have a TLB unit, each of which caches translations that cover the entire physical memory. This becomes impractical, because the total amount of translation hardware in the system grows linearly with the number of execution units, as well as ineffective, because the memory growth makes each of the TLB units incapable of achieving sufficient hit ratios. In contrast, if we were able to design a system where TLBs would act as memory-side translation caches, each serving one memory partition, then the number of TLBs would not depend on the number of execution units. More importantly, such TLBs would only need to cover a fraction of the dataset, which would significantly increase their TLB hit ratios, as per Figure~\ref{fig:pagewalks}.
 
 \subsubsection{Increasing page walk latency}
 
 As the average distance between compute and memory elements keeps increasing, the latency of page walks, which in the best case (i.e., perfect MMU caches) comprise of one access to a random memory element, increases proportionately.  
 
+\subsection{Prior Approaches}
+
+This part and Table~\ref{table:vms} overviews all prior work in memory management mechanism in terms of the aforesaid four goals presented before.
+
+\noindent\textbf{Multi-page mappings.} Several studies exploited
+the contiguity naturally generated by the buddy allocator and the
+memory compactor. CoLT~\cite{pham:colt} and clustered~\cite{pham:increasing} TLBs coalesce 4-8 page translations into a single TLB entry, as long as their physical locations are contiguously in memory. Although the TLB reach improves, it is still unable to cover the entirety of a large memory system of tens or hundreds of GBs~\cite{gandhi:range}, requiring large, deep, and power-hungry TLB hierarchies to cover all the memory.
+
+\noindent\textbf{Huge pages.} The most common approach to increase the TLB reach is the introduction of larger page sizes by using Transparent Huge Pages (THP)~\cite{transparenthugepages} and libhugetlbfs~\cite{lighugetlbfs}. In commercial x86 and ARM architectures, 2MB and 1GB pages are supported in addition to the traditional 4KB page size. Unfortunately, the OS can only allocate huge pages when the available physical memory is size-aligned and contiguous, which is not possible when the system is under memory pressure. Furthermore, supporting multiple page sizes heavily increases the TLB hardware complexity, making huge pages unsuitable for area and power efficient accelerators.
+
+\noindent\textbf{Segments.} More innovative ways of improving TLB coverage is the usage of variable-size segments instead of fixed page-based translations~\cite{karakostas:redundant, park:hybrid, basu:efficient}. Unfortunately, the effectiveness of all these techniques relies on heavy changes to the OS's allocation path with at-allocation contiguity generation (i.e., eager paging). Furthermore, direct segments requires applications to explicitly allocate a segment at startup, while redundant memory mappings (RMMs)~\cite{karakostas:redundant} requires highly associative power-hungry TLBs, both very unattractive from the programmability and hardware-efficiency perspectives.
+
+\noindent\textbf{Direct-mapped mappings.} These techniques deliver almost near-zero overhead as they completely overlap translation with data fetch. Unfortunately, these techniques severely restrict the OS's memory allocation mechanism by either using identify mapping~\cite{haria:devirtualizing} or direct-mapped page-level allocation~\cite{picorel:near-memory}. The allocation restrictions limit the performance of such techniques with fragmented and application multi-tenancy scenarios, and complicate traditional OS mechanisms such as copy-on-write (COW) and the widely used fork system call optimization.
 
 
 \javier{Points to come across:
@@ -34,6 +61,4 @@ As the average distance between compute and memory elements keeps increasing, th
 
 
 }
-
-
 
