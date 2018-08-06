@@ -20,13 +20,13 @@
 >{\columncolor[HTML]{FFFFFF}}c |
 >{\columncolor[HTML]{FFFFFF}}c |}
 \cline{2-5}
-\multicolumn{1}{c|}{\cellcolor[HTML]{FFFFFF}}                           & Programmability  & Performance and Efficiency & Flexibility & Safety and Security \\ \hline
+\multicolumn{1}{c|}{\cellcolor[HTML]{FFFFFF}}                           & Programmability  & Performance and Efficiency & Flexibility & Protection/Security \\ \hline
 \multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Multi-page mappings~\cite{pham:colt, pham:increasing}}       & \cmark              & \xmark                          & \cmark           & \cmark      \\ \hline
-\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Transparent Huge Pages~\cite{transparenthugepages}}    & \cmark               & \xmark                          & \cmark           & \cmark      \\ \hline
-\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Libhugetlbfs~\cite{lighugetlbfs}}              & \xmark                & \xmark                          & \cmark           & \cmark      \\ \hline
-\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Direct Segments~\cite{basu:efficient}}           & \xmark              & \cmark                          & \xmark           & \cmark      \\ \hline
-\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Redundant Memory Mappings~\cite{karakostas:redundant}}  & \cmark             & \xmark                          & \xmark           & \cmark      \\ \hline
-\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Direct-mapped Mappings~\cite{picorel:near-memory, haria:devirtualizing}}         & \cmark       & \cmark                          & \xmark           & \cmark      \\ \hline
+\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Transparent Huge Pages~\cite{transparenthugepages}}    & \cmark               & \xmark                          & \cmark           & {\small \color{red} coarse protection}      \\ \hline
+\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Libhugetlbfs~\cite{lighugetlbfs}}              & \xmark                & \xmark                          & \cmark           & {\small \color{red} coarse protection}      \\ \hline
+\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Direct Segments~\cite{basu:efficient}}           & \xmark              & \cmark                          & \xmark           & {\color{red} coarse protection, ASLR?}      \\ \hline
+\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Redundant Memory Mappings~\cite{karakostas:redundant}}  & \cmark             & \xmark                          & \xmark           & {\color{red} coarse protection, ASLR?}      \\ \hline
+\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Direct-mapped Mappings~\cite{picorel:near-memory, haria:devirtualizing}}         & \cmark       & \cmark                          & \xmark           & {\color{red} coarse protection, ASLR?}      \\ \hline
 \multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}SpryVM (Our Approach)}                    & \cmark                       & \cmark               & \cmark           & \cmark      \\ \hline
 \end{tabular}
 \end{table*}
@@ -265,7 +265,7 @@ approaches for propsed for near-memory accelerators
 \cite{picorel:near-memory}. Moreover, these approaches preclude
 mechanisms like copy-on-write (COW), which are widely used in fork
 system calls, and their impact on schemes that require address bit
-entropy (like ASRL) require further examination before widespread
+entropy (like ASLR) require further examination before widespread
 adoption.
 
 
