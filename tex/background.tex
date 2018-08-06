@@ -91,7 +91,7 @@ data \cite{ferdman:clearing, karakostas:performance, volos:fat,
 problematic for both address translation reach and latency, as we next
 discuss.
 
-\subsubsection{TLB Reach}
+\subsubsection{TLB Reach.}
 Several studies have established the difficulties of building TLBs
 with sufficient capacity or {\it reach} to cover increasing physical
 memory sizes \cite{basu:efficient, haria:devirtualizing,
@@ -180,16 +180,20 @@ dataset, which would significantly increase their TLB hit ratios, as
 per Figure~\ref{fig:pagewalks}.
 \end{comment}
 
-\subsubsection{Increasing page walk latency}
-Modern CPUs heavily depend on MMU caches to reduce the number of
-memory access per page walk. However, even with perfect MMU caches,
-page walks in the best case comprise of one access to a random memory
-element. As the average distance between compute and memory elements
-keeps increasing, the latency of page walks increases
-proportionately. The situation is more concerning for heterogeneous
-systems, because the accelerators may not have the sufficient
-resources to implement large enough MMU caches and may require many
-more memory references per page walk.
+\subsubsection{Increasing Page Table Walk Latency.} 
+In addition to TLB reach, the penalty of a TLB miss is critical to
+address translation performance. For this reason, CPUs are equipped
+with dedicated MMU caches to accelerate page table walks
+\cite{bhattacharjee:large-reach, barr:translation}. Unfortunately,
+even the presence of MMU caches cannot mitigate high page table walk
+latencies in the context of accelerators. The key culprit is that
+heterogeneous sytems with accelerators are usually integrated with
+NUMA memories and require long-latency lookups across memory chips and
+partitions. Even perfect MMU caches require at least one memory
+reference per page table walk and recent work shows that this single
+reference can dramatically exacerbate address translation costs for
+accelerators \cite{picorel:near-memory}.
+
 
 \subsection{Prior Approaches}
 
