@@ -32,18 +32,18 @@ identifies the physical address of the page table and initiates a
 lookup of it. Page tables can be implemented in many ways, e.g., radix
 tree, inverted, hashed, etc. Consider the scenario where either
 because of the page table structure or the presence of MMU caches
-\cite{bhattacharjee:large, barr:translation}, the entire page table
-walk amounts to a single memory reference lookup. This lookup can
-result in a probe of any location in memory. Consequently, we may need
-to traverse the NoC and off-chip interconnect to locate the memory
-channel hosting the desired page table entry. Once the memory channel
-is identified, its memory controller accesses the page table entry's
-location in DRAM, and then page table entry, which holds the
+\cite{bhattacharjee:large-reach, barr:translation}, the entire page
+table walk amounts to a single memory reference lookup. This lookup
+can result in a probe of any location in memory. Consequently, we may
+need to traverse the NoC and off-chip interconnect to locate the
+memory channel hosting the desired page table entry. Once the memory
+channel is identified, its memory controller accesses the page table
+entry's location in DRAM, and then page table entry, which holds the
 virtual-to-physical translation information is found. The page table
 entry has to return to the accelerator, again prompting NoC and
 off-chip interconnect traversal. Once the page table entry is returned
 to the accelerator, TLB fill occurs. This part of the timeline
-constitutes th translation path. 
+constitutes th translation path.
 
 Subsequently, the accelerator uses the page table entry to calculate
 the physical address of the data fetch. A set of NoC and off-chip
