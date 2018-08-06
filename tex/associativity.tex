@@ -16,25 +16,12 @@
 %}
 
 
-\subsection{Reducing associativity in Virtual Memory}
-
-As shown before, there is no single memory management mechanism that achieves all the desired goals. Most importantly, we have seen that there is a tradeoff between VM flexibility and hardware complexity; the more restricted the OS's memory allocation path is, the lower the hardware complexity required to achieve competitive performance is. More specifically, we observe that traditional VM require large TLBs because it is fully associative (i.e., a virtual page can potentially map to any physical frame). In contrast, VM techniques that exhibit minimal TLB requirements by creating vast virtual-to-physical contiguity~\cite{basu:efficient, gandhi:range, haria:devirtualizing} impose strong restrictions on which page frames to assign to a virtual page, reminiscent of the notion of direct-mapping. 
-
-Alternatively to all prior work, our approach is to find a middle-ground between these techniques and propose set-associative VM, where a virtual page can map to one among a set of page frames. 
-Our approach, SpryVM (Set-Associative Regions of Your Virtual Memory), slightly restricts associativity in VM so that a virtual address uniquely identifies the region of physical memory (e.g., a socket and memory channel) that holds the data. In doing so, we are able to perform translation of a narrower space (i.e., the region) using per-region TLBs. Our insight facilitates area-efficient TLBs with high hit rates, as separate TLBs are responsible for covering disjoint parts of physical memory) and fast miss penalties, as spryVM co-locates both translation information and data, allowing to overlap the lookup time of both. More importantly, we show that the OS support necessary to achieve this approach is compatible with existing OSes and does not sacrifice flexibility like in prior work. A high-level comparison between a conventional translation mechanism and SpryVM is shown in Figure 1.
-
-\noindent\textbf{Programmability.} SpryVM enables a unified Virtual Memory layer for CPUs and accelerators has many benefits: a simpler programming model, enabling "a pointer is a pointer everywhere" semantics~\cite{pichai:architectural, power:supporting, vesely:observation}, extending memory protection to accelerators, and obviating the need for manual inter-CPU-accelerator data marshalling.  
-
-\noindent\textbf{Area and Power.} SpryVM performs address translation using per-region TLBs. Our TLBs are area-efficient due to both high hit rates and a fast miss penalty. The high hit rates are because of having seperate TLBs being responsible for disjoint parts of the physical memory, increasing TLB reach and locality. SpryVM achieves fast TLB miss penalty by having each region holding the data and translation information, which allows to overlap most of the translation and data fetch time.
-
-
-\noindent\textbf{Flexibility.} SpryVM slightly restricts the VM associativity so that a virtual page uniquely identifies a region in the physical memory space (e.g., a socket and a memory channel). This mapping delivers great flexibility as current systems integrate 10s to 100s of GB of memory, translating into a flexibility of 1s to 10s of millions of page frames that a virtual page can potentially map to. More importantly, we show that the reduced associativity has negligible impact on the page fault rates and that the OS support necessary to achieve this approach is compatible with existing OSes and does not sacrifice flexibility, allowing demand-paging and COW optimizations~\footnote{The number of COW pages is limited by the size of the memory partition.}.
-
-\noindent\textbf{Safety.} In SpryVM, accelerators require address translation to access the target page frame and check the permissions, like in conventional VM. Hence, SpryVM provides protection for malicious and erroneous data accesses and facilitates sharing accelerators across multiple processes.
-
 \subsection{Implementation details}
 
-After presenting the high-level overview of SpryVM, we now dive in its implementation details. To ease the explanation, we first walk the reader through a translation operation in a conventional memory management mechanism and then we present the same operation in SpryVM.
+After presenting the high-level overview of SpryVM, we now dive in its
+implementation details. To ease the explanation, we first walk the
+reader through a translation operation in a conventional memory
+management mechanism and then we present the same operation in SpryVM.
 
 \subsubsection{Baseline's translation.}
 

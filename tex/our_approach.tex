@@ -1,2 +1,47 @@
-\section{Our Approach}
+\section{Our Approach}\label{our-approach}
 %\label{sec:associativity}
+Fundamentally, all prior techniques present the following maxim -- one
+can either implement large power-hungry TLBs to accommodate all the
+benefits of fully-flexible VM, or one can get away with smaller TLBs
+as long as software flexibility is sacrificed. In the first scenario,
+large TLBs are essential because VM is fully associative. In the
+second scenario, software flexibility is sacrificed because VM imposes
+restrictions reminiscent of direct mapping. SpryVM's contribution is
+to showcase, however, that there is a third regime of operation
+between these two extremes, where we implement set-associative VM to
+continue enjoying the benefits of flexible VM without requiring large
+TLBs. 
+
+The core idea behind SpryVM is (partly) captured in Figure 1. With
+SpryVM, VM associativity is restricted in that a virtual address is
+guaranteed to map to a physical address in a specific memory
+``region''. This memory region could be a socket or a memory
+channel. This effective set-associativity provides two
+benefits. First, it enables us to replace large per-CPU/accelerator
+TLB that need to address the entire physical address space with
+memory-side TLBs responsible for mapping only their specific memory
+regions. Because memory regions represent just a subset of the total
+physical address space, memory-side TLBs can achieve high hit rates
+despite being smaller in size. Second, set-associativity also permits
+us to reduce TLB miss by allowing us to co-locate data and
+translations in the same memory regions, partly overlapping their
+lookup. The confluence of these two benefits is a combination of
+better performance and reduction in TLB resources. 
+
+A factor in our approach is that implementing set-associativity in a
+commodity OS requires only modest changes to existing memory
+allocation/management code-paths. Furthermore, we have found that in
+practice, we can achieve good address translation performance by only
+modestly reducing associativity from the default fully-associative VM
+approach. Consequently, SpryVM implements unified CPU-accelerator
+address spaces without forcing coarser-grained memory protection,
+compromising on entropy in virtual address bits, or requiring
+power/area-hungry TLBs. The fact that SpryVM does not rely on
+contiguity also means that it can continue to operate efficiently in
+fragmented memory settings where translation contiguity or identity
+mappings may be hard to generate. Furthemore, the only modest drop
+from fully-associative designs means that optimizations like
+copy-on-write can, for all practical purposes, be supported (we will
+show that the number of CoW pages is limited only by the size of the
+memory region, which can be hundreds/thousands of pages in practice).
+
