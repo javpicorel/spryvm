@@ -101,7 +101,7 @@ that these changes are readily implementable. Moreover, we selectively
 apply set associativity to {\it regions} of the virtual address space
 that benefit from this approach. In so doing, we leave
 full-associativity for regions where it is better for performance, and
-retain cross-compatibility with existing systems.
+retain cross-compatibility with existing systems \djordje{we don't actually talk about how to implement this selective associativity reduction. And it doesn't sound trivial IMO}.
 
 \noindent $\bullet$ SpryVM, a translation mechanism which restricts VM
 associativity so that a virtual address uniquely identifies a memory
