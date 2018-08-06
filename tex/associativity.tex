@@ -2,7 +2,7 @@
 
 
 %\section{Associativity in Virtual Memory}
-\section{SpryVM}
+\section{SpryVM: Hardware Support}
 \label{sec:associativity}
 
 %\javier{ Points to come across:
@@ -15,25 +15,71 @@
 
 %}
 
+We compare the hardware necessary for SpryVM with conventional
+TLBs. We first walk the reader through a translation operation in a
+conventional memory management mechanism and then we present the same
+operation in SpryVM.
 
-\subsection{Implementation details}
+\subsection{Baseline Address Translation}
 
-After presenting the high-level overview of SpryVM, we now dive in its
-implementation details. To ease the explanation, we first walk the
-reader through a translation operation in a conventional memory
-management mechanism and then we present the same operation in SpryVM.
+Figure \ref{fig:pagewalk_base} illustrates the timeline of
+conventional address translation. In the conventional case, a TLB is
+first probed by the acclerator it resides in. Consider the case of a
+TLB miss on an accelerator without caches residing close to memory, as
+considered in recent work \cite{haria:devirtualizing,
+  picorel:near-memory}. The accelerator's hardware page table walker
+identifies the physical address of the page table and initiates a
+lookup of it. Page tables can be implemented in many ways, e.g., radix
+tree, inverted, hashed, etc. Consider the scenario where either
+because of the page table structure or the presence of MMU caches
+\cite{bhattacharjee:large, barr:translation}, the entire page table
+walk amounts to a single memory reference lookup. This lookup can
+result in a probe of any location in memory. Consequently, we may need
+to traverse the NoC and off-chip interconnect to locate the memory
+channel hosting the desired page table entry. Once the memory channel
+is identified, its memory controller accesses the page table entry's
+location in DRAM, and then page table entry, which holds the
+virtual-to-physical translation information is found. The page table
+entry has to return to the accelerator, again prompting NoC and
+off-chip interconnect traversal. Once the page table entry is returned
+to the accelerator, TLB fill occurs. This part of the timeline
+constitutes th translation path. 
 
-\subsubsection{Baseline's translation.}
+Subsequently, the accelerator uses the page table entry to calculate
+the physical address of the data fetch. A set of NoC and off-chip
+interconnects are traversed to locate the memory channel that holds
+the piece of data, and its memory controller access DRAM. Once the
+memory controller receives the data, the data has to traverse the same
+NoC and off-chip interconnects to return to the accelerator. This part
+of the timeline constitutes the data fetch.
 
-In a conventional memory management mechanism, every accelerator integrates a TLB. In this case, this single TLB is responsible to translate virtual addresses accessing any of the page frames in the physical memory, and hence, in the common case, TLB accesses result in TLB misses or page walks. Figure~\ref{fig:pagewalk_base} shows the timeline of events of a page walk in conventional translation. Upon the accelerator issuing a memory reference which results in a TLB miss, the page walk operation involves referencing the location of the page table entry that contains the physical address of the page frame. For illustration purposes, we assume that page walks involve a single memory reference, which is not the case in reality, as conventional ARM and x86 hierarchies implement hierarchical page tables of four levels, involving four memory references per page walk in the worst case. Note that the location can be anywhere in the memory system, requiring traversing NoC and off-chip interconnects to locate the memory channel that hosts the aforesaid page table entry. Once the memory channel is the located, its memory controller access the page table entry's location in DRAM, and then page table entry, which holds the virtual-to-physical translation information is found. The page table entry has to return to the accelerator, and hence it requires again to return it by traversing through the same NoC and off-chip interconnects. Once the page table entries returns to the accelerators the TLB fill occurs. This part of the timeline constitutes th translation path. 
+Figure \ref{fig:pagewalk_base} shows that conventional address
+translation is expensive. First, the TLB's accelerator-side
+integration means that it must address all of physical memory, which
+can elevate its miss rate. Second, when these misses occur,
+translation and data paths may not overlap. Hence, translation walk
+latency is on the critical path of the memory access.
 
-Now with the appropriate page table entry in the TLB, the accelerator knows the exact location of the data, including the appropriate memory channel channel and location in DRAM. A set of NoC and off-chip interconnects are traversed to locate the memory channel that holds the piece of data, and its memory controller access DRAM. Once the memory controller receives the data, the data has to traverse the same NoC and off-chip interconnects to return to the accelerator. This part of the timeline constitutes the data fetch.
 
-As show in the figure, the reason the overheads of conventional translation are significant is because TLB miss often, and the translation and data path do not overlap at all. Hence, all the timeline of the translation path is exposed to the cost of accessing memory in a virtually address accelerator. Note that in an ideal translation mechanism, the only cost of a memory reference is the data path.
+\subsection{SpryVM Address Translation}
 
-\subsubsection{SpryVM's translation.}
-
-In SpryVM, instead of integrating a TLB per accelerator, we integrate a TLB per region of physical memory a virtual address is able to uniquely identify. In our case, we restrict the associativity so that each TLB is responsible to translating the virtual addresses mapped to a memory channel (check Figure 1). Hence, each TLB is responsible of a narrower part of the physical memory, increasing the hit rates of the TLBs. Figure~\ref{fig:pagewalk_partition_hit} shows the timeline of events when an accelerator issues a memory reference which hits in one of SpryVM's TLBs. In SpryVM, as a virtual address uniquely identifies a memory region, the virtual address is used as a memory request, requiring traversing NoC and off-chip interconnect to locate the appropriate memory channel. Then, a simple multiplexer (not shown in the figure) distinguishes between virtual and physical address requiests, and sends the aforesaid required to the memory channel's TLB. The TLB holds the translation information and hence the page frame and the physical address of the data is known. This set of events constitute the translation path. 
+In SpryVM, instead of integrating a TLB per accelerator, we integrate
+a TLB per region of physical memory a virtual address is able to
+uniquely identify. In our case, we restrict the associativity so that
+each TLB is responsible to translating the virtual addresses mapped to
+a memory channel (check Figure 1). Hence, each TLB is responsible of a
+narrower part of the physical memory, increasing the hit rates of the
+TLBs. Figure~\ref{fig:pagewalk_partition_hit} shows the timeline of
+events when an accelerator issues a memory reference which hits in one
+of SpryVM's TLBs. In SpryVM, as a virtual address uniquely identifies
+a memory region, the virtual address is used as a memory request,
+requiring traversing NoC and off-chip interconnect to locate the
+appropriate memory channel. Then, a simple multiplexer (not shown in
+the figure) distinguishes between virtual and physical address
+requiests, and sends the aforesaid required to the memory channel's
+TLB. The TLB holds the translation information and hence the page
+frame and the physical address of the data is known. This set of
+events constitute the translation path.
 
 Now since the appropriate page table entry is in the TLB and the page frame is located in the memory channel, the data path begins by the memory controller accessing the DRAM arrays to fetch the data. Once the data returns to the memory controller, the data is sent back to the accelerator traversing the same NoC and off-ship interconnects. This set of events constitute the data path.
 
