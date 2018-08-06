@@ -27,7 +27,7 @@
 \multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Direct Segments~\cite{basu:efficient}}           & \xmark              & \cmark                          & \xmark           & \cmark      \\ \hline
 \multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Redundant Memory Mappings~\cite{karakostas:redundant}}  & \cmark             & \xmark                          & \xmark           & \cmark      \\ \hline
 \multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Direct-mapped Mappings~\cite{picorel:near-memory, haria:devirtualizing}}         & \cmark       & \cmark                          & \xmark           & \cmark      \\ \hline
-\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}SpryVM "our approach"}                    & \cmark                       & \cmark               & \cmark           & \cmark      \\ \hline
+\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}SpryVM (Our Approach)}                    & \cmark                       & \cmark               & \cmark           & \cmark      \\ \hline
 \end{tabular}
 \end{table*}
 
@@ -234,30 +234,39 @@ increases the TLB hardware complexity, making huge pages unsuitable
 for area- and power-efficient accelerators.
 \end{comment}
 
-\noindent\textbf{Segments.} More innovative ways of improving TLB
-coverage is the usage of variable-size segments instead of fixed
-page-based translations~\cite{karakostas:redundant, park:hybrid,
-  basu:efficient}. Unfortunately, the effectiveness of these
-techniques relies on heavy changes to the OS's allocation path with
-at-allocation contiguity generation (i.e., eager paging). Furthermore,
-direct segments require applications to explicitly allocate a segment
-at startup, while redundant memory mappings
-(RMMs)~\cite{karakostas:redundant} requires highly associative
-power-hungry TLBs, both very unattractive from the programmability and
-hardware-efficiency perspectives.
+\vspace{2mm}
+\noindent\textbf{Segments.} These approaches use variable-size segments
+instead of fixed page-based translations~\cite{karakostas:redundant,
+  park:hybrid, basu:efficient}. Unfortunately, the effectiveness of
+these techniques relies on heavy changes to the OS's allocation path
+with at-allocation contiguity generation (i.e., eager
+paging). Furthermore, direct segments require applications to
+explicitly allocate a segment at startup, while redundant memory
+mappings (RMMs)~\cite{karakostas:redundant}. While effective in many
+scenarios, their reliance on at-allocation contiguity generation means
+that there are situations on highly fragmented systems where
+segments/ranges may be difficult to generate. Additionally, because
+they are flexible in the number of contiguous translations they allow
+to be coalesced in a TLB entry, they require highly associative TLBs,
+which poses power/area overheads.
 
-\noindent\textbf{Direct-mapped mappings.} These techniques deliver almost near-zero overhead as they completely overlap translation with data fetch. Unfortunately, these techniques severely restrict the OS's memory allocation mechanism by either using identify mapping~\cite{haria:devirtualizing} or direct-mapped page-level allocation~\cite{picorel:near-memory}. The allocation restrictions limit the performance of such techniques with fragmented and application multi-tenancy scenarios, and complicate traditional OS mechanisms such as copy-on-write (COW) and the widely used fork system call optimization. Furthermore, these approaches drastically reduce the amount of entropy in address mapping, making the system more vulnerable to security attacks.
+\vspace{2mm}
+\noindent\textbf{Direct-mapped segments.} Recent work on devirtualized
+virtual memory extends the previous line of work on segments
+specifically in the context of accelerators
+\cite{haria:devirtualizing}. The approach is to identity map virtual
+and physical pages for large swaths of the application footprint; this
+enables just one TLB entry to essentially cover an entire
+segment. While address translation overheads are largely eliminated
+with this approach, identity mappings may be optimistic in
+highly-loaded multi-tenant cloud scenarios with memory
+fragmentation. Similar restrictions apply to other ``direct-mapped''
+approaches for propsed for near-memory accelerators
+\cite{picorel:near-memory}. Moreover, these approaches preclude
+mechanisms like copy-on-write (COW), which are widely used in fork
+system calls, and their impact on schemes that require address bit
+entropy (like ASRL) require further examination before widespread
+adoption.
 
 
-\javier{Points to come across:
-
-\begin{itemize}
-  \item SW trend: Servers workloads are keeping their datasets memory resident; HW trend: Due to slowdown in silicon density and efficiency, computer system are integrating custom logic (accelerators).
-  \item Explain the programmability benefits of pointer-is-a-pointer AND flexible VM system (e.g., demand paging, COW) of a conventional translation mechanism.
-  \item TLB Reach Problem: Explain that a conventional translation mechanism is not effective for accelerators because (1) it relies on deep cache and TLB hierarchies and (2) data reuse, to bridge the gap between computation speed and memory capacity. However, accelerators primarily exploit parallel access with proximity to memory, and not reuse and deep cache hierarchies. Furthermore, accelerator are custom and hence silicon optimized, hence the available budget for translation hardware is limited. I think we can just cite prior work on TLB miss rates for in-memory workloads.   
-  \item TLB Penalty Problem: Explain that compute and memory are scaling-out due to the slowdown in silicon scaling and efficiency, hence TLB misses (page walks) become more costly. We can show something similar to Figure 1 here.
-\end{itemize}
-
-
-}
 
