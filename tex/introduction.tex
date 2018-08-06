@@ -9,48 +9,47 @@ direct physical access to memory, the consequent lack of protection,
 isolation and paging significantly complicates the software
 stack and creates vulnerabilities. More recent studies have argued that the conventional VM
 abstraction and a global address space programming model is best for
-software development enabling "a pointer is a pointer everywhere"
+software development, enabling "a pointer is a pointer everywhere"
 semantics~\cite{pichai:architectural, power:supporting,
   haria:devirtualizing, vesely:observation, ausavarungnirun:mosaic},
 extending memory protection to accelerators, and obviating the need
 for manual inter-CPU-accelerator data marshalling.
 
-Unfortunately, it is challenging to extend the conventional VM to
+Unfortunately, it is challenging to extend conventional VM to
 accelerators in an efficient manner. While general-purpose cores rely
-on large hiearchical TLBs to achieve satisfactory VM performance, 
-such large structures are ill-suited to resource-constrained 
-accelerators. This is true for a wide spectrum of
-accelerators ranging from programmable GPGPUs
-\cite{pichai:architectural, power:supporting} to graph processing
-hardware \cite{haria:devirtualizing} to even more area-contrained
-processing in/near memory techniques \cite{picorel:near-memory}.
+on large hiearchical TLBs to achieve satisfactory VM performance, such
+large structures are ill-suited to resource-constrained
+accelerators. This is true for a wide spectrum of accelerators ranging
+from programmable GPGPUs \cite{pichai:architectural, power:supporting}
+to graph processing hardware \cite{haria:devirtualizing} to even more
+area-contrained processing in/near memory techniques
+\cite{picorel:near-memory}.
 
-In response, several recent studies propose changes to conventional
-TLB hardware and the memory allocation/management stack for efficient
+In response, recent studies propose changes to conventional TLB
+hardware and the memory allocation/management stack for efficient
 address translation and page management on accelerators
 \cite{pichai:architectural, power:supporting,
-  ausavarungnirun:mosaic}. Among the most promising techniques are those
-that obviate the need for large TLBs by relying on 
-translation contiguity, i.e., the situations where large contiguous 
-ranges of virtual pages are mapped to a corresponding range
-of spatially-adjacent physical pages. The idea is that TLBs would
-compress or coalesce these ranges of translations into a single
-hardware entry, greatly reducing address translation pressure. While
-some of these techniques rely on translation contiguity that OSes may
-serendipitously generate \cite{pham:colt, bhattacharjee:large-reach, 
-cox:efficient, pham:increasing}, the most successful ones are those that
-rely on changes to the OS's memory allocation path so that it produces
-vast swaths of translation contiguity
-\cite{haria:devirtualizing}. Unfortunately, these techniques, along with
-the similar ones proposed for CPUs \cite{basu:efficient, gandhi:range},
-sacrifice OS flexibility to generate translation contiguity by
-requiring, for example, identity mapping where virtual and physical 
-addresses must be identical (which can be difficult to
-achieve in real-world cloud settings where many applications utilize a
-machine), or at-allocation contiguity generation (which can be difficult
-to achieve in real-world systems with fragmented memory). %For all
-these reasons, these techniques have the option of falling back on
-traditional paging.
+  ausavarungnirun:mosaic}. Among the most promising techniques are
+those that obviate the need for large TLBs by relying on translation
+contiguity, i.e., situations where large contiguous ranges of virtual
+pages are mapped to a corresponding range of spatially-adjacent
+physical pages. Contiguous translations can be compressed or coalesced
+by TLBs into individual entries, reducing address translation
+pressure. While some of these techniques rely on translation
+contiguity that OSes may serendipitously generate \cite{pham:colt,
+  bhattacharjee:large-reach, cox:efficient, pham:increasing}, the most
+successful ones are those that rely on changes to the OS's memory
+allocation path so that it produces vast swaths of translation
+contiguity \cite{haria:devirtualizing}. Unfortunately, these
+techniques, along with the similar ones proposed for CPUs
+\cite{basu:efficient, gandhi:range}, sacrifice OS flexibility to
+generate translation contiguity by requiring, for example, identity
+mapping where virtual and physical addresses must be identical (which
+can be difficult to achieve in real-world cloud settings where many
+applications utilize a machine), or at-allocation contiguity
+generation (which can be difficult to achieve in real-world systems
+with fragmented memory). %For all these reasons, these techniques have
+%the option of falling back on traditional paging.
 
 In contrast, we observe that traditional VM requires large
 TLBs because it is {\it fully-associative}; i.e., a virtual page can
@@ -64,20 +63,20 @@ is to find the sweet spot between these techniques and propose {\it
 of page frames. We dub this approach spryVM (Set-Associative Regions
 of Your Virtual Memory). 
 
-SpryVM {\it slightly} restricts VM associativity so that a virtual address uniquely
-identifies the region of the physical address space (a memory chip or  partition)
-that holds the data. Once the target memory region is identified, SpryVM performs 
-translation on the memory side, using local per-region TLBs situated next the corresponding memory region. 
-In doing so, SpryVM solves two key problems. First, it facilitates area-efficient 
-TLBs with high hit rates, because separate TLBs are responsible for disjoint 
-parts of the physical address space, reducing their reach requirements. Second, 
-it dramatically cuts miss penalties by co-locating translation and data in TLB's 
-physical partition, overlapping most of the translation with data fetch.
-
-
-Importantly, we show that the OS support necessary to
-achieve this approach is compatible with existing OSes and does not
-sacrifice flexibility in the mould of prior work \cite{basu:efficient,
+SpryVM {\it slightly} restricts VM associativity so that a virtual
+address uniquely identifies the region of the physical address space
+(a memory chip or partition) that holds the data. Once the target
+memory region is identified, SpryVM performs translation on the memory
+side, using local per-region TLBs situated next the corresponding
+memory region.  In doing so, SpryVM solves two key problems. First, it
+facilitates area-efficient TLBs with high hit rates, because separate
+TLBs are responsible for disjoint parts of the physical address space,
+reducing their reach requirements. Second, it dramatically cuts miss
+penalties by co-locating translation and data in TLB's physical
+partition, overlapping translation with data fetch. Importantly, we
+also show that the OS support necessary to achieve this approach is
+compatible with existing kernels and does not sacrifice flexibility in
+the mould of prior work \cite{basu:efficient,
   haria:devirtualizing}. To showcase spryVM's effectiveness, we
 contribute the following:
 
@@ -100,10 +99,11 @@ retain cross-compatibility with existing systems.
 associativity so that a virtual address uniquely identifies a memory
 chip/partition, allowing memory accesses to be issued as soon as the
 virtual address is known. Each memory partition features an MMU with a
-TLB hierarchy, whose location next to the data allows data fetch and translation 
-to be almost entirely overlapped, for both TLB hits and misses. Each MMU's
-TLB hierarchy serves only its memory partition, makings its TLB
-performance  robust across any memory chip and partition counts.
+TLB hierarchy, whose location next to the data allows data fetch and
+translation to be almost entirely overlapped (for TLB hits and
+misses). Each MMU's TLB hierarchy serves only its memory partition,
+enabling graceful performance scaling across memory chip/partition
+counts.
 
 \noindent $\bullet$ A comparison of spryVM with well-known translation
 mechanisms. SpryVM improves performance by up to $26\%$ and $15\%$ for

@@ -5,11 +5,10 @@ challenge is the question of how to integrate hardware accelerators in
 modern platforms without impacting the conventional virtual memory
 abstractions modern complex software stacks rely on. Unfortunately, VM
 support for accelerators is fundamentally different from CPU's due to
-prohibitive TLB reach requirements, long-latency page table walks and
-tight area and power budgets. Moreover, recent proposals for accelerator 
-VM support break conventional VM
-abstractions with intrusive solutions to software stack to facilitate
-address translation.
+prohibitive TLB reach requirements, long-latency page table walks, and
+tight area and power budgets. Moreover, recent proposals for
+accelerator VM break conventional VM abstractions with intrusive OS
+changes to facilitate address translation.
 
 We propose spryVM, a set-associate VM for in-memory workloads. We show
 that maintaining the portion of the address space accelerators operate
