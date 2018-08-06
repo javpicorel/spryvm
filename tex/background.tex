@@ -23,7 +23,7 @@
 \multicolumn{1}{c|}{\cellcolor[HTML]{FFFFFF}}                           & Programmability  & Performance and Efficiency & Flexibility & Safety and Security \\ \hline
 \multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Multi-page mappings~\cite{pham:colt, pham:increasing}}       & \cmark              & \xmark                          & \cmark           & \cmark      \\ \hline
 \multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Transparent Huge Pages~\cite{transparenthugepages}}    & \cmark               & \xmark                          & \cmark           & \cmark      \\ \hline
-\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}libhugetlbfs~\cite{lighugetlbfs}}              & \xmark                & \xmark                          & \cmark           & \cmark      \\ \hline
+\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Libhugetlbfs~\cite{lighugetlbfs}}              & \xmark                & \xmark                          & \cmark           & \cmark      \\ \hline
 \multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Direct Segments~\cite{basu:efficient}}           & \xmark              & \cmark                          & \xmark           & \cmark      \\ \hline
 \multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Redundant Memory Mappings~\cite{karakostas:redundant}}  & \cmark             & \xmark                          & \xmark           & \cmark      \\ \hline
 \multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Direct-mapped Mappings~\cite{picorel:near-memory, haria:devirtualizing}}         & \cmark       & \cmark                          & \xmark           & \cmark      \\ \hline
@@ -92,6 +92,43 @@ problematic for both address translation reach and latency, as we next
 discuss.
 
 \subsubsection{TLB Reach}
+Several studies have established the difficulties of building TLBs
+with sufficient capacity or {\it reach} to cover increasing physical
+memory sizes \cite{basu:efficient, haria:devirtualizing,
+  pham:colt}. The common approach adopted by industry has been to
+aggressively grow TLBs -- e.g., Intel has been doubling CPU TLBs from
+Sandybridge to Skylake architectures -- and pay the cost of increased
+area/power. Nevertheless, despite TLBs with thousands of entries, the
+poor locality of access in emerging server workloads make TLB miss
+rates problematic. Figure \ref{fig:pagewalks} captures this effect by
+quantifying TLB miss rates as we vary the memory footprint of several
+of our workloads on an Intel Broadwell chip with 1.5K-entry L2 TLBs
+(see Section \ref{sec:methodology} for details). Despite Broadwell's
+large thousand-entry TLBs, TLB miss rates imcrease dramatically with
+larger memory footprints, corroborating results from prior work
+\cite{basu:efficient}. Naturally, this poses big problems with the
+advent of accelerators, which need their own TLBs. So far,
+accelerators like GPUs have been equipped with massive
+multi-thousand-entry TLBs too \cite{vesely:observation,
+  lowepower:inferring}, but there is widespread consensus that this
+approach is not viable for other more area-constrained accelerators
+\cite{haria:devirtualizing, picorel:near-memory}. Perhaps even more
+troublingly, while other techniques like large pages can offer partial
+relief in some cases, they present their own set of challenges because
+they offer only coarse-grained protection \cite{pham:large}, they can
+be hard to form on fragmented systems \cite{kwon:coordinated}, they
+have poor NUMA support \cite{gaud:large}, and they require complex TLB
+hardware for concurrent page size support \cite{cox:efficient}. For
+all these reasons, transparent support for large pages in OSes like
+Linux only apply to 2MB pages (and not other sizes like 1GB) even
+after decades of research on large pages \cite{arcangeli:transparent}
+and practically, vendors size TLBs for the worst-case scenario when
+base 4KB pages dominate. For the successful adoption, we concur with
+recent work \cite{pham:colt, basu:efficient, karakostas:redundant,
+  haria:devirtualizing} that alternate approaches (complementary to
+large pages) to scalable TLB design are needed.
+
+\begin{comment}
 As the memory capacity keeps increasing, TLB hit ratios decrease
 sharply~\cite{basu:efficient} resulting in significantly higher
 frequency of page walks. This effect is further exacerbated by
@@ -116,12 +153,42 @@ highly effective in reducing translation overheads, they may not be
 suitable for accelerators, and ultimately do not solve the problem as
 memory continues to scale~\cite{basu:efficient}.
 
-The area and power overheads of the translation hardware become particularly concerning and impractical in heterogeneous systems with a large number of tiny, highly customized accelerators~\cite{haria:devirtualizing}, where the overheads of the translation hardware can greatly surpass the power and area of the rest of the functional parts of the accelerator. Given the increasing gap between the memory growth and practical TLB capacity growth~\cite{gandhi:badgertrap}, the TLB performance is certainly not on a promising trajectory.
+The area and power overheads of the translation hardware become
+particularly concerning and impractical in heterogeneous systems with
+a large number of tiny, highly customized
+accelerators~\cite{haria:devirtualizing}, where the overheads of the
+translation hardware can greatly surpass the power and area of the
+rest of the functional parts of the accelerator. Given the increasing
+gap between the memory growth and practical TLB capacity
+growth~\cite{gandhi:badgertrap}, the TLB performance is certainly not
+on a promising trajectory.
 
-The underlying reason for poor TLB performance is that TBLs cache translation on the execution side. Because of that, every execution unit (be it a core or accelerator) must have a TLB unit, each of which caches translations that cover the entire physical memory. This becomes impractical, because the total amount of translation hardware in the system grows linearly with the number of execution units, as well as ineffective, because the memory growth makes each of the TLB units incapable of achieving sufficient hit ratios. In contrast, if we were able to design a system where TLBs would act as memory-side translation caches, each serving one memory partition, then the number of TLBs would not depend on the number of execution units. More importantly, such TLBs would only need to cover a fraction of the dataset, which would significantly increase their TLB hit ratios, as per Figure~\ref{fig:pagewalks}.
+The underlying reason for poor TLB performance is that TBLs cache
+translation on the execution side. Because of that, every execution
+unit (be it a core or accelerator) must have a TLB unit, each of which
+caches translations that cover the entire physical memory. This
+becomes impractical, because the total amount of translation hardware
+in the system grows linearly with the number of execution units, as
+well as ineffective, because the memory growth makes each of the TLB
+units incapable of achieving sufficient hit ratios. In contrast, if we
+were able to design a system where TLBs would act as memory-side
+translation caches, each serving one memory partition, then the number
+of TLBs would not depend on the number of execution units. More
+importantly, such TLBs would only need to cover a fraction of the
+dataset, which would significantly increase their TLB hit ratios, as
+per Figure~\ref{fig:pagewalks}.
+\end{comment}
 
 \subsubsection{Increasing page walk latency}
-Modern CPUs heavily depend on MMU caches to reduce the number of memory access per page walk. However, even with perfect MMU caches, page walks in the best case comprise of one access to a random memory element. As the average distance between compute and memory elements keeps increasing, the latency of page walks increases proportionately. The situation is more concerning for heterogeneous systems, because the accelerators may not have the sufficient resources to implement large enough MMU caches and may require many more memory references per page walk. 
+Modern CPUs heavily depend on MMU caches to reduce the number of
+memory access per page walk. However, even with perfect MMU caches,
+page walks in the best case comprise of one access to a random memory
+element. As the average distance between compute and memory elements
+keeps increasing, the latency of page walks increases
+proportionately. The situation is more concerning for heterogeneous
+systems, because the accelerators may not have the sufficient
+resources to implement large enough MMU caches and may require many
+more memory references per page walk.
 
 \subsection{Prior Approaches}
 
