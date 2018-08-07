@@ -61,11 +61,76 @@ In this section, we evaluate SpryVM with conventional translation using $4$KB an
 
 \subsection{TLB Miss Penalty}
 
-SpryVM does not only improve the area-efficiency of TLBs but also reduces the TLB miss penalty. Figure~\ref{fig:penalty} shows the TLB miss penalty of a memory reference, including the data access to memory, normalized to the ideal translation mechanism where only the data access of the memory references is required. We decided to be conservative and assume perfect MMU caches and hence page walks requires only one memory reference. We did this to decouple the benefits o from the page table structure, since in our case, with the inverted page table, we were able to guarantee one memory reference per page walk, whereas the hiearchical four-level page table requires a large 
+SpryVM does not only improve the area-efficiency of TLBs but also reduces the TLB miss penalty. Figure~\ref{fig:penalty} shows the TLB miss penalty of a memory reference, including the data access to memory, normalized to the ideal translation mechanism where only the data access of the memory references is required. We decided to be conservative and assume perfect MMU caches, and therefore page walks requires only one memory reference. The reason is because we want to decouple the TLB miss penalty benefits from the page table implementation, since in our case, with an inverted page table of $1/4x$ of load factor, we are able to guarantee one memory reference per page walk, whereas the hierarchical four-level page table requires a very significant MMU cache hierarchy. Furthermore, we consider two systems, a conventional two-socket machine and a large-memory eight-socket machine.
+
+As the figure shows, page walks in a conventional VM mechanism requires a memory reference to locate the page table entry, and hence a memory reference requires two memory accesses. In contrast, and as explain in Figure~\ref{fig:pagewalk_partition_miss}, the virtual address uniquely identifies the memory region, and hence the time it takes to locate the region, traversing the NoC and off-chip interconnects is overlapped with the data path. Furthermore, the larger the memory systems, the larger the contribution of the network time in the page walk time, and hence the large the reduction in page walk time with respect with conventional translation. 
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[width=1.0\columnwidth]{graphs/penalty.pdf}
+	\includegraphics[width=0.8\columnwidth]{graphs/penalty.pdf}
 	\caption{TLB miss penalty for conventional and SpryVM.}
 	\label{fig:penalty}
 \end{figure}
+
+\subsection{Associativity study of VM}
+
+\begin{figure*}
+	\centering
+	\subfloat[Memcached --- 1 Process]{
+		\label{fig:memcached_1p}
+		%  \includegraphics[width=.32\textwidth,clip,trim = 18mm 213mm 117mm 20mm]{figs/eps/sim-rread-lat.eps}}
+		\includegraphics[width=.365\textwidth,clip]{graphs/memcached_assoc_1p-bw.pdf}}
+	%  \hspace{.01in}
+	\subfloat[RocksDB --- 1 Process]{
+		\label{fig:rocksdb_1p}
+		%  \includegraphics[width=.32\textwidth,clip,trim = 18mm 213mm 115mm 20mm]{figs/eps/sim-rread-bw.eps}}
+		\includegraphics[width=.31\textwidth,clip]{graphs/rocksdb_assoc_1p-bw.pdf}}
+	%   \hspace{.01in}
+	\subfloat[Cassandra --- 1 Process]{
+		\label{fig:cassandra_1p}
+		%  \includegraphics[width=.32\textwidth,clip,trim = 28mm 217mm 115mm 20mm]{figs/eps/emu-rread-lat_cropped.eps}}
+		\includegraphics[width=.31\textwidth,clip]{graphs/cassandra_assoc_1p-bw.pdf}}
+	\caption{Overall miss ratio broken down into compulsory, capacity, and conflict misses.
+		\label{fig:miss_ratio}}
+\end{figure*}
+
+\begin{figure*}[t]
+	\centering
+	\subfloat[Memcached --- 2 Processes]{
+		\label{fig:memcached_2p_assoc}
+		\includegraphics[width=.36\textwidth,clip]{graphs/memcached_assoc_2p-bw.pdf}}
+	\subfloat[Memcached --- 4 Processes]{
+		\label{fig:memcached_4p_assoc}
+		\includegraphics[width=.31\textwidth,clip]{graphs/memcached_assoc_4p-bw.pdf}}
+	\subfloat[Memcached --- 8 Processes]{
+		\label{fig:memcached_8p}
+		\includegraphics[width=.31\textwidth,clip]{graphs/memcached_assoc_8p-bw.pdf}}
+	
+	
+	
+	\caption{Overall miss ratio broken down into compulsory, capacity, and conflict misses.
+		\label{fig:miss_ratio_procs}}
+\end{figure*}
+
+\subsection{Single-Process In-Memory}
+
+Fig.~\ref{fig:miss_ratio} shows results for three single-process workloads: Memcached, RocksDB, and Cassandra. The y-axis breaks down the total misses into the three distinct miss classes. Each category on the x-axis corresponds to the ratio between the size of the physical memory and the size of the application's working set. For example,  $8\times$ indicates that the memory is eight times larger than the application's working set. Similarly, $1/2\times$ means that the application's working set is twice the size of the memory. We collapse results for $8\times$ to $1\times$ because they are similar and visually identical; each case represents a fully in-memory scenario. Furthermore, within each working set category, the x-axis sweeps through different VM associativities, from direct-mapped to 32-way associative. 
+
+
+
+Even with a simple direct-mapped translation, compulsory misses represent $99.9\%$ of all the misses. There are no capacity misses as the working set fully fits in memory. Conflict misses are scarce. For example, Memcached using direct-mapped translation achieves a conflict miss rate in the order of one miss per $10^{8}$ memory accesses. Using $2$ ways removes all the conflicts for the $8\times$, $4\times$, and $2\times$ cases, while $4$ ways are required for the $1\times$ case (where the memory size is equal to the size of the working set). For in-memory scenarios, page conflicts arise because the virtual address space of server applications is particularly sparse; there are many virtual segments scattered all over the address space. For example, Java processes exhibit many virtual segments due to the dynamic nature of the JVM. This is best observed in the case of Cassandra, which exhibits direct-mapped conflict miss rates in the order of one miss per $10^{7}$ and $10^{6}$ memory accesses for the $8\times$--$2\times$ cases and the $1\times$ case respectively. However, conflict misses drop rapidly as associativity increases and using 4 ways removes all conflicts for the $4\times$ and $2\times$ cases, while virtually eliminating conflicts for the $1\times$ case. The observation that conflict misses drop rapidly with associativity has also been shown for caches~\cite{hill:aspects, cantin:cache}. We elide the results for TPC-H, TPC-DS, and MySQL as they follow identical trends.
+
+\subsection{Single-Process Out-of-Memory}
+
+In contrast to in-memory scenarios, when the working sets do not fit in memory ($1/2\times$, $1/4\times$, $1/8\times$ cases), capacity misses grow with the working set size, while the fraction of compulsory misses drops. Although conflict misses are more significant than in the in-memory scenarios, conflicts drop sharply after 2-4 ways. In the worst case, 16 ways are required to drive conflict misses down to $\sim1\%$ of all the misses. Note that Cassandra has an active working set that fits in a memory of $1/4\times$ the data size, and capacity misses start to rise at the $1/8\times$ case and beyond. Fundamentally, all these results corroborate the seminal work on caches~\cite{hill:aspects, cantin:cache}. 
+
+\subsection{Multi-programming In-Memory}
+Fig.~\ref{fig:miss_ratio_procs} presents results for multi-programming. We take each of the three workloads, Memcached, RocksDB, and Cassandra, and increase the number of processes, keeping the overall working set size the same with respect to the single process scenarios. For example, for the $1\times$ case in Fig.~\ref{fig:miss_ratio}, the working set of a single process equals the size of the memory. In Fig.~\ref{fig:miss_ratio_procs}, for two processes sharing the same physical memory, the per-process working set is half the size of the physical memory. Similarly, with four processes, per-process working sets consume a quarter of the physical memory. We thus guarantee that only the increase in the number of processes has an impact on the associativity. 
+
+For in-memory scenarios ($8\times$--$1\times$ cases), once the associativity equals the number of processes, compulsory misses represent $99.9\%$ of all the misses for all the workloads. Increasing the associativity further makes conflicts virtually disappear after a few additional ways. For instance, for Memcached, with 8, 16, and 32 ways, the conflicts are in the order of a single miss per $10^{9}$ accesses for 2, 4, and 8 processes, respectively. Cassandra requires 4, 8, and 8 ways to achieve a miss conflict rate of one miss per $10^{9}$ accesses for 2, 4, and 8 processes, respectively. Again, the trends are identical for TPC-H, TPC-DS, and MySQL. Overall, conflict misses become virtually zero with a few ways (i.e., 2-4) per process.
+
+\subsection{Multi-programming Out-of-Memory}
+
+For the cases where the working sets do not fit in memory, the trends are similar to the single-process scenarios. Capacity misses become more significant as the working set sizes grow, making conflict and compulsory misses less important. Similar to the in-memory case, once the associativity equals the number of processes, the fraction of conflict misses matches the single-process results. Conflicts drop rapidly as in the other cases and with 4 ways per process, conflict misses remain within $1\%$ of the total misses for all the workloads. The results for TPC-H, TPC-DS, and MySQL are identical.
+
+
