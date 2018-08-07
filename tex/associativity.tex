@@ -89,7 +89,6 @@ Although SpryVM significantly reduce the frequency of TLB misses, page walks can
 
 In this case, page walks are still much cheaper than in conventional translation as the time to locate the appropriate memory channel is part of both the translation path and data path, essentially removing this part of the cost of address translation. Furthermore, page walks do not further involve network communication as the page table entries are all locate in the same memory channel. Note that the larger the latency of the network is with respect to the DRAM accesses, the lower overhead of page walks in SpryVM. This behavior benefits large memory systems, as the need for scaling out the memory for large-memory machines increase the average distance to the memory channels. 
 
-\subsubsection{Overview.} Overall, we show that SpryVM makes the cases where its performance overhead is zero more frequent (i.e., TLB hits), but also reduces the penalty of TLB misses when they occur. 
 
 \begin{figure*}
 	\includegraphics[width=\textwidth]{figures/time_event_base.pdf}
