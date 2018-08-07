@@ -25,8 +25,8 @@ we conceptually treat subsets of the virtual address space as being bound to spe
 NUMA nodes. Therefore SpryVM can be implemented in a manner that
 reuses {\it membind} code paths such that each memory set is treated
 as a NUMA node. Note that this implementation is only possible because SpryVM
-reduces associativity only \it{by a small factor}, as opposed to reducing it
-\it{to a small number} (e.g., dirrect mapped or 4-way associative~\ref{picorel:near-memory}). 
+reduces associativity only \textit{by a small factor}, as opposed to reducing it
+\textit{to a small number} (e.g., dirrect mapped or 4-way associative~\cite{picorel:near-memory}). 
 
 
 \vspace{2mm}
