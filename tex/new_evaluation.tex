@@ -171,4 +171,21 @@ For in-memory scenarios ($8\times$--$1\times$ cases), once the associativity equ
 
 For the cases where the working sets do not fit in memory, the trends are similar to the single-process scenarios. Capacity misses become more significant as the working set sizes grow, making conflict and compulsory misses less important. Similar to the in-memory case, once the associativity equals the number of processes, the fraction of conflict misses matches the single-process results. Conflicts drop rapidly as in the other cases and with 4 ways per process, conflict misses remain within $1\%$ of the total misses for all the workloads. The results for TPC-H, TPC-DS, and MySQL are identical.
 
+\begin{figure*}[t]
+	\centering
+	\subfloat[32GB]{
+		\label{fig:memcached_2p_assoc}
+		\includegraphics[width=0.3\textwidth,clip]{graphs/speedup_32GB.pdf}}
+	\subfloat[128GB]{
+		\label{fig:memcached_4p_assoc}
+		\includegraphics[width=0.3\textwidth,clip]{graphs/speedup_128GB.pdf}}
+
+	\caption{Speedup of conventional translation with $2$MB pages and SpryVM, with respect to conventional $4$KB pages.
+		\label{fig:perf}}
+\end{figure*}
+
+\subsection{Performance}
+
+Figure~\ref{fig:perf} compares the performance of $2$MB pages and SpryVM, with respect to a conventional translation mechanism using $4$KB pages, for $32$GB and $128$GB cases. SpryVM clearly outperforms $4$KB pages in both working set scenarios, by up to $1.8\times$ with $32$GB and $1.7\times$ on average. Furthermore, in $128$GB scenarios, SpryVM outperforms $4$KB pages by up to $2.36\times$ and $2.18\times$ on average. Compared to conventional translation with $2$MB pages, SpryVM outperforms it by up to $1.7\times$ and $1.2\times$ on average for $32$GBs, and by up to $2.15\times$ and $1.6\times$ on average for $128$GB. Furthermore, there is no case in which $2$MB pages outperforms SpryVM in the large-memory scenario.
+
 
