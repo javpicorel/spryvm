@@ -61,9 +61,11 @@ In this section, we evaluate SpryVM with conventional translation using $4$KB an
 
 \subsection{TLB Miss Penalty}
 
+SpryVM does not only improve the area-efficiency of TLBs but also reduces the TLB miss penalty. Figure~\ref{fig:penalty} shows the TLB miss penalty of a memory reference, including the data access to memory, normalized to the ideal translation mechanism where only the data access of the memory references is required. We decided to be conservative and assume perfect MMU caches and hence page walks requires only one memory reference. We did this to decouple the benefits o from the page table structure, since in our case, with the inverted page table, we were able to guarantee one memory reference per page walk, whereas the hiearchical four-level page table requires a large 
+
 \begin{figure}[t]
 	\centering
 	\includegraphics[width=1.0\columnwidth]{graphs/penalty.pdf}
 	\caption{TLB miss penalty for conventional and SpryVM.}
-	\label{fig:pagewalks}
+	\label{fig:penalty}
 \end{figure}
