@@ -1,18 +1,20 @@
-\section{Methodology}
+\section{Experimental Methodology}
 \label{sec:methodology}
 
 Like most recent work on VM~\cite{basu:efficient, pham:increasing, pham:colt, bhattacharjee:large-reach, barr:spectlb, papadopoulou:prediction-based, saulsbury:recently-based}, we use a combination of trace-driven functional simulation, analytical models, and real hardwar prototypes.
 
 \subsection{Workloads}
 
-Similar to prior work, we assume accelerators running memory-intensive dynamic data structure traversals~\cite{picorel:near-memory, haria:devirtualizing, kocberber:meet, hsieh:accelerating}. We choose these workloads because of their minimal data locality and instruction-level parallelism, stressing conventional general-purpose CPU architectures and hence favoring custom hardware. In our case, we evaluate a set of data traversal applications present in ASCYLIB~\cite{david:asynchronized}, which contains state-of-the-art implementations of hash tables, extarnal and internal binary trees, and skip lists. Similar to prior work~\cite{picorel:near-memory}, we present results for four representative implementations for space reasons.
+To study the impact of associativity on general-purpose software, we use a suite of popular server workloads, shown in Table~\ref{table:workload}, in a variety of setups. First, we use them to study the very limits of reducing associativity using a 3C page fault model and Pin traces. For practical reasons these workloads are tuned to fit in 8GB memory for this experiment. Then we study the behavior of the server workloads on real hardware with our modified linux kernel (v4.10) with set-associative memory, which we plan to open-source, using more realistic dataset sizes (16-32GB), in both in-memory and out-of-memory setups.
+
+To study the TLB behavior at very large datasets (128GB), we use  data traversal applications present in the ASCYLIB~\cite{david:asynchronized} suite, which contains state-of-the-art implementations of hash tables, extarnal and internal binary trees, and skip lists, which are the core of many of the server workloads, such as Memcached and RocksDB. We choose these workloads because of their minimal data locality and instruction-level parallelism, stressing conventional general-purpose CPU architectures and hence favoring custom hardware~\cite{ haria:devirtualizing, picorel:near-memory, kocberber:meet, hsieh:accelerating}. Similar to prior work~\cite{picorel:near-memory}, we present the results for four representative implementations for space reasons. 
 
 %: Java Hash Table (Hash Table), Fraser Skip List (Skip List), Howley Binary Search Tree (BST Internal), and Natarajan Binary Search Tree (BST External).
 
-Furthermore, following the premises of a unified VM and enabling "pointer-is-a-pointer" semantics, it is not expected that accelerators will run an end-to-end workload in isolation. In contrast, the expected model is to offload certain parts of the CPU's execution which are more efficiently executed on the accelerators. Although the offloading mechanism is out of the scope of this paper, we decided to stress the notion of associativity in VM with a set of popular server workload, shown in Table~\ref{table:workload}. The reason is that these workloads stress the VM mechanism, with large memory requirements, often allocation and de-allocation of memory, and overly fragmented virtual memory layouts~\cite{picorel:near-memory}. Moreover, the evaluated data structure traversals are in fact the core of many of the server workloads, such as Memcached's hash table and RocksDB' skip list data structures.
+%Furthermore, following the premises of a unified VM and enabling "pointer-is-a-pointer" semantics, it is not expected that accelerators will run an end-to-end workload in isolation. In contrast, the expected model is to offload certain parts of the CPU's execution which are more efficiently executed on the accelerators. Although the offloading mechanism is out of the scope of this paper, we decided to stress the notion of associativity in VM with a set of popular server workload, shown in Table~\ref{table:workload}. The reason is that these workloads stress the VM mechanism, with large memory requirements, often allocation and de-allocation of memory, and overly fragmented virtual memory layouts~\cite{picorel:near-memory}. Moreover, the evaluated data structure traversals are in fact the core of many of the server workloads, such as Memcached's hash table and RocksDB' skip list data structures.
 
-\subsection{TLB performance and sensitivity}
-To study the impact on memory size on TLB performance (Figure~\ref{fig:pagewalks}), we perform measurements on real hardware using the \it{perf} tool during a 10min execution window. To study the impact of TLB size, we collect memory traces using Pin~\cite{luk:pin} containing 1B instrutions, which is more than enough for the TLB sensitivity experiments up to a few thousand entries. We use the traces to probe a set-associative TLB structure whose size we vary, after validating the model against the measurements on real hardware. 
+\subsection{TLB studies}
+To study the impact on memory size on  TLB performance (Figure~\ref{fig:pagewalks}), we perform measurements on real hardware using the \it{perf} tool during a 10min execution window. To study the impact of TLB size, we collect memory traces for 32GB and 128GB datasets using Pin~\cite{luk:pin}, with each trace containing 1B instrutions, which is more than enough for the TLB sensitivity experiments up to a few thousand entries. We use the traces to probe a set-associative TLB structure whose size we vary, after validating the model against the measurements on real hardware. 
 
 \subsection{Associativity}
 
@@ -29,7 +31,19 @@ As our approach intends to find a middle-ground between fully associative (i.e.,
 
 %\subsection{Single-Process In-Memory}
 
-%Fig.~\ref{fig:miss_ratio} shows results for three single-process workloads: Memcached, RocksDB, and Cassandra. The y-axis breaks down the total misses into the three distinct miss classes. Each category on the x-axis corresponds to the ratio between the size of the physical memory and the size of the application's working set. For example,  $8\times$ indicates that the memory is eight times larger than the application's working set. Similarly, $1/2\times$ means that the application's working set is twice the size of the memory. We collapse results for $8\times$ to $1\times$ because they are similar and visually identical; each case represents a fully in-memory scenario. Furthermore, within each working set category, the x-axis sweeps through different VM associativities, from direct-mapped to 32-way associative. 
+%Fig.~\ref{fig:miss_ratio} shows results for three single-process
+%workloads: Memcached, RocksDB, and Cassandra. The y-axis breaks down
+%the total misses into the three distinct miss classes. Each category
+%on the x-axis corresponds to the ratio between the size of the
+%physical memory and the size of the application's working set. For
+%example, $8\times$ indicates that the memory is eight times larger
+%than the application's working set. Similarly, $1/2\times$ means that
+%the application's working set is twice the size of the memory. We
+%collapse results for $8\times$ to $1\times$ because they are similar
+%and visually identical; each case represents a fully in-memory
+%scenario. Furthermore, within each working set category, the x-axis
+%sweeps through different VM associativities, from direct-mapped to
+%32-way associative.
 
 
 We collect memory traces using Pin~\cite{luk:pin}. For workloads with fine-grained operations (i.e., Memcached, RocksDB, MySQL, and Cassandra), the traces contain the same number of instructions as the application executes in 60 seconds without Pin. For analytics workloads (i.e., TPC-H \& TPC-DS), we instrument the entire execution. We extract the ASID bits and virtual address of each memory access, concatenate both~\cite{basu:reducing, yoon:revisiting},  and use it to probe a set-associative memory structure. For the associativity experiments, we tune all the workloads to have a resident set size (RSS) of 8GB. In other words, the allocated physical memory for all the processes of a given workload is 8GB. For single-process runs, a single process has an RSS of 8GBs. For two-process runs, each of the processes has an RSS of 4GB. The same scaling applies for the runs with four and eight processes. To vary the memory size to working set size ratio, we vary the size of the set-associative memory structure. 
