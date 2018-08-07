@@ -180,20 +180,20 @@ For the cases where the working sets do not fit in memory, the trends are simila
 \end{figure}
 
 
-We were able to run all server workloads on modified linux with 32 memory regions (nodes), utilizing above 90\% of available DRAM without a single page fault. Figure~\ref{fig:realhw} shows the page fault rate vs. memory capacity in the critical capacity range for RocksDB tuned for a 16GB footprint, as we vary the available memory capacity using the linux boot-time mem parameter. First, we note that our kernel properly deals with demand paging in the out-of-memory scenarios. Second, we see that the page fault rates in fully associative (1 partition) and set-associative (32 partitions) case follow the same trend, except that the 32-partition setup requires about 1.5--2GB more memory to achieve the same page-fault rate. We note that this is not related to associativity, given that the associativity reduction is minor. Instead, this effect is the artifact of the prototype that relies on linux NUMA nodes, which have small memory overheads per node and exhibit a degree of variability in their capacity. 
+We successfully ran all server workloads on modified linux with 32 memory regions (nodes), utilizing above 90\% of available DRAM without a single page fault. Figure~\ref{fig:realhw} shows the page fault rate RocksDB tuned for a 16GB footprint, as we vary the available memory capacity in the critical range using the linux boot-time mem parameter. First, we note that our kernel properly deals with demand paging in the out-of-memory scenarios. Second, we see that the page fault rates in fully associative (1 partition) and set-associative (32 partitions) case follow the same trend, except that the 32-partition setup requires about 1.5--2GB more memory to achieve the same page-fault rate. We note that this is not related to associativity, given that the associativity reduction is minor. Instead, this effect is the artifact of the prototype that relies on linux NUMA nodes, which have small memory overheads per node and exhibit a degree of variability in their capacity. 
 
-\begin{figure*}[t]
+\begin{figure}[t]
 	\centering
 	\subfloat[32GB]{
 		\label{fig:memcached_2p_assoc}
-		\includegraphics[width=0.3\textwidth,clip]{graphs/speedup_32GB.pdf}}
+		\includegraphics[width=0.25\textwidth,clip]{graphs/speedup_32GB.pdf}}
 	\subfloat[128GB]{
 		\label{fig:memcached_4p_assoc}
-		\includegraphics[width=0.3\textwidth,clip]{graphs/speedup_128GB.pdf}}
+		\includegraphics[width=0.25\textwidth,clip]{graphs/speedup_128GB.pdf}}
 
 	\caption{Speedup of conventional translation with $2$MB pages and SpryVM, with respect to conventional $4$KB pages.
 		\label{fig:perf}}
-\end{figure*}
+\end{figure}
 
 \subsection{Performance}
 
