@@ -1,13 +1,42 @@
 \section{Methodology}
 \label{sec:methodology}
 
-Like most recent work on VM~\cite{basu:efficient, pham:increasing, pham:colt, bhattacharjee:large-reach, barr:spectlb, papadopoulou:prediction-based, saulsbury:recently-based}, we use trace-driven functional and cycle-accurate simulation.
+Like most recent work on VM~\cite{basu:efficient, pham:increasing, pham:colt, bhattacharjee:large-reach, barr:spectlb, papadopoulou:prediction-based, saulsbury:recently-based}, we use a combination of analytical models, trace-driven functional simulation, and prototypes on real hardware. 
 
-\subsection{Traces}
+\subsection{Workloads}
 
-We collect memory traces using Pin~\cite{luk:pin}. For workloads with fine-grained operations (i.e., Memcached, RocksDB, MySQL, and Cassandra), the traces contain the same number of instructions as the application executes in 60 seconds without Pin. For analytics workloads (i.e., TPC-H \& TPC-DS), we instrument the entire execution. We extract the ASID bits and virtual address of each memory access, concatenate both~\cite{basu:reducing, yoon:revisiting},  and use it to probe a set-associative memory structure. 
+Similar to prior work, we assume accelerators running memory-intensive dynamic data structure traversals~\cite{picorel:near-memory, haria:devirtualizing, kocberber:meet, hsieh:accelerating}. We choose these workloads because of their minimal data locality and instruction-level parallelism, stressing conventional general-purpose CPU architectures and hence favoring custom hardware. In our case, we evaluate a set of data-structure traversals present in ASCYLIB~\cite{david:asynchronized}, which contains state-of-the-art implementations of hash tables, binary trees, and skip lists. For clarity and similar to prior work~\cite{picorel:near-memory}, we present results for four representative implementations.
 
-For the associativity experiments in Section~\ref{sec:associativity}, we tune all the workloads to have a resident set size (RSS) of 8GB. In other words, the allocated physical memory for all the processes of a given workload is 8GB. For single-process runs, a single process has an RSS of 8GBs. For two-process runs, each of the processes has an RSS of 4GB. The same scaling applies for the runs with four and eight processes. To vary the memory size to working set size ratio, we vary the size of the set-associative memory structure. We use the same traces for the page table experiments of Section~\ref{sec:pagetable} and feed them into our inverted page table modeling tool. For the TLB experiments in Section~\ref{sec:tlb} and the performance experiments in Section~\ref{sec:evaluation}, we tune the workloads to employ working sets of size 32GB and 64GB, depending on the size of the network. We use 32GB and 64GB for 4- and 8-chip, and 16-chip configurations respectively.
+%: Java Hash Table (Hash Table), Fraser Skip List (Skip List), Howley Binary Search Tree (BST Internal), and Natarajan Binary Search Tree (BST External).
+
+Furthermore, following the premises of a unified VM and enabling "pointer-is-a-pointer" semantics, it is not expected that accelerators will run an end-to-end workload in isolation. In contrast, the expected model is to offload certain parts of the CPU's execution which are more efficiently executed on the accelerators. Although the offloading mechanism is out of the scope of this paper, we decided to stress the notion of associativity in VM with a set of popular server workload, shown in Table~\ref{table:workload}. The reason is that these workloads stress the VM mechanism, with large memory requirements, often allocation and de-allocation of memory, and overly fragmented virtual memory layouts~\cite{picorel:near-memory}. Moreover, the evaluated data structure traversals are in fact the core of many of the server workloads, such as Memcached's hash table and RocksDB' skip list data structures.
+
+\subsection{TLB sensitivity}
+
+We collect memory traces using Pin~\cite{luk:pin} for the data structure traversals. The traces contain the number of memory operations executed in 1B instructions, which corresponds to the execution of a few seconds, more than enough for the TLB sensitivity experiments of at most a few thousand entries. We use the traces to probe a set-associative TLB structure. 
+
+\subsection{Associativity}
+
+As modern systems place no restrictions on the virtual-to-physical mapping, address translation is on the critical path of every memory access. To break translation and data path serialization, prior work proposes to eliminate associativity and enforce a direct mapping between virtual pages and page frames~\cite{picorel:near-memory, haria:devirtualizing}. As every virtual page can only map to one single location, translation and data paths are independent and can proceed in parallel.
+
+As our approach intends to find a middle-ground between these two cases, we aim to fill the research void of what is the level of associativity needed. Interestingly enough, there exists no study on VM associativity, unlike caches, which are similar in some organizational aspects and for which such a study has existed for three decades~\cite{hill:aspects}. To study the VM associativity, we employ the well-established 3C model---initially developed for caches~\cite{hill:aspects}. In this context, associativity means the number of possible locations (page frames) a given virtual page can map to. This model classifies misses (i.e., page faults) into three categories: conflict misses (when too many active pages map to a fraction of the sets), capacity misses (due to limited memory size), and compulsory misses (upon the first access to a page). 
+
+%One potential way to break translation-memory access serialization is to completely eliminate associativity and enforce a direct mapping between virtual pages and page frames. Since a virtual page can now only map to a single page frame, address translation and data fetch are independent and can proceed in parallel. Conventional wisdom dictates that direct mapping creates an excess of page faults, due to conflicts from multiple virtual pages mapping to the same page frame. However, this is merely intuition, as there exists no study on VM associativity, unlike caches, which are similar in some organizational aspects and for which such a study has existed for three decades~\cite{hill:aspects}. 
+
+
+
+%To fill this research void, we employ the 3C model---initially developed for caches~\cite{hill:aspects}---to study VM associativity. In this context, associativity means the number of possible locations (page frames) a given virtual page can map to. This model classifies misses (i.e., page faults) into three categories: conflict misses (when too many active pages map to a fraction of the sets), capacity misses (due to limited memory size), and compulsory misses (upon the first access to a page). 
+
+%To simulate real-world scenarios, we select a set of representative server workloads, summarized in Table~\ref{table:workload}. We include two cloud workloads from CloudSuite~\cite{ferdman:clearing}, Cassandra and Memcached, an online transaction processing (OLTP) workload~\cite{facebook:linkbench}, MySQL, two online analytical processing (OLAP) workloads~\cite{boncz:breaking}, TPC-H and TPC-DS, and a widely-used storage system workload~\cite{dong:optimizing}, RocksDB. We collect long memory traces of several 10s of billions of instructions of the server workloads using Pin~\cite{luk:pin}. We extract the virtual address and address space identifier (ASID) of each memory reference and use it to probe a set-associative memory structure, varying the associativity to observe and classify the misses. A detailed description of our methodology is found in Section~\ref{sec:methodology}.
+
+%\subsection{Single-Process In-Memory}
+
+%Fig.~\ref{fig:miss_ratio} shows results for three single-process workloads: Memcached, RocksDB, and Cassandra. The y-axis breaks down the total misses into the three distinct miss classes. Each category on the x-axis corresponds to the ratio between the size of the physical memory and the size of the application's working set. For example,  $8\times$ indicates that the memory is eight times larger than the application's working set. Similarly, $1/2\times$ means that the application's working set is twice the size of the memory. We collapse results for $8\times$ to $1\times$ because they are similar and visually identical; each case represents a fully in-memory scenario. Furthermore, within each working set category, the x-axis sweeps through different VM associativities, from direct-mapped to 32-way associative. 
+
+
+We collect memory traces using Pin~\cite{luk:pin}. For workloads with fine-grained operations (i.e., Memcached, RocksDB, MySQL, and Cassandra), the traces contain the same number of instructions as the application executes in 60 seconds without Pin. For analytics workloads (i.e., TPC-H \& TPC-DS), we instrument the entire execution. We extract the ASID bits and virtual address of each memory access, concatenate both~\cite{basu:reducing, yoon:revisiting},  and use it to probe a set-associative memory structure. For the associativity experiments, we tune all the workloads to have a resident set size (RSS) of 8GB. In other words, the allocated physical memory for all the processes of a given workload is 8GB. For single-process runs, a single process has an RSS of 8GBs. For two-process runs, each of the processes has an RSS of 4GB. The same scaling applies for the runs with four and eight processes. To vary the memory size to working set size ratio, we vary the size of the set-associative memory structure. 
+
+%We use the same traces for the page table experiments of Section~\ref{sec:pagetable} and feed them into our inverted page table modeling tool. For the TLB experiments in Section~\ref{sec:tlb} and the performance experiments in Section~\ref{sec:evaluation}, we tune the workloads to employ working sets of size 32GB and 64GB, depending on the size of the network. We use 32GB and 64GB for 4- and 8-chip, and 16-chip configurations respectively.
 
 We collect the traces on a dual-socket server CPU (Intel Xeon E5-2680 v3) with $256$GB of memory, using the Linux 3.10 kernel and Google's TCMalloc~\cite{google:tcmalloc}. Address space randomization (ASLR) is enabled in all experiments.
 
@@ -16,14 +45,14 @@ We collect the traces on a dual-socket server CPU (Intel Xeon E5-2680 v3) with $
 %%%% THINK WHETHER TO ADD IT BACK
 %This study does not cover the problem of partitioning applications into CPU-side and memory-side execution, or specializing the latter in hardware, or interfacing and synchronizing the two executions~\cite{gao:practical, ahn:scalable, balasubramonian:near-data}. Such problems are out of the scope. To avoid such problems we evaluate the applications running entirely on the MPUs.
 
-Full-system simulation for TLB misses and page faults is not practical, as these events occur less frequently than other micro-architectural events (e.g., branch mispredictions). Hence, we resort to the CPI models often used in VM research~\cite{papadopoulou:prediction-based, saulsbury:recently-based, bhattacharjee:shared} to evaluate the performance gains. These prior studies report performance as the reduction in the translation-related cycles per instruction. As CPI components are additive, this metric is valid irrespective of the workload's baseline CPI. We further strengthen this methodology by studying the CPI savings on all memory operations, not only on translation (as we overlap translation and data fetch operations). Our model thus captures both the translation and data fetch cycles, which together constitute the largest fraction of the total CPI in server workloads~\cite{ferdman:clearing}. The CPI is measured by feeding the memory traces into our cycle-accurate simulator. 
+Full-system simulation for TLB misses and page faults is not practical, as these events occur less frequently than other micro-architectural events (e.g., branch mispredictions). Hence, we resort to the CPI models often used in VM research~\cite{papadopoulou:prediction-based, saulsbury:recently-based, bhattacharjee:shared} to evaluate the performance gains. These prior studies report performance as the reduction in the translation-related cycles per instruction. As CPI components are additive, this metric is valid irrespective of the workload's baseline CPI. We further strengthen this methodology by studying the CPI savings on all memory operations, not only on translation (as we overlap translation and data fetch operations). Our model thus captures both the translation and data fetch cycles, which together constitute the largest fraction of the total CPI in server workloads~\cite{ferdman:clearing}. The CPI is measured by applying fixed penalties to the TLB miss rates obtained with the PIN traces.
 
 \subsection{Simulation Parameters}
-We use the Flexus cycle-accurate simulator~\cite{wenisch:simflex}, with detailed core, MMU, memory hierarchy, and interconnect models. Following prior work on MPUs~\cite{gao:practical, ahn:scalable, pugsley:ndc}, we model the MPU cores after ARM Cortex A7~\cite{arm:cortex-a7}. We provision the baseline with a high-end MMU similar to Intel Xeon Haswell~\cite{intel:tlbs, mammarlund:4th}, with multi-level TLBs and MMU caches~\cite{bhattacharjee:large-reach, barr:translation}. For the baseline, we consider a 4-level hierarchical page table~\cite{jacob:look} (as in ARMv$8$ and x$86\_64$) and an inverted page table identical to the one spryVM employs, but covering the whole memory. We assume 48-bit virtual and physical addresses. The MMU supports $4$KB, $2$MB, and $1$GB pages. Page table entries are transparently allocated in the L$1$-D cache like in commercial systems~\cite{intel:architectures}. For simplicity, we probe the cache with physical addresses for the baseline and with virtual addresses when using spryVM. Both behave identically as we verify that TLB misses never reference a cache-resident block.
+Following prior work on accelerators~\cite{gao:practical, ahn:scalable, pugsley:ndc}, we model the MPU cores after ARM Cortex A7~\cite{arm:cortex-a7}. We provision the baseline with a high-end MMU similar to prior work~\cite{haria:devirtualizing}, with multi-level TLBs and MMU caches~\cite{bhattacharjee:large-reach, barr:translation}. We consider perfect MMU caches for the baseline to avoid penalizing the hiearchical page table strucre; our inverted page table is able to achieve one memory reference per page walk. We assume 48-bit virtual and physical addresses. The baseline MMU supports $4$KB and $2$MB pages, whereas SpryVM only employs $4$KB pages. 
 
-We model our 3D memory stack following the organization of the Micron's Hybrid Memory Cube with eight $8$Gb DRAM layers and 16 vaults~\cite{micron:hmc}. We conservatively estimate DRAM timing parameters from publicly available information and research literature~\cite{gao:practical}. For spryVM, we employ a conventional two-level TLB hierarchy. The SRAM overhead per memory chip is less than 256KB (which is partitioned across vaults) for an area of $0.3mm^2$ in $22$nm, corresponding to less than 0.2\% of the area of an $8$Gb DRAM die (i.e., $226mm^2$~\cite{shevgoor:quantifying}). As there are 16 memory partitions (or vaults), each of $512$MB, spryVM provides a VM associativity of $128$K ways, making the number of page faults virtually identical to full associativity.
+%We model our 3D memory stack following the organization of the Micron's Hybrid Memory Cube with eight $8$Gb DRAM layers and 16 vaults~\cite{micron:hmc}. We conservatively estimate DRAM timing parameters from publicly available information and research literature~\cite{gao:practical}. For spryVM, we employ a conventional two-level TLB hierarchy. The SRAM overhead per memory chip is less than 256KB (which is partitioned across vaults) for an area of $0.3mm^2$ in $22$nm, corresponding to less than 0.2\% of the area of an $8$Gb DRAM die (i.e., $226mm^2$~\cite{shevgoor:quantifying}). As there are 16 memory partitions (or vaults), each of $512$MB, spryVM provides a VM associativity of $128$K ways, making the number of page faults virtually identical to full associativity.
 
-We conservatively assume that page faults always involve SSD IO, taking $32\mu{}s$ to resolve~\cite{chou:cameo}. This parameter is only important for out-of-memory workloads. Memory-resident workloads only suffer a page fault the first time a page is accessed. Table~\ref{table:system} summarizes all system parameters.
+%We conservatively assume that page faults always involve SSD IO, taking $32\mu{}s$ to resolve~\cite{chou:cameo}. This parameter is only important for out-of-memory workloads. Memory-resident workloads only suffer a page fault the first time a page is accessed. Table~\ref{table:system} summarizes all system parameters.
 
 %%%%%%%%%%% Table: Methodology %%%%%%%%%%%
 \begin{table}
@@ -43,8 +72,8 @@ We conservatively assume that page faults always involve SSD IO, taking $32\mu{}
 				%\hline
 				\toprule
 				\multirow{1}{*}{Cores}                       &  Single-issue, in-order, 2GHz \\ 
-				\cmidrule{2-2}
-				\multirow{1}{*}{L1-I/D}                       &  32KB, 2-way, 64B block, 2-cycle load-to-use \\ 
+				%\cmidrule{2-2}
+				%\multirow{1}{*}{L1-I/D}                       &  32KB, 2-way, 64B block, 2-cycle load-to-use \\ 
 				\toprule
 				{\bf MMU}                  & {\bf Description}  \\
 				\toprule
@@ -54,19 +83,18 @@ We conservatively assume that page faults always involve SSD IO, taking $32\mu{}
 				%\multirow{2}{*}{Core Types}    & In-order (Cortex A8-like): 2-wide \\
 				%		                               &  OoO (Xeon-like): 4-wide, 128-entry ROB \\
 				%\hline
-				\multirow{3}{*}{TLB}	& $4$KB pages: 64-entry, 4-way associative \\
-				& $2$MB pages: 32-entry, 4-way associative \\
-				& $1$GB pages: 4-entry, fully associative \\
-				\cmidrule{2-2}
+				\multirow{3}{*}{TLB}	& $4$KB pages: 128-entry, fully associative \\
+				& $2$MB pages: 128-entry, fully associative \\
+				%& $1$GB pages: 4-entry, fully associative \\
+				%\cmidrule{2-2}
 				%\multirow{2}{*}{L1-I/D Caches}	&	32KB, split, 2 ports, 64B blocks, 10 MSHRs, \\
 				%							& 2-cycle load-to-use latency \\
-				\multirow{1}{*}{STLB} 			& 4KB/2MB pages: 1024-entry, 8-way associative \\ 
+				%\multirow{1}{*}{STLB} 			& 4KB/2MB pages: 1024-entry, 8-way associative \\ 
 				
 				%\hline
 				\cmidrule{2-2}
-				\multirow{3}{*}{Caches} 	&	L4: 2-entry, fully associative~\cite{bhattacharjee:large-reach} \\ 
-				&       L3: 4-entry, fully associative~\cite{bhattacharjee:large-reach} \\
-				&       L2: 32-entry, 4-way associative~\cite{bhattacharjee:large-reach} \\
+				\multirow{1}{*}{MMU Caches} 	&	Perfect \\ 
+				
 				%			\cmidrule{2-2}
 				%			\multirow{1}{*}{Walker} 	&	Two in-flight page walks \\ 
 				
@@ -75,9 +103,9 @@ We conservatively assume that page faults always involve SSD IO, taking $32\mu{}
 				\toprule
 				
 				
-				\multirow{1}{*}{MPU chip}                                   &  8GB chips, 8 DRAM layers x 16 vaults \\         
+				\multirow{1}{*}{Channel}                                   &  4Gbit chips, 4GB per channel, 4 channels per socket \\         
 				\cmidrule{2-2}
-				\multirow{1}{*}{Networks}                             &  4, 8, and 16 chips in daisy chain and mesh \\       
+				\multirow{1}{*}{Sockets}                             &  4- and 8-socket machines in mesh interconnect\\       
 				\cmidrule{2-2}
 				\multirow{2}{*}{DRAM}                                &  $t_{CK} = 1.6$ns, $t_{RAS} = 22.4$ns, $t_{RCD} = 11.2$ns \\
 				&  $t_{CAS} = 11.2$ns, $t_{WR} = 14.4$ns, $t_{RP} = 11.2$ns \\ 
@@ -90,11 +118,11 @@ We conservatively assume that page faults always involve SSD IO, taking $32\mu{}
 				\toprule
 				{\bf spryVM}                  & {\bf Description}  \\
 				\toprule
-				\multirow{1}{*}{TLB}	& $4$KB pages: 64-entry, 4-way associative \\
-				\cmidrule{2-2}
+				\multirow{1}{*}{TLB}	& $4$KB pages: 128-entry, fully associative \\
+				%\cmidrule{2-2}
 				%\multirow{2}{*}{L1-I/D Caches}	&	32KB, split, 2 ports, 64B blocks, 10 MSHRs, \\
 				%							& 2-cycle load-to-use latency \\
-				\multirow{1}{*}{STLB} 			& 4KB pages: 1024-entry, 8-way associative \\ 
+				%\multirow{1}{*}{STLB} 			& 4KB pages: 1024-entry, 8-way associative \\ 
 				
 				
 				\bottomrule

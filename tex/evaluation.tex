@@ -106,44 +106,41 @@
 \end{figure*}
 
 
-\javier{Points to come across:
+%\javier{Points to come across:
 
-\begin{itemize}
-  \item Set-associativity doesn't increase page faults: 3C model + Memcached and RocksDB on real HW
-  \item TLB miss rate vs. working set for microkernels (hash table, skip list, bst internal, bst external)
-  \item TLB miss penalty vs. working set (or sockets)
-  \item Fragmentation
-  \item $IPC =IPC_base + Penalty_tlb + Penalty_page_faults$
-\end{itemize}
+%\begin{itemize}
+%  \item Set-associativity doesn't increase page faults: 3C model %+ Memcached and RocksDB on real HW
+%  \item TLB miss rate vs. working set for microkernels (hash %table, skip list, bst internal, bst external)
+%  \item TLB miss penalty vs. working set (or sockets)
+%  \item Fragmentation
+%  \item $IPC =IPC_base + Penalty_tlb + Penalty_page_faults$
+%\end{itemize}
+%
+%}
 
-}
 
-
-\begin{figure*}[!h]
-\centering
- 
-  \subfloat[In-memory scenario.]{
-  \label{fig:speedup_memory_in}
-%  \includegraphics[width=.32\textwidth,clip,trim = 18mm 213mm 117mm 20mm]{figs/eps/sim-rread-lat.eps}}
-   \includegraphics[width=0.48\textwidth,clip]{graphs/speedup_inmemory.pdf}
-   }
-%  \hspace{.01in}
-%\caption{Speedup over conventional MMU with 4KB pages for 2MB and 1GB pages, SAVAgE, and ideal translation for in memory scenario.}
-%\end{figure*}
 %\begin{figure*}[!h]
 %\centering
-  \subfloat[Out-of-memory scenario.]{
-  \label{fig:speedup_memory_out}
-%  \includegraphics[width=.32\textwidth,clip,trim = 18mm 213mm 115mm 20mm]{figs/eps/sim-rread-bw.eps}}
- \includegraphics[width=0.48\textwidth,clip]{graphs/speedup_disk.pdf}
-  }
-%  \hspace{.01in}
+% 
+%  \subfloat[In-memory scenario.]{
+%  \label{fig:speedup_memory_in}
+%
+%   \includegraphics[width=0.48\textwidth,clip]{graphs/speedup_inmemory.pdf}
+%   }
+%
+%
+%  \subfloat[Out-of-memory scenario.]{
+%  \label{fig:speedup_memory_out}
+%
+% \includegraphics[width=0.48\textwidth,clip]{graphs/speedup_disk.pdf}
+%  }
 
 
-\caption{Speedup over 4KB-H for 4KB-I, 2MB-H, 2MB-I, spryVM, and an ideal translation.}
-  \label{fig:speedup_memory}
+
+%\caption{Speedup over 4KB-H for 4KB-I, 2MB-H, 2MB-I, spryVM, and an ideal translation.}
+%  \label{fig:speedup_memory}
  
-\end{figure*}
+%\end{figure*}
 
 %In this section, we perform a quantitative and qualitative study of the performance of different translation mechanisms.
 
