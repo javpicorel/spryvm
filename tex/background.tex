@@ -188,21 +188,21 @@ NUMA memories and require long-latency lookups across sockets/chips,
 etc. Even perfect MMU caches require at least one memory reference per
 page table walk and recent work shows that this single reference can
 dramatically exacerbate address translation costs for accelerators
-\cite{picorel:near-memory}.
+\cite{picorel:near-memory, pichai:architectural}.
 
 
 \subsection{Prior Approaches}
 
-In response to the TLB reach and miss penalty problems detailed in the
-last section, several studies have proposed a range of techniques to
-improve address translation. Table \ref{table:vms} summarizes these
-techniques as well as their programmbility and flexibility
-attributes. We detail these techniques further but note that in
-general, all approaches change VM software and sacrifice aspects of
-traditional VM flexibility (to varying degrees) to achieve effective
-address translation. SpryVM's goal is to find a better compromise
-between retaining traditional VM benefits at the software level, while
-also enabling more efficient TLB hardware.
+In response to the problems detailed in the last section, several
+studies have proposed a range of techniques to improve address
+translation. Table \ref{table:vms} summarizes these techniques as well
+as their programmbility and flexibility attributes. We detail these
+techniques further but note that in general, all approaches change VM
+software and sacrifice aspects of traditional VM flexibility (to
+varying degrees) to achieve effective address translation. SpryVM's
+goal is to find a better compromise between retaining traditional VM
+benefits at the software level, while also enabling more efficient TLB
+hardware.
 
 \vspace{2mm}
 \noindent\textbf{Multi-page mappings.} Studies have exploited
@@ -212,9 +212,10 @@ TLBs coalesce 4-8 page translations into a single TLB entry, as long
 as their physical locations are contiguous. Although TLB reach
 improves, they cannot cover the entirety of a large memory system of
 tens or hundreds of GBs~\cite{gandhi:range}.  Equally problematically,
-these techniques rely on contiguity that {\it might} be generated
-serendipitously, which can be challenging in highly-loaded cloud
-systems where memory can be and is fragmented.
+these techniques rely on contiguity that {\it might} be generated but
+does not have to be. Achieving such contiguity is challenging in
+highly-loaded cloud systems where memory can be fragmented
+\cite{pham:colt}.
 
 \begin{comment}
 \noindent\textbf{Huge pages.} The most common approach to increase the
