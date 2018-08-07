@@ -3,11 +3,11 @@
 
 One of SpryVM's advantages is that is is readily-implementable and
 compatible with commodity OSes. To demonstrate this, we have
-prototyped SpryVM in stock Linux by implementing set-associativity in
+prototyped SpryVM in stock Linux (4.10) by implementing set-associativity in
 the memory management sections of the kernel. Additionally, we have
-implemented SpryVM's page table in the kernel. (We focus on an
-inverted page table implementation, though other implementations are
-also just as readily possible.) Overall, these and other ancillary
+implemented SpryVM's page table in the kernel as an inverted page table,
+although other implementations are also just as readily possible. 
+Overall, these and other ancillary
 modifications were compatible with the existing kernel. A measure of
 this is that when use \verb|git diff| to track our changes, we find
 the following: \texttt{20 files changed, 266 insertions(+), 43
@@ -20,11 +20,14 @@ leveraging existing Linux code built to bind processes to NUMA nodes
 (i.e., {\it membind}). In other words, we observed that the notion of
 mapping only a fixed set of physical frames to a virtual page is
 analogous to the idea of assigning physical frames from only select
-NUMA nodes. Consequently, to build set-associativity, we conceptually
-treat subsets of the virtual address space as being bound to specific
+NUMA nodes. Consequently, to build a system with only slightly reduced associativity, 
+we conceptually treat subsets of the virtual address space as being bound to specific
 NUMA nodes. Therefore SpryVM can be implemented in a manner that
 reuses {\it membind} code paths such that each memory set is treated
-as a NUMA node. 
+as a NUMA node. Note that this implementation is only possible because SpryVM
+reduces associativity only \it{by a small factor}, as opposed to reducing it
+\it{to a small number} (e.g., dirrect mapped or 4-way associative~\ref{picorel:near-memory}). 
+
 
 \vspace{2mm}
 \noindent {\bf Anonymous and file-backed pages.} Our SpryVM
@@ -32,7 +35,7 @@ implementation has to treat anonymous and file-backed pages
 differently because the former is generally private to a process,
 while the latter can (and is) often shared among processes.
 
-Consider the case of anonymous pages. On page faults to them, the OS
+Consider the case of anonymous pages. On page faults, the OS
 must calculate a corresponding NUMA node ID when allocating physical
 pages. To do this, we embed logic in the kernel to apply our hash
 function on the faulting virtual page before obtaining a free page

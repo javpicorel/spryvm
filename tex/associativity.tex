@@ -74,9 +74,9 @@ can be routed to the particular region. This means that rather than
 placing per-accelerator TLBs, we only need per-region TLBs mapping the
 physical frames within that region. Similarly, we can also place a
 page table within the memory region for physical pages only belonging
-to that region. Per-region TLBs be made much smaller than
-per-accelerator TLBs which have to cover all of physical
-memory. Per-region page tables can reduce page table walk latency as
+to that region. Per-region TLBs can be made much smaller than
+per-accelerator TLBs, which have to cover all of physical
+memory. Per-region page tables reduce page table walk latency as
 they are co-located in the same region as the data.
 
 Figuer \ref{fig:pagewalk_partition_hit} shows the timeline of events
@@ -114,9 +114,10 @@ the cost of address translation). Page table walks do not involve
 network communication as the page table entries are all located in the
 same memory channel. The longer the latency of the network is with
 respect to the DRAM accesses, the lower overhead of page table walks
-in SpryVM. This behavior benefits large memory systems, as the need
+in SpryVM. This behavior particularly benefits large memory systems, as the need
 for scaling out the memory for large-memory machines increase the
-average distance to the memory channels.
+average distance to the memory channels, as well as systems with lower DRAM
+latencies (e.g., 3D-stacked memories).
 
 
 \begin{figure*}

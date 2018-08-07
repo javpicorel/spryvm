@@ -23,8 +23,8 @@ memory-side TLBs responsible for mapping only their specific memory
 regions. Because memory regions represent just a subset of the total
 physical address space, memory-side TLBs can achieve high hit rates
 despite being smaller in size. Second, set-associativity also permits
-us to reduce TLB miss by allowing us to co-locate data and
-translations in the same memory regions, partly overlapping their
+us to dramatically reduce TLB miss penalty by allowing co-location of data and
+the corresponding translations in the same memory regions, overlapping their
 lookup. The confluence of these two benefits is a combination of
 better performance and reduction in TLB resources. 
 
@@ -39,9 +39,10 @@ compromising on entropy in virtual address bits, or requiring
 power/area-hungry TLBs. The fact that SpryVM does not rely on
 contiguity also means that it can continue to operate efficiently in
 fragmented memory settings where translation contiguity or identity
-mappings may be hard to generate. Furthemore, the only modest drop
+mappings may be hard to generate. Furthemore, having only a modest drop
 from fully-associative designs means that optimizations like
 copy-on-write can, for all practical purposes, be supported (we will
 show that the number of CoW pages is limited only by the size of the
-memory region, which can be hundreds/thousands of pages in practice).
+memory region, which can be thousands of pages in practice).
+
 
