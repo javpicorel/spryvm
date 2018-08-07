@@ -63,31 +63,60 @@ latency is on the critical path of the memory access.
 
 \subsection{SpryVM Address Translation}
 
-In SpryVM, instead of integrating a TLB per accelerator, we integrate
-a TLB per region of physical memory a virtual address is able to
-uniquely identify. In our case, we restrict the associativity so that
-each TLB is responsible to translating the virtual addresses mapped to
-a memory channel (check Figure 1). Hence, each TLB is responsible of a
-narrower part of the physical memory, increasing the hit rates of the
-TLBs. Figure~\ref{fig:pagewalk_partition_hit} shows the timeline of
-events when an accelerator issues a memory reference which hits in one
-of SpryVM's TLBs. In SpryVM, as a virtual address uniquely identifies
-a memory region, the virtual address is used as a memory request,
-requiring traversing NoC and off-chip interconnect to locate the
-appropriate memory channel. Then, a simple multiplexer (not shown in
-the figure) distinguishes between virtual and physical address
-requiests, and sends the aforesaid required to the memory channel's
-TLB. The TLB holds the translation information and hence the page
-frame and the physical address of the data is known. This set of
-events constitute the translation path.
+SpryVM's set-associative organization means that a virtual page can
+map to a physical frame from specific memory regions only. This
+permits us to relieve the accelerator from having to translate virtual
+pages to physical frames and instead, requires that accelerators only
+calculate the physical memory region that a virtual page corresponds
+to. This can be accomplished using a simple hash function (e.g.,
+implementable using bit masking combinational logic) and the request
+can be routed to the particular region. This means that rather than
+placing per-accelerator TLBs, we only need per-region TLBs mapping the
+physical frames within that region. Similarly, we can also place a
+page table within the memory region for physical pages only belonging
+to that region. Per-region TLBs be made much smaller than
+per-accelerator TLBs which have to cover all of physical
+memory. Per-region page tables can reduce page table walk latency as
+they are co-located in the same region as the data.
 
-Now since the appropriate page table entry is in the TLB and the page frame is located in the memory channel, the data path begins by the memory controller accessing the DRAM arrays to fetch the data. Once the data returns to the memory controller, the data is sent back to the accelerator traversing the same NoC and off-ship interconnects. This set of events constitute the data path.
+Figuer \ref{fig:pagewalk_partition_hit} shows the timeline of events
+with a TLB hit in SpryVM. The virtual address uniquely identifies a
+memory region and traverses the NoC and off-chip interconnect to
+locate the appropriate memory channel. Then, a simple multiplexer (not
+shown in the figure) distinguishes virtual and physical address
+requiests, and sends the former to the memory channel's TLB. The TLB
+holds the translation. From this page frame, we can calculate the
+physical address of the data, completing the translation path. Once
+this completes, data fetch commences. Unlike the baseline case, note
+that spryVM can overlap translation with data fetch completely because
+both the TLB and data are co-located in the same region. This means
+that the translation overhead is exactly zero, equal to an ideal
+translation mechanism.
 
-As shown in the figure, TLB hits completely overlap the translation with the data path, because the time to locate the memory channel takes part of both paths at the same time. Hence, the translation overhead is exactly zero, equal to an ideal translation mechanism. Furthermore, we make sure that TLB hits are more often than in the conventional translation as TLB are responsible of translation of a narrow part of the physical memory space.
+With SpryVM, TLBs misses are rarer but can occur. When they do, as
+shown in Figure \ref{fig:pagewalk_partition_miss}, the virtual address
+identifies the appropriate memory controller, which can be reached by
+traversing the NoC and off-chip interconnects. Suppose there is a TLB
+miss; the page table is also resident in the same memory
+region. Therefore, unlike conventional translation, there is no need
+to traverse the NoC and off-chip interconnects for the page table
+lookup. Once the page table entry arrives from the DRAM arrays and the
+TLB fill operation completes, translation finishes. Then, the memory
+controller issues the complete physical address to locate the target
+piece of data. When data returns from the DRAM array, it is sent back
+to the accelerator by traversing the networks, finishing the data
+path.
 
-Although SpryVM significantly reduce the frequency of TLB misses, page walks can still occur. Figure~\ref{fig:pagewalk_partition_miss} shows the timeline of events when an accelerator issues a memory reference that misses in one of SpryVM's TLBs. In such cases, and similar to the previous case, the virtual address is used to arrive at the appropriate memory controller traversing the NoC and off-chip interconnects. Then, upon a TLB miss, a page table, similarly to the TLBs, only responsible for holding page table entries that map to the region of physical memory, is referenced. Note that unlike in the conventional translation mechanism, there is no need to traverse the NoC and off-chip interconnects for the page walk operation. Once the page table entry arrives from the DRAM arrays and the TLB fill operation completes, the translation path finishes. Then, memory controller issues the complete physical address to locate the target piece of data. Then, when data returns from the DRAM array, it is sent back to the accelerator by traversing the networks, finishing the data path.
-
-In this case, page walks are still much cheaper than in conventional translation as the time to locate the appropriate memory channel is part of both the translation path and data path, essentially removing this part of the cost of address translation. Furthermore, page walks do not further involve network communication as the page table entries are all locate in the same memory channel. Note that the larger the latency of the network is with respect to the DRAM accesses, the lower overhead of page walks in SpryVM. This behavior benefits large memory systems, as the need for scaling out the memory for large-memory machines increase the average distance to the memory channels. 
+With SpryVM, page walks are cheaper than in conventional translation
+as the time to locate the appropriate memory channel is part of both
+the translation path and data path (essentially removing this part of
+the cost of address translation). Page table walks do not involve
+network communication as the page table entries are all located in the
+same memory channel. The longer the latency of the network is with
+respect to the DRAM accesses, the lower overhead of page table walks
+in SpryVM. This behavior benefits large memory systems, as the need
+for scaling out the memory for large-memory machines increase the
+average distance to the memory channels.
 
 
 \begin{figure*}
