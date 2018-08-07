@@ -171,4 +171,14 @@ For in-memory scenarios ($8\times$--$1\times$ cases), once the associativity equ
 
 For the cases where the working sets do not fit in memory, the trends are similar to the single-process scenarios. Capacity misses become more significant as the working set sizes grow, making conflict and compulsory misses less important. Similar to the in-memory case, once the associativity equals the number of processes, the fraction of conflict misses matches the single-process results. Conflicts drop rapidly as in the other cases and with 4 ways per process, conflict misses remain within $1\%$ of the total misses for all the workloads. The results for TPC-H, TPC-DS, and MySQL are identical.
 
+\subsection{Linux Prototype}
+\begin{figure}[t]
+   \centering
+   \includegraphics[width=1.0\columnwidth]{graphs/realhw.pdf}
+   \caption{Page fault rate vs memory size for fully associative (1-node) and set-associative (32-nodes).}
+   \label{fig:realhw}
+\end{figure}
+
+
+We were able to run all server workloads on modified linux with 32 memory regions (nodes), utilizing above 90\% of available DRAM without a single page fault. Figure~\ref{fig:realhw} shows the page fault rate vs. memory capacity in the critical capacity range for RocksDB tuned for a 16GB footprint, as we vary the available memory capacity using the linux boot-time mem parameter. First, we note that our kernel properly deals with demand paging in the out-of-memory scenarios. Second, we see that the page fault rates in fully associative (1 partition) and set-associative (32 partitions) case follow the same trend, except that the 32-partition setup requires about 1.5--2GB more memory to achieve the same page-fault rate. We note that this is not related to associativity, given that the associativity reduction is minor. Instead, this effect is the artifact of the prototype that relies on linux NUMA nodes, which have small memory overheads per node and exhibit a degree of variability in their capacity. 
 
