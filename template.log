@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2018.4.16)  7 AUG 2018 16:22
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2018.4.16)  7 AUG 2018 16:26
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1307,43 +1307,43 @@ Underfull \vbox (badness 10000) has occurred while \output is active []
 <graphs/penalty.pdf, id=460, 360.34625pt x 215.80624pt>
 File: graphs/penalty.pdf Graphic file (type pdf)
 <use graphs/penalty.pdf>
-Package pdftex.def Info: graphs/penalty.pdf  used on input line 70.
+Package pdftex.def Info: graphs/penalty.pdf  used on input line 108.
 (pdftex.def)             Requested size: 195.12975pt x 116.85963pt.
 <graphs/memcached_assoc_1p-bw.pdf, id=461, 393.08324pt x 182.1435pt>
 File: graphs/memcached_assoc_1p-bw.pdf Graphic file (type pdf)
 <use graphs/memcached_assoc_1p-bw.pdf>
-Package pdftex.def Info: graphs/memcached_assoc_1p-bw.pdf  used on input line 8
-2.
+Package pdftex.def Info: graphs/memcached_assoc_1p-bw.pdf  used on input line 1
+20.
 (pdftex.def)             Requested size: 184.65262pt x 85.56297pt.
 <graphs/rocksdb_assoc_1p-bw.pdf, id=463, 338.57745pt x 178.93263pt>
 File: graphs/rocksdb_assoc_1p-bw.pdf Graphic file (type pdf)
 <use graphs/rocksdb_assoc_1p-bw.pdf>
-Package pdftex.def Info: graphs/rocksdb_assoc_1p-bw.pdf  used on input line 87.
-
+Package pdftex.def Info: graphs/rocksdb_assoc_1p-bw.pdf  used on input line 125
+.
 (pdftex.def)             Requested size: 156.82466pt x 82.88063pt.
 <graphs/cassandra_assoc_1p-bw.pdf, id=465, 337.55515pt x 179.4929pt>
 File: graphs/cassandra_assoc_1p-bw.pdf Graphic file (type pdf)
 <use graphs/cassandra_assoc_1p-bw.pdf>
-Package pdftex.def Info: graphs/cassandra_assoc_1p-bw.pdf  used on input line 9
-2.
+Package pdftex.def Info: graphs/cassandra_assoc_1p-bw.pdf  used on input line 1
+30.
 (pdftex.def)             Requested size: 156.82466pt x 83.39212pt.
 <graphs/memcached_assoc_2p-bw.pdf, id=467, 392.54712pt x 160.37103pt>
 File: graphs/memcached_assoc_2p-bw.pdf Graphic file (type pdf)
 <use graphs/memcached_assoc_2p-bw.pdf>
 Package pdftex.def Info: graphs/memcached_assoc_2p-bw.pdf  used on input line 1
-01.
+39.
 (pdftex.def)             Requested size: 182.1207pt x 74.40535pt.
 <graphs/memcached_assoc_4p-bw.pdf, id=469, 339.9879pt x 164.22847pt>
 File: graphs/memcached_assoc_4p-bw.pdf Graphic file (type pdf)
 <use graphs/memcached_assoc_4p-bw.pdf>
 Package pdftex.def Info: graphs/memcached_assoc_4p-bw.pdf  used on input line 1
-04.
+42.
 (pdftex.def)             Requested size: 156.82466pt x 75.75148pt.
 <graphs/memcached_assoc_8p-bw.pdf, id=471, 338.9416pt x 162.14253pt>
 File: graphs/memcached_assoc_8p-bw.pdf Graphic file (type pdf)
 <use graphs/memcached_assoc_8p-bw.pdf>
 Package pdftex.def Info: graphs/memcached_assoc_8p-bw.pdf  used on input line 1
-07.
+45.
 (pdftex.def)             Requested size: 156.82466pt x 75.0219pt.
  [9 <./graphs/HT_32GB.pdf> <./graphs/SL_32GB.pdf> <./graphs/BSTI_32GB.pdf> <./g
 raphs/BSTE_32GB.pdf> <./graphs/HT_128GB.pdf> <./graphs/SL_128GB.pdf> <./graphs/
@@ -1457,7 +1457,7 @@ ts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2018/texmf-dist/fonts/type1/u
 rw/times/utmr8a.pfb></usr/local/texlive/2018/texmf-dist/fonts/type1/urw/times/u
 tmri8a.pfb></usr/local/texlive/2018/texmf-dist/fonts/type1/urw/zapfding/uzdr.pf
 b>
-Output written on template.pdf (13 pages, 458919 bytes).
+Output written on template.pdf (13 pages, 458947 bytes).
 PDF statistics:
  936 PDF objects out of 1000 (max. 8388607)
  790 compressed objects within 8 object streams
