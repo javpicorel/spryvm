@@ -1,7 +1,7 @@
 \section{Conclusion}
 \label{sec:conclusion}
 
-Extending VM to MPUs is a crucial step in easing programmability, simplifying CPU-MPU sharing, and enabling transparent memory allocation and protection. In this work, we show that the full associativity of VM is largely unnecessary, as the majority of misses are either compulsory or capacity, and hence insensitive to associativity. By restricting the associativity to identify a memory chip and partition uniquely, memory can be accessed as soon as the virtual address is known, while a memory-side MMU translates and fetches the data, overlapping both operations almost entirely.
+Extending VM to accelerators is a crucial step in easing programmability, simplifying data sharing, and enabling transparent memory allocation and protection. In this work, we show that the full associativity of VM is largely unnecessary, as the majority of misses are either compulsory or capacity, and hence insensitive to associativity. By restricting the associativity to identify a memory chip and partition uniquely, memory can be accessed as soon as the virtual address is known, while a memory-side TLB translates and fetches the data, overlapping both operations almost entirely. By implementing this concept in stock linux prototype, we show that set-associative memory can be easily implemented using the existing Linux code paths. 
 
 
 %we perform an associativity study of VM across a variety of scenarios and conclude that capacity and compulsory misses dominate the overall misses, while conflict misses, which associativity alleviates, rapidly drop as the VM associativity increases. Hence, the full associativity of VM remains largely unused. 
