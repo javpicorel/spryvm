@@ -1,9 +1,5 @@
 \begin{thebibliography}{10}
 
-\bibitem{facebook:linkbench}
-{Facebook LinkBench Benchmark}.
-\newblock \url{https://github.com/facebook/linkbench}.
-
 \bibitem{google:tcmalloc}
 {Google Performance Tools}.
 \newblock \url{https://code.google.com/p/gperftools/}.
@@ -12,11 +8,6 @@
 {Intel 64 and IA-32 Architectures Software Developer's Manual}.
 \newblock
   \url{http://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-system-programming-manual-325384.pdf}.
-
-\bibitem{facebook:rocksdb}
-{RocksDB In Memory Workload Performance Benchmarks}.
-\newblock
-  \url{https://github.com/facebook/rocksdb/wiki/RocksDB-In-Memory-Workload-Performance-Benchmarks}.
 
 \bibitem{ahn:scalable}
 Junwhan Ahn, Sungpack Hong, Sungjoo Yoo, Onur Mutlu, and Kiyoung Choi.
@@ -88,6 +79,10 @@ Abhishek Bhattacharjee and Margaret Martonosi.
   chip multiprocessors.
 \newblock In {\em Proceedings of the 2009 International Conference on Parallel
   Architectures and Compilation Techniques}, 2009.
+
+\bibitem{cantin:cache}
+Jason~F. Cantin.
+\newblock {Cache Performance for SPEC CPU2000 Benchmarks}, 2003.
 
 \bibitem{chiueh:eliminating}
 Tzi{-}cker Chiueh and Randy~H. Katz.
@@ -220,14 +215,6 @@ Youngjin Kwon, Hangchen Yu, Simon Peter, Christopher~J. Rossbach, and Emmett
 \newblock Coordinated and efficient huge page management with ingens.
 \newblock In {\em Proceedings of the 2016 {USENIX} Symposium on Operating
   Systems Design and Implementation}, 2016.
-
-\bibitem{lim:thin}
-Kevin~T. Lim, David Meisner, Ali~G. Saidi, Parthasarathy Ranganathan, and
-  Thomas~F. Wenisch.
-\newblock Thin servers with smart pipes: designing soc accelerators for
-  memcached.
-\newblock In {\em Proceedings of the 2013 International Symposium on Computer
-  Architecture}, 2013.
 
 \bibitem{lowepower:inferring}
 Jason Lowe-Power.

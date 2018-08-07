@@ -4,48 +4,46 @@ The top-level auxiliary file: template.aux
 The style file: plain.bst
 Database file #1: references.bib
 Warning--to sort, need author or key in google:tcmalloc
-Warning--to sort, need author or key in facebook:linkbench
-Warning--to sort, need author or key in facebook:rocksdb
 Warning--to sort, need author or key in intel:architectures
-You've used 61 entries,
+You've used 59 entries,
             2118 wiz_defined-function locations,
-            766 strings with 16969 characters,
-and the built_in function-call counts, 18867 in all, are:
-= -- 1583
-> -- 1196
+            760 strings with 16600 characters,
+and the built_in function-call counts, 18381 in all, are:
+= -- 1541
+> -- 1173
 < -- 0
-+ -- 480
-- -- 414
-* -- 1209
-:= -- 3198
-add.period$ -- 177
-call.type$ -- 61
-change.case$ -- 388
++ -- 470
+- -- 406
+* -- 1179
+:= -- 3133
+add.period$ -- 172
+call.type$ -- 59
+change.case$ -- 378
 chr.to.int$ -- 0
-cite$ -- 65
-duplicate$ -- 753
-empty$ -- 1599
-format.name$ -- 414
-if$ -- 3905
+cite$ -- 61
+duplicate$ -- 732
+empty$ -- 1547
+format.name$ -- 406
+if$ -- 3794
 int.to.chr$ -- 0
-int.to.str$ -- 61
-missing$ -- 51
-newline$ -- 302
+int.to.str$ -- 59
+missing$ -- 50
+newline$ -- 293
 num.names$ -- 112
-pop$ -- 600
+pop$ -- 581
 preamble$ -- 1
-purify$ -- 330
+purify$ -- 322
 quote$ -- 0
-skip$ -- 435
+skip$ -- 420
 stack$ -- 0
-substring$ -- 402
-swap$ -- 103
+substring$ -- 392
+swap$ -- 100
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 240
-warning$ -- 4
+type$ -- 232
+warning$ -- 2
 while$ -- 120
-width$ -- 63
-write$ -- 601
-(There were 4 warnings)
+width$ -- 61
+write$ -- 585
+(There were 2 warnings)

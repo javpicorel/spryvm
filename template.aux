@@ -79,6 +79,7 @@
 \@writefile{toc}{\contentsline {section}{\numberline {4}SpryVM: Hardware Support}{4}{section.4}}
 \newlabel{sec:associativity}{{4}{4}{SpryVM: Hardware Support}{section.4}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Baseline Address Translation}{4}{subsection.4.1}}
+\citation{picorel:near-memory}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.2}SpryVM Address Translation}{5}{subsection.4.2}}
 \@writefile{toc}{\contentsline {section}{\numberline {5}SpryVM: Operating System Support}{5}{section.5}}
 \newlabel{sec:os}{{5}{5}{SpryVM: Operating System Support}{section.5}{}}
@@ -117,8 +118,6 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Performance}{7}{subsection.6.4}}
 \citation{kanter:cavium,towles:unifying}
 \citation{haria:devirtualizing}
-\citation{villavieja:didi}
-\citation{yoon:revisiting,park:efficient}
 \@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces System parameters.\relax }}{8}{table.caption.7}}
 \newlabel{table:system}{{2}{8}{System parameters.\relax }{table.caption.7}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {6.5}Simulation Parameters}{8}{subsection.6.5}}
@@ -128,12 +127,6 @@
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {7.1.1}32GB working set.}{8}{subsubsection.7.1.1}}
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {7.1.2}128GB working set.}{8}{subsubsection.7.1.2}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {7.2}TLB Miss Penalty}{8}{subsection.7.2}}
-\@writefile{toc}{\contentsline {section}{\numberline {8}Discussion}{8}{section.8}}
-\newlabel{sec:discussion}{{8}{8}{Discussion}{section.8}{}}
-\citation{gao:practical,ahn:scalable,pugsley:ndc,ahn:pim-enabled}
-\citation{reinders:knights,volos:fat}
-\citation{reinders:knights}
-\citation{mauerer:professional,mckusick:design}
 \newlabel{fig:memcached_2p_assoc}{{6a}{9}{Subfigure 6a}{subfigure.6.1}{}}
 \newlabel{sub@fig:memcached_2p_assoc}{{(a)}{a}{Subfigure 6a\relax }{subfigure.6.1}{}}
 \newlabel{fig:memcached_4p_assoc}{{6b}{9}{Subfigure 6b}{subfigure.6.2}{}}
@@ -162,6 +155,23 @@
 \@writefile{lof}{\contentsline {subfigure}{\numberline{(b)}{\ignorespaces {Skip List}}}{9}{subfigure.7.2}}
 \@writefile{lof}{\contentsline {subfigure}{\numberline{(c)}{\ignorespaces {BST Internal}}}{9}{subfigure.7.3}}
 \@writefile{lof}{\contentsline {subfigure}{\numberline{(d)}{\ignorespaces {BST External}}}{9}{subfigure.7.4}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.3}Associativity study of VM}{9}{subsection.7.3}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.4}Single-Process In-Memory}{9}{subsection.7.4}}
+\citation{hill:aspects,cantin:cache}
+\citation{hill:aspects,cantin:cache}
+\citation{villavieja:didi}
+\citation{yoon:revisiting,park:efficient}
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces TLB miss penalty for conventional and SpryVM.\relax }}{10}{figure.caption.10}}
+\newlabel{fig:penalty}{{8}{10}{TLB miss penalty for conventional and SpryVM.\relax }{figure.caption.10}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.5}Single-Process Out-of-Memory}{10}{subsection.7.5}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.6}Multi-programming In-Memory}{10}{subsection.7.6}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.7}Multi-programming Out-of-Memory}{10}{subsection.7.7}}
+\@writefile{toc}{\contentsline {section}{\numberline {8}Discussion}{10}{section.8}}
+\newlabel{sec:discussion}{{8}{10}{Discussion}{section.8}{}}
+\citation{gao:practical,ahn:scalable,pugsley:ndc,ahn:pim-enabled}
+\citation{reinders:knights,volos:fat}
+\citation{reinders:knights}
+\citation{mauerer:professional,mckusick:design}
 \citation{intel:architectures}
 \citation{sun:ultrasparc}
 \citation{bhattacharjee:large-reach,barr:translation}
@@ -172,72 +182,90 @@
 \citation{gustafson:ibm}
 \citation{jouppi:architectural}
 \citation{smith:comparative}
+\newlabel{fig:memcached_1p}{{9a}{11}{Subfigure 9a}{subfigure.9.1}{}}
+\newlabel{sub@fig:memcached_1p}{{(a)}{a}{Subfigure 9a\relax }{subfigure.9.1}{}}
+\newlabel{fig:rocksdb_1p}{{9b}{11}{Subfigure 9b}{subfigure.9.2}{}}
+\newlabel{sub@fig:rocksdb_1p}{{(b)}{b}{Subfigure 9b\relax }{subfigure.9.2}{}}
+\newlabel{fig:cassandra_1p}{{9c}{11}{Subfigure 9c}{subfigure.9.3}{}}
+\newlabel{sub@fig:cassandra_1p}{{(c)}{c}{Subfigure 9c\relax }{subfigure.9.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces Overall miss ratio broken down into compulsory, capacity, and conflict misses. \relax }}{11}{figure.caption.11}}
+\newlabel{fig:miss_ratio}{{9}{11}{Overall miss ratio broken down into compulsory, capacity, and conflict misses. \relax }{figure.caption.11}{}}
+\@writefile{lof}{\contentsline {subfigure}{\numberline{(a)}{\ignorespaces {Memcached --- 1 Process}}}{11}{subfigure.9.1}}
+\@writefile{lof}{\contentsline {subfigure}{\numberline{(b)}{\ignorespaces {RocksDB --- 1 Process}}}{11}{subfigure.9.2}}
+\@writefile{lof}{\contentsline {subfigure}{\numberline{(c)}{\ignorespaces {Cassandra --- 1 Process}}}{11}{subfigure.9.3}}
+\newlabel{fig:memcached_2p_assoc}{{10a}{11}{Subfigure 10a}{subfigure.10.1}{}}
+\newlabel{sub@fig:memcached_2p_assoc}{{(a)}{a}{Subfigure 10a\relax }{subfigure.10.1}{}}
+\newlabel{fig:memcached_4p_assoc}{{10b}{11}{Subfigure 10b}{subfigure.10.2}{}}
+\newlabel{sub@fig:memcached_4p_assoc}{{(b)}{b}{Subfigure 10b\relax }{subfigure.10.2}{}}
+\newlabel{fig:memcached_8p}{{10c}{11}{Subfigure 10c}{subfigure.10.3}{}}
+\newlabel{sub@fig:memcached_8p}{{(c)}{c}{Subfigure 10c\relax }{subfigure.10.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces Overall miss ratio broken down into compulsory, capacity, and conflict misses. \relax }}{11}{figure.caption.12}}
+\newlabel{fig:miss_ratio_procs}{{10}{11}{Overall miss ratio broken down into compulsory, capacity, and conflict misses. \relax }{figure.caption.12}{}}
+\@writefile{lof}{\contentsline {subfigure}{\numberline{(a)}{\ignorespaces {Memcached --- 2 Processes}}}{11}{subfigure.10.1}}
+\@writefile{lof}{\contentsline {subfigure}{\numberline{(b)}{\ignorespaces {Memcached --- 4 Processes}}}{11}{subfigure.10.2}}
+\@writefile{lof}{\contentsline {subfigure}{\numberline{(c)}{\ignorespaces {Memcached --- 8 Processes}}}{11}{subfigure.10.3}}
+\@writefile{toc}{\contentsline {section}{\numberline {9}Related Work}{11}{section.9}}
+\newlabel{sec:relatedwork}{{9}{11}{Related Work}{section.9}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {10}Conclusion}{11}{section.10}}
+\newlabel{sec:conclusion}{{10}{11}{Conclusion}{section.10}{}}
 \bibstyle{plain}
 \bibdata{references}
-\bibcite{facebook:linkbench}{1}
-\bibcite{google:tcmalloc}{2}
-\bibcite{intel:architectures}{3}
-\bibcite{facebook:rocksdb}{4}
-\bibcite{ahn:scalable}{5}
-\bibcite{ahn:pim-enabled}{6}
-\bibcite{arm:cortex-a7}{7}
-\bibcite{ausavarungnirun:mosaic}{8}
-\bibcite{barr:translation}{9}
-\bibcite{barr:spectlb}{10}
-\bibcite{basu:efficient}{11}
-\bibcite{basu:reducing}{12}
-\bibcite{bhattacharjee:large-reach}{13}
-\bibcite{bhattacharjee:shared}{14}
-\bibcite{bhattacharjee:characterizing}{15}
-\bibcite{chiueh:eliminating}{16}
-\bibcite{cox:efficient}{17}
-\bibcite{david:asynchronized}{18}
-\bibcite{ferdman:clearing}{19}
-\bibcite{gandhi:range}{20}
-\bibcite{arcangeli:transparent}{21}
-\bibcite{gao:practical}{22}
-\bibcite{gaud:large}{23}
-\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces TLB miss penalty for conventional and SpryVM.\relax }}{10}{figure.caption.10}}
-\newlabel{fig:penalty}{{8}{10}{TLB miss penalty for conventional and SpryVM.\relax }{figure.caption.10}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {9}Related Work}{10}{section.9}}
-\newlabel{sec:relatedwork}{{9}{10}{Related Work}{section.9}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {10}Conclusion}{10}{section.10}}
-\newlabel{sec:conclusion}{{10}{10}{Conclusion}{section.10}{}}
-\bibcite{gustafson:ibm}{24}
-\bibcite{haria:devirtualizing}{25}
-\bibcite{hill:case}{26}
-\bibcite{hill:aspects}{27}
-\bibcite{hsieh:accelerating}{28}
-\bibcite{transparenthugepages}{29}
-\bibcite{jouppi:architectural}{30}
-\bibcite{kanter:cavium}{31}
-\bibcite{karakostas:redundant}{32}
-\bibcite{karakostas:performance}{33}
-\bibcite{kocberber:meet}{34}
-\bibcite{kwon:coordinated}{35}
-\bibcite{lim:thin}{36}
-\bibcite{lowepower:inferring}{37}
-\bibcite{luk:pin}{38}
-\bibcite{mauerer:professional}{39}
-\bibcite{mckusick:design}{40}
-\bibcite{papadopoulou:prediction-based}{41}
-\bibcite{park:hybrid}{42}
-\bibcite{park:efficient}{43}
-\bibcite{pham:increasing}{44}
-\bibcite{pham:colt}{45}
-\bibcite{pham:large}{46}
-\bibcite{pichai:architectural}{47}
-\bibcite{picorel:near-memory}{48}
-\bibcite{power:supporting}{49}
-\bibcite{pugsley:ndc}{50}
-\bibcite{lighugetlbfs}{51}
-\bibcite{reinders:knights}{52}
-\bibcite{saulsbury:recently-based}{53}
-\bibcite{smith:comparative}{54}
-\bibcite{sun:ultrasparc}{55}
-\bibcite{taylor:tlb}{56}
-\bibcite{towles:unifying}{57}
-\bibcite{vesely:observation}{58}
-\bibcite{villavieja:didi}{59}
-\bibcite{volos:fat}{60}
-\bibcite{yoon:revisiting}{61}
+\bibcite{google:tcmalloc}{1}
+\bibcite{intel:architectures}{2}
+\bibcite{ahn:scalable}{3}
+\bibcite{ahn:pim-enabled}{4}
+\bibcite{arm:cortex-a7}{5}
+\bibcite{ausavarungnirun:mosaic}{6}
+\bibcite{barr:translation}{7}
+\bibcite{barr:spectlb}{8}
+\bibcite{basu:efficient}{9}
+\bibcite{basu:reducing}{10}
+\bibcite{bhattacharjee:large-reach}{11}
+\bibcite{bhattacharjee:shared}{12}
+\bibcite{bhattacharjee:characterizing}{13}
+\bibcite{cantin:cache}{14}
+\bibcite{chiueh:eliminating}{15}
+\bibcite{cox:efficient}{16}
+\bibcite{david:asynchronized}{17}
+\bibcite{ferdman:clearing}{18}
+\bibcite{gandhi:range}{19}
+\bibcite{arcangeli:transparent}{20}
+\bibcite{gao:practical}{21}
+\bibcite{gaud:large}{22}
+\bibcite{gustafson:ibm}{23}
+\bibcite{haria:devirtualizing}{24}
+\bibcite{hill:case}{25}
+\bibcite{hill:aspects}{26}
+\bibcite{hsieh:accelerating}{27}
+\bibcite{transparenthugepages}{28}
+\bibcite{jouppi:architectural}{29}
+\bibcite{kanter:cavium}{30}
+\bibcite{karakostas:redundant}{31}
+\bibcite{karakostas:performance}{32}
+\bibcite{kocberber:meet}{33}
+\bibcite{kwon:coordinated}{34}
+\bibcite{lowepower:inferring}{35}
+\bibcite{luk:pin}{36}
+\bibcite{mauerer:professional}{37}
+\bibcite{mckusick:design}{38}
+\bibcite{papadopoulou:prediction-based}{39}
+\bibcite{park:hybrid}{40}
+\bibcite{park:efficient}{41}
+\bibcite{pham:increasing}{42}
+\bibcite{pham:colt}{43}
+\bibcite{pham:large}{44}
+\bibcite{pichai:architectural}{45}
+\bibcite{picorel:near-memory}{46}
+\bibcite{power:supporting}{47}
+\bibcite{pugsley:ndc}{48}
+\bibcite{lighugetlbfs}{49}
+\bibcite{reinders:knights}{50}
+\bibcite{saulsbury:recently-based}{51}
+\bibcite{smith:comparative}{52}
+\bibcite{sun:ultrasparc}{53}
+\bibcite{taylor:tlb}{54}
+\bibcite{towles:unifying}{55}
+\bibcite{vesely:observation}{56}
+\bibcite{villavieja:didi}{57}
+\bibcite{volos:fat}{58}
+\bibcite{yoon:revisiting}{59}

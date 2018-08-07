@@ -232,20 +232,21 @@ for area- and power-efficient accelerators.
 \end{comment}
 
 \vspace{2mm}
-\noindent\textbf{Segments.} These approaches use variable-size segments
-instead of fixed page-based translations~\cite{karakostas:redundant,
-  park:hybrid, basu:efficient}. Unfortunately, the effectiveness of
-these techniques relies on heavy changes to the OS's allocation path
-with at-allocation contiguity generation (i.e., eager
-paging). Furthermore, direct segments require applications to
-explicitly allocate a segment at startup, while redundant memory
-mappings (RMMs)~\cite{karakostas:redundant}. While effective in many
-scenarios, their reliance on at-allocation contiguity generation means
-that there are situations on highly fragmented systems where
-segments/ranges may be difficult to generate. Additionally, because
-they are flexible in the number of contiguous translations they allow
-to be coalesced in a TLB entry, they require highly associative TLBs,
-which poses power/area overheads.
+\noindent\textbf{Segments.} These approaches use variable-size
+segments instead of fixed page-based
+translations~\cite{karakostas:redundant, park:hybrid,
+  basu:efficient}. Unfortunately, the effectiveness of these
+techniques relies on heavy changes to the OS's allocation path with
+at-allocation contiguity generation (i.e., eager paging). Furthermore,
+direct segments require applications to explicitly allocate a segment
+at startup, while redundant memory mappings
+(RMMs)~\cite{karakostas:redundant}. While effective in many scenarios,
+their reliance on at-allocation contiguity generation means that there
+are situations on highly fragmented systems where segments/ranges may
+be difficult to generate. Additionally, because they are flexible in
+the number of contiguous translations they can coalesce in a TLB
+entry, they require highly associative TLBs, which poses power/area
+overheads.
 
 \vspace{2mm}
 \noindent\textbf{Direct-mapped segments.} Recent work on devirtualized
@@ -258,7 +259,7 @@ segment. While address translation overheads are largely eliminated
 with this approach, identity mappings may be optimistic in
 highly-loaded multi-tenant cloud scenarios with memory
 fragmentation. Similar restrictions apply to other ``direct-mapped''
-approaches for propsed for near-memory accelerators
+approaches propsed for near-memory accelerators
 \cite{picorel:near-memory}. Moreover, these approaches preclude
 mechanisms like copy-on-write (COW), which are widely used in fork
 system calls, and their impact on schemes that require address bit
