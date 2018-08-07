@@ -1,5 +1,9 @@
 \begin{thebibliography}{10}
 
+\bibitem{facebook:linkbench}
+{Facebook LinkBench Benchmark}.
+\newblock \url{https://github.com/facebook/linkbench}.
+
 \bibitem{google:tcmalloc}
 {Google Performance Tools}.
 \newblock \url{https://code.google.com/p/gperftools/}.
@@ -8,6 +12,11 @@
 {Intel 64 and IA-32 Architectures Software Developer's Manual}.
 \newblock
   \url{http://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-system-programming-manual-325384.pdf}.
+
+\bibitem{facebook:rocksdb}
+{RocksDB In Memory Workload Performance Benchmarks}.
+\newblock
+  \url{https://github.com/facebook/rocksdb/wiki/RocksDB-In-Memory-Workload-Performance-Benchmarks}.
 
 \bibitem{ahn:scalable}
 Junwhan Ahn, Sungpack Hong, Sungjoo Yoo, Onur Mutlu, and Kiyoung Choi.
@@ -22,11 +31,6 @@ Junwhan Ahn, Sungjoo Yoo, Onur Mutlu, and Kiyoung Choi.
   processing-in-memory architecture.
 \newblock In {\em Proceedings of the 2015 International Symposium on Computer
   Architecture}, 2015.
-
-\bibitem{arm:cortex-a7}
-ARM.
-\newblock {Cortex-A7 Processor}.
-\newblock \url{http://www.arm.com/products/ processors/cortex-a/cortex-a7.php}.
 
 \bibitem{ausavarungnirun:mosaic}
 Rachata Ausavarungnirun, Joshua Landgraf, Vance Miller, Saugata Ghose, Jayneel
@@ -180,11 +184,6 @@ Norman~P. Jouppi.
 \newblock In {\em Proceedings of the 1989 International Symposium on Computer
   Architecture}, 1989.
 
-\bibitem{kanter:cavium}
-David Kanter.
-\newblock {Cavium Thunders Into Servers: Specialized Silicon Rivals Xeon for
-  Specific Workloads}, 2016.
-
 \bibitem{karakostas:redundant}
 Vasileios Karakostas, Jayneel Gandhi, Furkan Ayar, Adri\'{a}n Cristal, Mark~D.
   Hill, Kathryn~S. McKinley, Mario Nemirovsky, Michael~M. Swift, and Osman
@@ -215,6 +214,14 @@ Youngjin Kwon, Hangchen Yu, Simon Peter, Christopher~J. Rossbach, and Emmett
 \newblock Coordinated and efficient huge page management with ingens.
 \newblock In {\em Proceedings of the 2016 {USENIX} Symposium on Operating
   Systems Design and Implementation}, 2016.
+
+\bibitem{lim:thin}
+Kevin~T. Lim, David Meisner, Ali~G. Saidi, Parthasarathy Ranganathan, and
+  Thomas~F. Wenisch.
+\newblock Thin servers with smart pipes: designing soc accelerators for
+  memcached.
+\newblock In {\em Proceedings of the 2013 International Symposium on Computer
+  Architecture}, 2013.
 
 \bibitem{lowepower:inferring}
 Jason Lowe-Power.
@@ -342,12 +349,6 @@ George Taylor, Peter Davies, and Michael Farmwald.
 \newblock The tlb slice---a low-cost high-speed address translation mechanism.
 \newblock In {\em Proceedings of the 1990 International Symposium on Computer
   Architecture}, 1990.
-
-\bibitem{towles:unifying}
-Brian Towles, J.~P. Grossman, Brian Greskamp, and David~E. Shaw.
-\newblock Unifying on-chip and inter-node switching within the anton 2 network.
-\newblock In {\em Proceedings of the 2014 International Symposium on Computer
-  Architecture}, 2014.
 
 \bibitem{vesely:observation}
 J{\'{a}}n Vesel{\'{y}}, Arkaprava Basu, Mark Oskin, Gabriel~H. Loh, and
