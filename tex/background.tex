@@ -50,17 +50,15 @@ our design:
           hand-managed data copying and marshaling. Ideally, we wish
           to preserve all the benefits typically associated with VM
           like memory protection and isolation, and flexibility of
-          sharing parts of the address space among processes, in a
-          manner that is transparent and familiar to programmers.
+          sharing parts of the address space among processes.
 
         \item \textbf{Flexibility.} Traditional VM imposes no
           restrictions on virtual-to-physical page mapping
           relationships. This is valuable to support any level of
           system memory fragmentation, application multi-tenancy,
           memory allocation strategies transparent to programmers, as
-          well as the integration of features such as demand-paging
-          and copy-on-write (CoW). We wish to continue supporting this
-          flexibility.
+          well as the integration of features such as paging and
+          copy-on-write (CoW).
 
         \item \textbf{Safety and Security.} Direct access to physical
           memory is generally not acceptable nor desirable. Such
@@ -69,19 +67,15 @@ our design:
           across different processes with proper
           isolation~\cite{haria:devirtualizing}. Furthermore, the
           entropy in address mapping must be as high as possible to
-          reduce the vulnerability to security attacks.
+          reduce vulnerability to security attacks.
 
         \item \textbf{Performance and Efficiency.} Crucially, all the
           goals listed thus far must be achievable without excessive
           performance or area overheads in hardware. In other words,
-          address translation, the central mechanism on which VM's
-          benefits rest, must provide near-zero performance overheads
-          regardless of application working set and locality patterns,
-          and must do so under tight area and power constraints. In
-          the context of accelerators, the area and power budgets are
-          even tighter because custom hardware is only integrated if
-          it provides large performance benefits with minimal
-          resources.
+          address translation must provide near-zero performance
+          overheads regardless of application working set and locality
+          patterns, and must do so under tight area and power
+          constraints (particularly for area-constrained accelerators). 
 
 
 \end{itemize}
