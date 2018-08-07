@@ -49,7 +49,7 @@ contiguity that OSes may serendipitously generate \cite{pham:colt,
 successful ones are those that rely on changes to the OS's memory
 allocation path so that it produces vast swaths of translation
 contiguity \cite{haria:devirtualizing}. Unfortunately, these
-techniques, along with the similar ones proposed for CPUs
+techniques, along with similar ones proposed for CPUs
 \cite{basu:efficient, gandhi:range}, sacrifice OS flexibility to
 generate translation contiguity by requiring, for example, identity
 mapping where virtual and physical addresses must be identical (which
@@ -77,16 +77,15 @@ address uniquely identifies the region of the physical address space
 memory region is identified, SpryVM performs translation on the memory
 side, using local per-region TLBs situated next the corresponding
 memory region.  In doing so, SpryVM solves two key problems. First, it
-facilitates area-efficient TLBs with high hit rates, because separate
+facilitates area-efficient TLBs with high hit rates because separate
 TLBs are responsible for disjoint parts of the physical address space,
 reducing their reach requirements. Second, it dramatically cuts miss
 penalties by co-locating translation and data in TLB's physical
-partition, overlapping translation with data fetch. Importantly, we
-also show that the OS support necessary to achieve this approach is
-compatible with existing kernels and does not sacrifice flexibility in
-the mould of prior work \cite{basu:efficient,
-  haria:devirtualizing}. To showcase spryVM's effectiveness, we
-contribute the following:
+partition, overlapping translation with data fetch. We also show that
+the OS support necessary to achieve this approach is compatible with
+existing kernels and does not sacrifice flexibility in the mould of
+prior work \cite{basu:efficient, haria:devirtualizing}. To showcase
+spryVM's effectiveness, we contribute the following:
 
 \noindent $\bullet$ A study of the VM associativity needs of modern
 server workloads. We are inspired by previous work on caches, which
@@ -101,7 +100,7 @@ that these changes are readily implementable. Moreover, we selectively
 apply set associativity to {\it regions} of the virtual address space
 that benefit from this approach. In so doing, we leave
 full-associativity for regions where it is better for performance, and
-retain cross-compatibility with existing systems \djordje{we don't actually talk about how to implement this selective associativity reduction. And it doesn't sound trivial IMO}.
+retain cross-compatibility with existing systems 
 
 \noindent $\bullet$ SpryVM, a translation mechanism which restricts VM
 associativity so that a virtual address uniquely identifies a memory
