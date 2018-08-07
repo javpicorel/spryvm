@@ -1,6 +1,38 @@
 \section{Experimental Methodology}
 \label{sec:methodology}
 
+\begin{table}
+        \begin{center}
+                \caption{Server Workload description.}
+                \scalebox{0.7}
+                \small
+                \vspace{0.01in}
+                \label{table:workload}
+                \renewcommand{\arraystretch}{1.0}
+                {\scriptsize
+                        \begin{tabular}{ l  l }
+                                \toprule
+                                {\bf Workload}                  & {\bf Description}  \\
+                                \toprule
+                                \multirow{1}{*}{Cassandra}      &  NoSQL data store running Yahoo's YCSB. \\
+                                \cmidrule{2-2}
+                                \multirow{1}{*}{Memcached}      & Cache store running Twitter-like workload~\cite{lim:thin}. \\
+                                \cmidrule{2-2}
+                                \multirow{1}{*}{TPC-H}          & TPC-H on MonetDB column store (Q1-Q21). \\
+                                \cmidrule{2-2}
+                                \multirow{1}{*}{TPC-DS}         & TPC-DS on MonetDB column store (Queries of~\cite{kocberber:meet}). \\
+                                \cmidrule{2-2}
+                                \multirow{1}{*}{MySQL}          & SQL DBMS running Facebook's LinkBench~\cite{facebook:linkbench}. \\
+                                \cmidrule{2-2}
+                                \multirow{1}{*}{RocksDB}        &  Store engine running Facebook benchmarks~\cite{facebook:rocksdb}. \\ %a canonical uniform request distribution. \\
+
+                                \bottomrule
+                        \end{tabular}
+                } %small
+        \end{center}
+        \vspace{-0.1in}
+\end{table}
+
 Like most recent work on VM~\cite{basu:efficient, pham:increasing, pham:colt, bhattacharjee:large-reach, barr:spectlb, papadopoulou:prediction-based, saulsbury:recently-based}, we use a combination of real-hardware measurements, trace-driven functional simulation, analytical models, and linux kernel prototypes.
 
 \subsection{Workloads}
@@ -16,7 +48,7 @@ To study the TLB behavior at very large datasets (128GB), we use  data traversal
 \subsection{TLB studies}
 To study the impact on memory size on  TLB performance (Figure~\ref{fig:pagewalks}), we perform measurements on real hardware using the \textit{perf} tool during a 10min execution window. To study the impact of TLB size, we collect memory traces for 32GB and 128GB datasets using Pin~\cite{luk:pin}, with each trace containing 1B instrutions, which is more than enough for the TLB sensitivity experiments up to a few thousand entries. We use the traces to probe a set-associative TLB structure while varying its size and organization, after validating the baseline TLB model against the measurements on real hardware. 
 
-\subsection{Associativity}
+\subsection{Limits of Associativity Reduction}
 
 %As modern systems place no restrictions on the virtual-to-physical mapping, address translation is on the critical path of every memory access. To break translation and data path serialization, prior work proposes to eliminate associativity and enforce a direct mapping between virtual pages and page frames~\cite{picorel:near-memory, haria:devirtualizing}. As every virtual page can only map to one single location, translation and data paths are independent and can proceed in parallel.
 
@@ -54,93 +86,6 @@ We collect the traces on a dual-socket server CPU (Intel Xeon E5-2680 v3) with $
 
 \subsection{Performance}
 
-%%%% THINK WHETHER TO ADD IT BACK
-%This study does not cover the problem of partitioning applications into CPU-side and memory-side execution, or specializing the latter in hardware, or interfacing and synchronizing the two executions~\cite{gao:practical, ahn:scalable, balasubramonian:near-data}. Such problems are out of the scope. To avoid such problems we evaluate the applications running entirely on the MPUs.
 
-Full-system simulation for TLB misses and page faults is not practical, as these events occur less frequently than other micro-architectural events (e.g., branch mispredictions). Hence, we resort to the CPI models often used in VM research~\cite{papadopoulou:prediction-based, saulsbury:recently-based, bhattacharjee:shared} to sketch the performance gains. These prior studies report performance as the reduction in the translation-related cycles per instruction. As CPI components are additive, this metric is valid irrespective of the workload's baseline CPI. We further strengthen this methodology by studying the CPI savings on all memory operations, not only on translation (as we overlap translation and data fetch operations). Our model thus captures both the translation and data fetch cycles, which together constitute the largest fraction of the total CPI in data structure traversals~\cite{picorel:near-memory}. The CPI is measured by applying fixed penalties to the TLB miss rates obtained with the PIN traces.
+Full-system simulation for TLB misses and page faults is not practical, as these events occur less frequently than other micro-architectural events (e.g., branch mispredictions). Hence, we resort to the CPI models often used in VM research~\cite{papadopoulou:prediction-based, saulsbury:recently-based, bhattacharjee:shared} to sketch the performance gains. These prior studies report performance as the reduction in the translation-related cycles per instruction. As CPI components are additive, this metric is valid irrespective of the workload's baseline CPI. We further strengthen this methodology by studying the CPI savings on all memory operations, not only on translation (as we overlap translation and data fetch operations). Our model thus captures both the translation and data fetch cycles, which together constitute the largest fraction of the total CPI in data structure traversals~\cite{picorel:near-memory}. The CPI is measured by applying fixed penalties to the TLB miss rates obtained with the PIN traces. 
 
-\subsection{Simulation Parameters}
-Following prior work on accelerators~\cite{gao:practical, ahn:scalable, pugsley:ndc}, we model the MPU cores after ARM Cortex A7~\cite{arm:cortex-a7}. We provision the baseline with a high-end MMU similar to prior work~\cite{haria:devirtualizing}, with multi-level TLBs and MMU caches~\cite{bhattacharjee:large-reach, barr:translation}. We consider perfect MMU caches for the baseline to avoid penalizing the hiearchical page table strucre; our inverted page table is able to achieve one memory reference per page walk. We assume 48-bit virtual and physical addresses. The baseline MMU supports $4$KB and $2$MB pages, whereas SpryVM only employs $4$KB pages. 
-
-%We model our 3D memory stack following the organization of the Micron's Hybrid Memory Cube with eight $8$Gb DRAM layers and 16 vaults~\cite{micron:hmc}. We conservatively estimate DRAM timing parameters from publicly available information and research literature~\cite{gao:practical}. For spryVM, we employ a conventional two-level TLB hierarchy. The SRAM overhead per memory chip is less than 256KB (which is partitioned across vaults) for an area of $0.3mm^2$ in $22$nm, corresponding to less than 0.2\% of the area of an $8$Gb DRAM die (i.e., $226mm^2$~\cite{shevgoor:quantifying}). As there are 16 memory partitions (or vaults), each of $512$MB, spryVM provides a VM associativity of $128$K ways, making the number of page faults virtually identical to full associativity.
-
-%We conservatively assume that page faults always involve SSD IO, taking $32\mu{}s$ to resolve~\cite{chou:cameo}. This parameter is only important for out-of-memory workloads. Memory-resident workloads only suffer a page fault the first time a page is accessed. Table~\ref{table:system} summarizes all system parameters.
-
-%%%%%%%%%%% Table: Methodology %%%%%%%%%%%
-\begin{table}
-	\begin{center}
-		\caption{System parameters.}
-		\scalebox{0.7}
-		\small
-		\vspace{0.01in}
-		\label{table:system}
-		\renewcommand{\arraystretch}{1.0} 
-		{\scriptsize
-			\begin{tabular}{ l  l }
-				%\hline
-				\toprule
-				{\bf MPU logic}                  & {\bf Description}  \\
-				%\hline
-				%\hline
-				\toprule
-				\multirow{1}{*}{Cores}                       &  Single-issue, in-order, 2GHz \\ 
-				%\cmidrule{2-2}
-				%\multirow{1}{*}{L1-I/D}                       &  32KB, 2-way, 64B block, 2-cycle load-to-use \\ 
-				\toprule
-				{\bf MMU}                  & {\bf Description}  \\
-				\toprule
-				
-				%\hline
-				
-				%\multirow{2}{*}{Core Types}    & In-order (Cortex A8-like): 2-wide \\
-				%		                               &  OoO (Xeon-like): 4-wide, 128-entry ROB \\
-				%\hline
-				\multirow{3}{*}{TLB}	& $4$KB pages: 128-entry, fully associative \\
-				& $2$MB pages: 128-entry, fully associative \\
-				%& $1$GB pages: 4-entry, fully associative \\
-				%\cmidrule{2-2}
-				%\multirow{2}{*}{L1-I/D Caches}	&	32KB, split, 2 ports, 64B blocks, 10 MSHRs, \\
-				%							& 2-cycle load-to-use latency \\
-				%\multirow{1}{*}{STLB} 			& 4KB/2MB pages: 1024-entry, 8-way associative \\ 
-				
-				%\hline
-				\cmidrule{2-2}
-				\multirow{1}{*}{MMU Caches} 	&	Perfect \\ 
-				
-				%			\cmidrule{2-2}
-				%			\multirow{1}{*}{Walker} 	&	Two in-flight page walks \\ 
-				
-				\toprule
-				{\bf Memory}                  & {\bf Description}  \\
-				\toprule
-				
-				
-				\multirow{1}{*}{Channel}                                   &  4Gbit chips, 4GB per channel, 4 channels per socket \\         
-				\cmidrule{2-2}
-				\multirow{1}{*}{Sockets}                             &  4- and 8-socket machines in mesh interconnect\\       
-				\cmidrule{2-2}
-				\multirow{2}{*}{DRAM}                                &  $t_{CK} = 1.6$ns, $t_{RAS} = 22.4$ns, $t_{RCD} = 11.2$ns \\
-				&  $t_{CAS} = 11.2$ns, $t_{WR} = 14.4$ns, $t_{RP} = 11.2$ns \\ 
-				\cmidrule{2-2}
-				\multirow{1}{*}{Serial links}                             &  2B bidirectional, 10GHz, 30ns per hop~\cite{kanter:cavium, towles:unifying} \\           
-				\cmidrule{2-2}
-				\multirow{1}{*}{NoC}                             &  Mesh, 128-bit links, 3 cycles per hop \\
-				%\hline
-				
-				\toprule
-				{\bf spryVM}                  & {\bf Description}  \\
-				\toprule
-				\multirow{1}{*}{TLB}	& $4$KB pages: 128-entry, fully associative \\
-				%\cmidrule{2-2}
-				%\multirow{2}{*}{L1-I/D Caches}	&	32KB, split, 2 ports, 64B blocks, 10 MSHRs, \\
-				%							& 2-cycle load-to-use latency \\
-				%\multirow{1}{*}{STLB} 			& 4KB pages: 1024-entry, 8-way associative \\ 
-				
-				
-				\bottomrule
-				%\hline
-			\end{tabular}
-		} %small
-	\end{center}
-	\vspace{-0.1in}
-\end{table}
