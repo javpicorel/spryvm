@@ -11,7 +11,11 @@
 
 \begin{table*}[]
 \centering
-\caption{Comparison of SpryVM with previous approaches for reducing virtual memory overhead.}
+\caption{Comparison of SpryVM with previous approaches for reducing
+  virtual memory overhead. For protection/security, we show
+  tick/cross-marks for each of those cases. Coarse-grained protection
+  is indicated with a cross, as is lower entropy in virtual address
+  bits.}
 \label{table:vms}
 \begin{tabular}{
 >{\columncolor[HTML]{FFFFFF}}l |
@@ -20,13 +24,13 @@
 >{\columncolor[HTML]{FFFFFF}}c |
 >{\columncolor[HTML]{FFFFFF}}c |}
 \cline{2-5}
-\multicolumn{1}{c|}{\cellcolor[HTML]{FFFFFF}}                           & Programmability  & Performance and Efficiency & Flexibility & Protection/Security \\ \hline
-\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Multi-page mappings~\cite{pham:colt, pham:increasing}}       & \cmark              & \xmark                          & \cmark           & \cmark      \\ \hline
-\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Transparent Huge Pages~\cite{transparenthugepages}}    & \cmark               & \xmark                          & \cmark           & {\small \color{red} coarse protection}      \\ \hline
-\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Libhugetlbfs~\cite{lighugetlbfs}}              & \xmark                & \xmark                          & \cmark           & {\small \color{red} coarse protection}      \\ \hline
-\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Direct Segments~\cite{basu:efficient}}           & \xmark              & \cmark                          & \xmark           & {\color{red} coarse protection, ASLR?}      \\ \hline
-\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Redundant Memory Mappings~\cite{karakostas:redundant}}  & \cmark             & \xmark                          & \xmark           & {\color{red} coarse protection, ASLR?}      \\ \hline
-\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Direct-mapped Mappings~\cite{picorel:near-memory, haria:devirtualizing}}         & \cmark       & \cmark                          & \xmark           & {\color{red} coarse protection, ASLR?}      \\ \hline
+\multicolumn{1}{c|}{\cellcolor[HTML]{FFFFFF}}                           & Programmability  & Performance and Efficiency & Flexibility & Fine Protection/Security \\ \hline
+\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Multi-page mappings~\cite{pham:colt, pham:increasing}}       & \cmark              & \xmark                          & \cmark           & \cmark \ \cmark     \\ \hline
+\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Transparent Huge Pages~\cite{transparenthugepages}}    & \cmark               & \xmark                          & \cmark           & \xmark \ \cmark      \\ \hline
+\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Libhugetlbfs~\cite{lighugetlbfs}}              & \xmark                & \xmark                          & \cmark           & \xmark \ \cmark      \\ \hline
+\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Direct Segments~\cite{basu:efficient}}           & \xmark              & \cmark                          & \xmark           & \xmark \ \xmark      \\ \hline
+\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Redundant Memory Mappings~\cite{karakostas:redundant}}  & \cmark             & \xmark                          & \xmark           & \xmark \ \xmark      \\ \hline
+\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Direct-mapped Mappings~\cite{picorel:near-memory, haria:devirtualizing}}         & \cmark       & \cmark                          & \xmark           & \xmark \ \xmark     \\ \hline
 \multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}SpryVM (Our Approach)}                    & \cmark                       & \cmark               & \cmark           & \cmark      \\ \hline
 \end{tabular}
 \end{table*}
