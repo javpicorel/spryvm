@@ -83,8 +83,8 @@ our design:
 
 \subsection{Shortcomings of Modern MMU Hardware}
 The ever-increasing memory needs of modern software has given rise to
-scale-out systems with large memories that give low-latency access to
-data \cite{ferdman:clearing, karakostas:performance, volos:fat,
+scale-out systems with large memories with low-latency access to data
+\cite{ferdman:clearing, karakostas:performance, volos:fat,
   basu:efficient}. The advent of increasing memory sizes is
 problematic for both address translation reach and latency, as we next
 discuss.
@@ -93,39 +93,37 @@ discuss.
 Several studies have established the difficulties of building TLBs
 with sufficient capacity or {\it reach} to cover increasing physical
 memory sizes \cite{basu:efficient, haria:devirtualizing,
-  pham:colt}. The common approach adopted by industry has been to
-aggressively grow TLBs -- e.g., Intel has been doubling CPU TLBs from
-Sandybridge to Skylake architectures -- and pay the cost of increased
+  pham:colt}. Industry's approach has been to aggressively grow TLBs
+-- e.g., Intel has been doubling CPU TLBs from Sandybridge to Skylake
+architectures -- and pay the cost of increased
 area/power. Nevertheless, despite TLBs with thousands of entries, the
 poor locality of access in emerging server workloads make TLB miss
 rates problematic. Figure \ref{fig:pagewalks} captures this effect by
 quantifying TLB miss rates as we vary the memory footprint of several
 of our workloads on an Intel Broadwell chip with 1.5K-entry L2 TLBs
 (see Section \ref{sec:methodology} for details). Despite Broadwell's
-large thousand-entry TLBs, TLB miss rates imcrease dramatically with
+large thousand-entry TLBs, TLB miss rates increase dramatically with
 larger memory footprints, corroborating results from prior work
-\cite{basu:efficient}. Naturally, this poses big problems with the
-advent of accelerators, which need their own TLBs. So far,
-accelerators like GPUs have been equipped with massive
-multi-thousand-entry TLBs too \cite{vesely:observation,
-  lowepower:inferring}, but there is widespread consensus that this
-approach is not viable for other more area-constrained accelerators
-\cite{haria:devirtualizing, picorel:near-memory}. Perhaps even more
-troublingly, while other techniques like large pages can offer partial
-relief in some cases, they present their own set of challenges because
-they offer only coarse-grained protection \cite{pham:large}, they can
-be hard to form on fragmented systems \cite{kwon:coordinated}, they
-have poor NUMA support \cite{gaud:large}, and they require complex TLB
-hardware for concurrent page size support \cite{cox:efficient}. For
-all these reasons, transparent support for large pages in OSes like
-Linux only apply to 2MB pages (and not other sizes like 1GB) even
-after decades of research \cite{arcangeli:transparent}.  Practically,
-vendors implement multi-thousand-entry TLBs for the worst-case
-scenario when base 4KB pages dominate. For the successful adoption, we
-concur with recent work \cite{pham:colt, basu:efficient,
-  karakostas:redundant, haria:devirtualizing} that alternate
-approaches (complementary to large pages) to scalable TLB design are
-needed.
+\cite{basu:efficient}. Naturally, this poses problems for accelerator
+TLBs; for example, GPUs integrate massive multi-thousand-entry TLBs
+too \cite{vesely:observation, lowepower:inferring}, but there is
+widespread consensus that this approach is not viable for other more
+area-constrained accelerators \cite{haria:devirtualizing,
+  picorel:near-memory}. Perhaps even more troublingly, while other
+techniques like large pages can offer partial relief in some cases,
+they present their own set of challenges because they offer only
+coarse-grained protection \cite{pham:large}, they can be hard to form
+on fragmented systems \cite{kwon:coordinated}, they have poor NUMA
+support \cite{gaud:large}, and they require complex TLB hardware for
+concurrent page size support \cite{cox:efficient}. For all these
+reasons, transparent support for large pages in OSes like Linux only
+apply to 2MB pages (and not other sizes like 1GB) even after decades
+of research \cite{arcangeli:transparent}.  Practically, vendors
+implement multi-thousand-entry TLBs for the worst-case scenario when
+base 4KB pages dominate. For the successful adoption, we concur with
+recent work \cite{pham:colt, basu:efficient, karakostas:redundant,
+  haria:devirtualizing} that alternate approaches (complementary to
+large pages) are needed.
 
 \begin{comment}
 As the memory capacity keeps increasing, TLB hit ratios decrease
@@ -186,11 +184,11 @@ with dedicated MMU caches to accelerate page table walks
 even the presence of MMU caches cannot mitigate high page table walk
 latencies in the context of accelerators. The key culprit is that
 heterogeneous sytems with accelerators are usually integrated with
-NUMA memories and require long-latency lookups across memory chips and
-partitions. Even perfect MMU caches require at least one memory
-reference per page table walk and recent work shows that this single
-reference can dramatically exacerbate address translation costs for
-accelerators \cite{picorel:near-memory}.
+NUMA memories and require long-latency lookups across sockets/chips,
+etc. Even perfect MMU caches require at least one memory reference per
+page table walk and recent work shows that this single reference can
+dramatically exacerbate address translation costs for accelerators
+\cite{picorel:near-memory}.
 
 
 \subsection{Prior Approaches}
