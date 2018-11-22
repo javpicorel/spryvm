@@ -1,35 +1,30 @@
-\documentclass[pageno]{jpaper}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% This is the template for submission to ISCA 2019
+% The cls file is a modified from  'sig-alternate.cls'
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%replace XXX with the submission number you are given from the ASPLOS submission site.
-\newcommand{\asplossubmissionnumber}{329}
-
+\documentclass{sig-alternate}
 \usepackage{mathptmx} % This is Times font
-\usepackage[table]{xcolor} % xcdraw causes compilation error
-%\usepackage{amssymb}
-\usepackage{pifont}
 
-\newcommand{\cmark}{{\color{green}\ding{51}}}%
-\newcommand{\xmark}{{\color{red}\ding{55}}}%
-
+\newcommand{\ignore}[1]{}
 \usepackage{fancyhdr}
 \usepackage[normalem]{ulem}
-%\usepackage[hyphens]{url}
-\usepackage[sort,nocompress]{cite}
-%\usepackage[final]{microtype}
-\usepackage{flushend}
+\usepackage[hyphens]{url}
+\usepackage{microtype}
+
+
+
 \usepackage{subfig}
-\usepackage{graphicx}
-\usepackage{tikz}
 \usepackage{algorithm}
 \usepackage[noend]{algpseudocode}
+\usepackage{comment}
+\usepackage[table]{xcolor} % xcdraw causes compilation error
+\usepackage{pifont}
 
-\def\UrlBreaks{\do\/\do-\do_}
-\usepackage[hyphenbreaks]{breakurl}
-\usepackage{hyperref}
-%\usepackage{comment}
 
-% Always include hyperref last
-%\usepackage[bookmarks=true,breaklinks=true,letterpaper=true,colorlinks,linkcolor=black,citecolor=blue,urlcolor=black]{hyperref}
+\newcommand{\cmark}{{\color{green}\ding{51}}}
+\newcommand{\xmark}{{\color{red}\ding{55}}}
+
 
 \newcommand\javier[1]{\noindent{\color{cyan} {\bf \fbox{Javier}} {\it#1}}}
 \newcommand\abhishek[1]{\noindent{\color{green} {\bf \fbox{Abhishek}} {\it#1}}}
@@ -38,28 +33,41 @@
 \newcommand\chart[1]{\noindent{\color{cyan} {\bf \fbox{Chart}} {\it#1}}}
 
 
-
 \usepackage{booktabs}
 \usepackage{multirow}
 
-\sloppy
+% Always include hyperref last
+\usepackage[bookmarks=true,breaklinks=true,letterpaper=true,colorlinks,linkcolor=black,citecolor=blue,urlcolor=black]{hyperref}
 
+% Ensure letter paper
+\pdfpagewidth=8.5in
+\pdfpageheight=11in
 
+%%%%%%%%%%%---SETME-----%%%%%%%%%%%%%
+\newcommand{\iscasubmissionnumber}{NaN}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\newcommand*\circled[1]{\tikz[baseline=(char.base)]{
-            \node[shape=circle,draw,inner sep=0.5pt] (char) {#1};}}
+\fancypagestyle{firstpage}{
+  \fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+  \fancyhead[C]{\normalsize{ISCA 2019 Submission
+      \textbf{\#\iscasubmissionnumber} \\ Confidential Draft: DO NOT DISTRIBUTE}}
+  \fancyfoot[C]{\thepage}
+}
+
+\pagenumbering{arabic}
+
+%%%%%%%%%%%---SETME-----%%%%%%%%%%%%%
+\title{Memory-Side Address Translation for Set-Associative Virtual Memory}
+\author{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{document}
-
-%\title{
-%Instructions for Submission to ASPLOS 2018}
-
-\title{Set-Associative Virtual Memory}
-
-\date{}
 \maketitle
+\thispagestyle{firstpage}
+\pagestyle{plain}
 
-\thispagestyle{empty}
+
 
 \input{tex/abstract}
 \input{tex/introduction}
@@ -76,11 +84,9 @@
 \input{tex/conclusion}
 
 
-
-\bibliographystyle{plain}
 \bibliography{references}
-%\bibliographystyle{IEEEtranS}
-%\bibliography{refs}
+\bibliographystyle{ieeetr}
+
 
 
 \end{document}
