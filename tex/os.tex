@@ -26,44 +26,65 @@ NUMA nodes. Therefore SpryVM can be implemented in a manner that
 reuses {\it membind} code paths such that each memory set is treated
 as a NUMA node. Note that this implementation is only possible because SpryVM
 reduces associativity only \textit{by a small factor}, as opposed to reducing it
-\textit{to a small number} (e.g., dirrect mapped or 4-way associative~\cite{picorel:near-memory}). 
+\textit{to a small number} (e.g., direct mapped or 4-way associative~\cite{picorel:near-memory}). 
 
 
 \vspace{2mm}
-\noindent {\bf Anonymous and file-backed pages.} Our SpryVM
-implementation has to treat anonymous and file-backed pages
-differently because the former is generally private to a process,
-while the latter can (and is) often shared among processes.
+\noindent {\bf Virtual page and physical page allocation.} In our OS design, 
+the key issue we need to solve is that how to ensure each virtual page 
+maps to a physical page in the right memory set based on our MEM\_SET\_INDEX\_HASH() function. 
+The issue can happen at two situations: 1) a virtual page maps to a 
+physical page that is not present in the memory, which mostly happens
+when this physical page is \textit{private} and a subsequent
+page fault will allocate a physical page to this virtual page; 
+2) a virtual page maps to a physical page that is already present in the memory,
+which means either this physical page is \textit{shared} between processes via this
+virtual page or this virtual page is a \textit{remap} of this physical page.
+The principle of the solution is to adjust virtual pages or physical pages 
+according to the existing memory information. If no physical page is present 
+in the memory, we allocate physical pages according to the memory set index 
+based on virtual addresses. If a physical page is present, we assign a virtual 
+address that maps to the memory set, which the existing physical page 
+resides, based on our memory set index scheme. Concrete examples are discussed below:
 
-Consider the case of anonymous pages. On page faults, the OS
-must calculate a corresponding NUMA node ID when allocating physical
-pages. To do this, we embed logic in the kernel to apply our hash
-function on the faulting virtual page before obtaining a free page
-from the NUMA node identified by the hash function. We found it most
-efficient to embed this logic in Linux's \verb|alloc_pages_vma()|,
-which serves as the entry point of all user space allocations. Within
-this function, we calculate a memory set index (stored in the NUMA
-node mask), derive the desired zone list, and pass this information to
-the page allocation function, (\verb|__alloc_pages_nodemask()|). From
-this point onwards, we recycle existing Linux code paths for anonymous
-pages. The basic operations are shown in
-Algorithm~\ref{alg:anonymous}.
+\begin{itemize}
+  \item \textbf{Private physical pages.} In this case, because no physical page is in the memory
+  before any page fault, we have no restriction on virtual address assignment. 
+  This means we use Linux’s existing \verb|get_unmap_area|() kernel function to 
+  get a free virtual address region and assign it to a user space application whenever
+  the user space application request virtual address space regions via malloc or such.
+  When page faults happen, since there is no corresponding physical page in the memory, 
+  we first calculate the memory set index from the faulting virtual address and allocate 
+  a physical page, using Linux's NUMA page allocation function, from the corresponding 
+  memory set. This is shown in Algorithm~\ref{alg:private}.
+  
+  \item \textbf{Shared physical pages.} In this case, because a physical page is already 
+  present in a specific memory set, we have to restrict our virtual address assignment. 
+  This means after we get a free virtual address region upon a request from user space applications
+  by using the kernel function \verb|get_unmap_area|(), we need to adjust the starting
+  and ending addresses of the virtual address region, so that all the virtual pages 
+  in the region map to the existing physical pages and conform to our MEM\_SET\_INDEX\_HASH()
+  function. For example, in a system with 4 memory sets, whose physical page regions are [P0...P9], 
+  [P10...P19], [P20...P29], [P30...P39], and our memory set index hash function is VPN mod 4.
+  At the beginning, a process Proc1 maps its virtual memory region [$V3_{Proc1}$ ... $V7_{Proc1}$] to a group of 
+  physical pages [P30, P0, P10, P20, P31] from memory sets 3, 0, 1, 2, 3, respectively. 
+  Next a second process Proc2 is calling \verb|mmap|() to 
+  share the same set of physical pages with P1. At that moment, the \verb|get_unmap_area|() 
+  kernel function can give [$V5_{Proc2}$ ... $V9_{Proc2}$] to P2 as its virtual memory region pointing to the
+  shared physical pages. But this virtual memory region maps to a sequence of physical pages from memory
+  sets 1, 2, 3, 0, 1, which does not match the memory set sequence of the existing physical pages.
+  In that case, inside the kernel, we need to adjust the region 
+  from [$V5_{Proc2}...V9_{Proc2}$] to [$V7_{Proc2}...V11_{Proc2}$] or other analogous regions, so that the adjusted
+  virtual memory region maps to a sequence of physical pages from memory sets 3, 0, 1, 2, 3,
+  which is the same sequence as the shared physical pages.
 
-File-backed pages, on the other hand, present more subtle
-implementation challenges because they can be shared among different
-processes. Because of this, there is no guarantee that multiple
-processes use the same virtual addresses to access these pages,
-meaning that the output of our hash function may differ depending on
-the faulting process. Consequently, we use the page offset in a file
-as the memory set ID for each page. The rationale is that page offsets
-indicate the position of the page residing in the file to which it
-maps. Therefore, using page offsets enables us to allocate file-backed
-pages from different memory sets via our index scheme. We do need to
-adjust virtual address assignment in the kernel (via
-\verb|get_unmapped_area()|) to accomplish this however. We do this by
-aligning the beginning of the given virtual address to match memory
-set 0's index. Thus, each process maps files starting from memory set
-0. These algorithms are shown in Algorithm~\ref{alg:file-backed}.
+  \item \textbf{Remapped physical pages.} This case is almost the same as the shared memory case, 
+  since it basically assigns a new virtual address region to an existing set of physical pages. 
+  Thus, we will first find a suitable virtual memory region, then adjust the virtual address region
+  that it maps to the same memory set sequence of the group of existing physical pages and return
+  it to the userspace application, which asks for memory remapping via \verb|mremap|() system call.
+
+\end{itemize}
 
 
 \vspace{2mm}
@@ -128,7 +149,7 @@ All these modifications are very simple and not intrusive to operating systems. 
 \end{comment}
 
 \begin{algorithm}
-  \caption{Anonymous page allocation scheme}\label{alg:anonymous}
+  \caption{Physical page allocation scheme.}\label{alg:private}
   \begin{algorithmic}[1]
     \Procedure{alloc\_pages\_vma}{\textbf{addr\_t} vaddr}
     \State $\textit{mem\_set\_id} \gets \verb|MEM_SET_INDEX_HASH|(\mbox{vaddr})$
@@ -138,19 +159,15 @@ All these modifications are very simple and not intrusive to operating systems. 
   \end{algorithmic}
 \end{algorithm}
 
+\begin{comment}
 \begin{algorithm}
-  \caption{File-backed page allocation scheme}\label{alg:file-backed}
+  \caption{Virtual page assignment scheme}\label{alg:shared_or_remap}
   \begin{algorithmic}[1]
-    \Procedure{alloc\_page\_cache}{\textbf{pgoff\_t} page\_offset}
-    \State $\textit{mem\_set\_id} \gets \mbox{page\_offset}$
-    \State $\textit{page} \gets \verb|alloc_pages_node|(\mbox{vaddr}, \mbox{mem\_set\_id})$
-    \State \textbf{return} \textit{page}
-    \EndProcedure
-
-    \Procedure{get\_unmapped\_area}{\textbf{size\_t} mmap\_size, \textbf{pgoff\_t} page\_offset}
+    \Procedure{get\_unmapped\_area}{\textbf{size\_t} mmap\_size, \textbf{int} mem\_set\_idx}
     \State $\textit{vaddr} \gets \verb|FIND_HOLE_IN_VSPACE|(\mbox{mmap\_size})$
-    \State $\textit{vaddr} \gets \verb|ALIGN_TO_OFFSET|(\mbox{vaddr}, \mbox{page\_offset})$
+    \State $\textit{vaddr} \gets \verb|ALIGN_TO_OFFSET|(\mbox{vaddr}, \mbox{mem\_set\_idx})$
     \State \textbf{return} \textit{vaddr}
     \EndProcedure
   \end{algorithmic}
 \end{algorithm}
+\end{comment}
