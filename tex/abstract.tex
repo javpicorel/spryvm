@@ -1,24 +1,27 @@
 \begin{abstract}
 
-As the computing industry embraces heterogeneity, a key research
-challenge is the question of how to integrate hardware accelerators in
-modern platforms without impacting the conventional virtual memory
+As the computing industry embraces increasingly large and heterogeous systems, 
+a key research challenge is the question of how to integrate hardware accelerators in
+modern platforms without impacting the conventional virtual memory (VM)
 abstractions modern complex software stacks rely on. Unfortunately, VM
 support for accelerators is fundamentally different from CPU's due to
-prohibitive TLB reach requirements, long-latency page table walks, and
-tight area and power budgets. Moreover, recent proposals for
+prohibitive TLB reach requirements, tight area and power budgets, and increasing
+latency of page table walks. Moreover, recent proposals for
 accelerator VM break conventional VM abstractions with intrusive OS
 changes to facilitate address translation.
 
-We propose spryVM, a set-associate VM for in-memory workloads. We show
-that maintaining the portion of the address space accelerators operate
-on set-associatively has little impact on page fault traffic, but
-reduces address translation hardware requirements. SpryVM leverages
-this observation to improve TLB hit rates by desigining TLBs targeted
-to accelerator-local partitions, and by breaking page table walk-data
-fetch serialization upon TLB misses. SpryVM achieves within 1.2\% and
-0.6\% of ideal translation in scenarios where working sets are
-memory-resident and exceed the available memory capacity,
+
+We propose SpryVM, a set-associative VM architecture for large heterogeneos systems.
+We show that maintaining the portion of the address space accelerators operate
+on set-associatively has virtually no impact on page fault traffic, but 
+significantly reduces translation hardware requirements and page-walk latency. 
+A tiny reduction in the associativity of virtual-to-physical address mapping allows 
+SpryVM to partition the memory space and delegate the address translation to the
+memory partition that holds the data, where memory-side per-partition TLBs and MMUs
+can locally translate addresses at lower latency and with higher efficiency. In doing so, SpryVM 
+significantly improves TLB hit rates and breaks page walk-data fetch serialization upon
+TLB misses. SpryVM achieves within 1.2\% and 0.6\% of ideal translation in scenarios 
+where working sets are memory-resident and exceed the available memory capacity,
 respectively. Finally, we implement spryVM in stock Linux, showing
 that these benefits are achievable while retaining conventional VM
 abstractions and with only modest changes to existing VM software
