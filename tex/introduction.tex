@@ -11,7 +11,7 @@
 As the computing industry embraces hardware specialization, research
 questions pertaining to the system integration of accelerators in
 modern platforms are becoming increasingly important. One such
-question is that of how to expose the virtual memory (VM) abstraction
+question is that of how to expose the VM abstraction
 to accelerators. While initial solutions allow accelerators to have
 direct physical access to memory, the consequent lack of protection,
 isolation and paging significantly complicates the software
@@ -31,7 +31,10 @@ accelerators. This is true for a wide spectrum of accelerators ranging
 from programmable GPGPUs \cite{pichai:architectural, power:supporting}
 to graph processing hardware \cite{haria:devirtualizing} to even more
 area-contrained processing in/near memory techniques
-\cite{picorel:near-memory}.
+\cite{picorel:near-memory}. Furthermore, most accelerators rely on a centralized 
+IOMMU for page walks, whose physical distance from the accelerator and from the increasingly 
+large and distributed memory makes multi-level page-table walks increasingly slow and inefficient. 
+
 
 In response, recent studies propose changes to conventional TLB
 hardware and the memory allocation/management stack for efficient
@@ -73,15 +76,16 @@ of Your Virtual Memory).
 
 SpryVM {\it slightly} restricts VM associativity so that a virtual
 address uniquely identifies the region of the physical address space
-(a memory chip or partition) that holds the data. Once the target
+(a memory chip or partition of arbitrary size) that holds the data. Once the target
 memory region is identified, SpryVM performs translation on the memory
 side, using local per-region TLBs situated next the corresponding
-memory region.  In doing so, SpryVM solves two key problems. First, it
+memory region. In doing so, SpryVM solves two key problems. First, it
 facilitates area-efficient TLBs with high hit rates because separate
 TLBs are responsible for disjoint parts of the physical address space,
 reducing their reach requirements. Second, it dramatically cuts miss
 penalties by co-locating translation and data in TLB's physical
-partition, overlapping translation with data fetch. We also show that
+partition and performing localized page walks, effectively overlapping 
+translation with data fetch. We also show that
 the OS support necessary to achieve this approach is compatible with
 existing kernels and does not sacrifice flexibility in the mould of
 prior work \cite{basu:efficient, haria:devirtualizing}. To showcase
