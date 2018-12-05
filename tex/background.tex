@@ -36,25 +36,25 @@
 \end{table*}
 
 \subsection{Goals for VM in Large Heterogeneous Systems}
-When buiding VM support for accelerators, it is important to identify
+When building VM support for accelerators, it is important to identify
 design goals for the its operation. Like prior work
 \cite{haria:devirtualizing}, we identify the following as key goals in
 our design:
 
 \begin{itemize}
         \item \textbf{Programmability.} The widespread adoption of
-          accelerators rests on the usability and familiarity of their
+          accelerators rests on the usability and simplicity of their
           programming models. Unified virtual memory between CPUs and
           accelerators are one way of achieving this in a manner that
           simplifies data sharing, eliminating the need for
-          hand-managed data copying and marshaling. Ideally, we wish
+          hand-managed data copying and marshalling. Ideally, we wish
           to preserve all the benefits typically associated with VM
           like memory protection and isolation, and flexibility of
           sharing parts of the address space among processes.
 
         \item \textbf{Flexibility.} Traditional VM imposes no
           restrictions on virtual-to-physical page mapping
-          relationships. This is valuable to support any level of
+          relationships. This flexibility is valuable to support any level of
           system memory fragmentation, application multi-tenancy,
           memory allocation strategies transparent to programmers, as
           well as the integration of features such as paging and
@@ -118,7 +118,7 @@ support \cite{gaud:large}, and they require complex TLB hardware for
 concurrent page size support \cite{cox:efficient}. For all these
 reasons, transparent support for large pages in OSes like Linux only
 apply to 2MB pages (and not other sizes like 1GB) even after decades
-of research \cite{arcangeli:transparent}.  Practically, vendors
+of research \cite{arcangeli:transparent}. Practically, vendors
 implement multi-thousand-entry TLBs for the worst-case scenario when
 base 4KB pages dominate. For the successful adoption, we concur with
 recent work \cite{pham:colt, basu:efficient, karakostas:redundant,
@@ -183,13 +183,12 @@ with dedicated MMU caches to accelerate page table walks
 \cite{bhattacharjee:large-reach, barr:translation}. Unfortunately,
 even the presence of MMU caches cannot mitigate high page table walk
 latencies in the context of accelerators. The key culprit is that
-heterogeneous sytems with accelerators are usually integrated with
+heterogeneous systems with accelerators are usually integrated with
 NUMA memories and require long-latency lookups across sockets/chips,
 etc. Even perfect MMU caches require at least one memory reference per
 page table walk and recent work shows that this single reference can
 dramatically exacerbate address translation costs for accelerators
 \cite{picorel:near-memory, pichai:architectural}.
-
 
 \subsection{Prior Approaches}
 
@@ -249,7 +248,7 @@ entry, they require highly associative TLBs, which poses power/area
 overheads.
 
 \vspace{2mm}
-\noindent\textbf{Direct-mapped segments.} Recent work on devirtualized
+\noindent\textbf{Direct mapping.} Recent work on devirtualized
 virtual memory extends the previous line of work on segments
 specifically in the context of accelerators
 \cite{haria:devirtualizing}. The approach is to identity map virtual
