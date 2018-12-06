@@ -1,8 +1,9 @@
 \section{Evaluation}
 \label{sec:evalation}
 
-In this section, we evaluate SpryVM with conventional translation using $4$KB and $2$MB pages, and qualitatively with the other prior work.   
+In this section, we evaluate various aspects of SpryVM and compare it with the conventional translation.
 
+\begin{comment}
 \begin{figure*}[t]
 	\centering
 	\subfloat[Hash Table]{
@@ -46,7 +47,6 @@ In this section, we evaluate SpryVM with conventional translation using $4$KB an
 \end{figure*}
 
 \subsection{TLB Sensitivity}
-
 ~\subsubsection{32GB working set.} Figure~\ref{fig:miss_ratio_32GB} shows the TLB miss ratio as we increase the number of entries, of the four data structure traversals, hash table, skip list, binary search tree internal, and binary search tree external, with a working set size of $32$GBs. Each graph plots three lines. The blue line represents the conventional translation mechanism using 4KB pages. The orange line the same mechanism but using $2$MB pages. The gray bar represent the TLB miss ratio of SpryVM, which uses $4$KB pages.
 
 \noindent\textbf{4KB pages:} For all four data structures, SpryVM
@@ -96,6 +96,23 @@ the miss ratio of 4 TLB entries in SpryVM. Furthermore, in the cases
 where there is more data locality, the situation also worsens, and in
 fact, for the binary search tree external, now $2$MB pages and SpryVM,
 behave almost identically.
+\end{comment}
+
+\begin{figure*}[t]
+    \centering
+    \subfloat{
+        \includegraphics[width=1 \textwidth,clip]{graphs/all_128G_entries.png}}
+    \caption{TLB sensitivity study for 128GB working set for conventional translation with 4KB and 2MB pages and SpryVM.}
+    \label{fig:miss_ratio_128GB}
+\end{figure*}
+
+
+\subsection{TLB Sensitivity}
+Figure~\ref{fig:miss_ratio_128GB} shows the TLB miss ratio for the four data traversal benchmarks: hash table, skip lists, internal and external binary search trees, as we vary the number of TLB entries. The working set size of all workloads is $128$GBs, and the TLB associativity is fixed to 4 ways. Each graph plots six lines. The full black line shows the TLB miss ratio for the conventional translation with 4KB pages, while the dotted black line shows the TLB miss ratio for conventional translation with 2MB pages. The red lines show TLB miss ratio for SpryVM, assuming only four memory partitions; the full red line shows the SpryVM with 4KB pages, while the dotted red line shows SpryVM with 2MB pages. It is important to note that the use of huge pages is orthogonal and fully compatible with our approach. Finally, the blue lines show the TLB miss ratio for SpryVM with 128 memory partitions, with the full blue lines showing the case with 4KB pages, and blue dotted lines showing the case with 2MB pages. 
+
+For all workloads, the SpryVM configuration with only 4 memory partitions (full red line) significantly outperforms the conventional translation with 4KB pages (full black line). On average, the memory-side TLB require about 4x fewer TLB entries to match the performance of conventional execution-side TLBs. This efficiency of memory-side TLBs is attributed to their distributed nature: they cover only a fraction of the physical memory space. As expected, conventional TLBs with 2MB pages (black dotted line) perform strictly better compared to the TLBs with 4KB page sizes (full black line), often outperforming the SpryVM configuration with 4KB pages (red full line) as well. However, for some workloads with poor spatial locality, such as skip lists, the memory-side TLBs with 4KB pages (full red line) are even able to outperform conventional TLBs with 2MB pages (black dotted line) with the same number of entries. 
+
+SpryVM is not bound to any page size and can be implemented with 2MB pages as well. Red dotted line shows TLB miss ratio with 2MB pages for SpryVM with 4 partitions. Not surprisingly, this configuration greatly outperforms the conventional designs with both 4KB and 2MB pages, as well as the SpryVM configuration with 4KB pages. An interesting case is the SpryVM configuration with 128 partitions and 4KB pages (full blue line). It outperforms all other configurations with 4KB pages, but also the configurations with 2MB pages for some workloads, such as skip lists. This shows that for workloads with low spatial locality, the benefits of further memory partitioning is much more significant than the impact of increasing the page size. However, the two techniques, partitioning and huge pages, are orthogonal and mutually compatible. Finally, the SpryVM configuration with 128 partitions and 2MB pages (blue dotted line) offers unmatched performance. With only 4 entries this configuration is able to outperform the conventional configurations with 2048 TLB entries for most of the workloads and page sizes.
 
 \subsection{TLB Miss Penalty}
 
