@@ -4,7 +4,7 @@
 \begin{figure*}
 \centering
  \includegraphics[width=1\textwidth,clip]{figures/overview.pdf}
- \caption{Overview of conventional (left) and SpryVM system (right).}
+ \caption{Overview of conventional (left) and DTRIM system (right).}
 \label{fig:overview}
 \end{figure*}
 
@@ -71,15 +71,15 @@ strong restrictions on which physical frames to assign to a virtual
 page, reminiscent of the notion of {\it direct-mapping}. Our approach
 is to find the sweet spot between these techniques and propose {\it
   set-associative} VM, where a virtual page can map to one among a set
-of page frames. We dub this approach spryVM (Set-Associative Regions
+of page frames. We dub this approach DTRIM (Set-Associative Regions
 of Your Virtual Memory). 
 
-SpryVM {\it slightly} restricts VM associativity so that a virtual
+DTRIM {\it slightly} restricts VM associativity so that a virtual
 address uniquely identifies the region of the physical address space
 (a memory chip or partition of arbitrary size) that holds the data. Once the target
-memory region is identified, SpryVM performs translation on the memory
+memory region is identified, DTRIM performs translation on the memory
 side, using local per-region TLBs situated next the corresponding
-memory region. In doing so, SpryVM solves two key problems. First, it
+memory region. In doing so, DTRIM solves two key problems. First, it
 facilitates area-efficient TLBs with high hit rates because separate
 TLBs are responsible for disjoint parts of the physical address space,
 reducing their reach requirements. Second, it dramatically cuts miss
@@ -89,7 +89,7 @@ translation with data fetch. We also show that
 the OS support necessary to achieve this approach is compatible with
 existing kernels and does not sacrifice flexibility in the mould of
 prior work \cite{basu:efficient, haria:devirtualizing}. To showcase
-spryVM's effectiveness, we contribute the following:
+DTRIM's effectiveness, we contribute the following:
 
 \noindent $\bullet$ A study of the VM associativity needs of modern
 server workloads. We are inspired by previous work on caches, which
@@ -98,7 +98,7 @@ misses \cite{hill:case}. We find that full VM associativity is often
 unnecessary, as most misses---page faults---are either compulsory or
 capacity, and are hence insensitive to associativity. 
 
-\noindent $\bullet$ We develop a working prototype of spryVM by
+\noindent $\bullet$ We develop a working prototype of DTRIM by
 integrating support for set-associative VM in stock Linux, and show
 that these changes are readily implementable. Moreover, we selectively
 apply set associativity to {\it regions} of the virtual address space
@@ -106,7 +106,7 @@ that benefit from this approach. In so doing, we leave
 full-associativity for regions where it is better for performance, and
 retain cross-compatibility with existing systems 
 
-\noindent $\bullet$ SpryVM, a translation mechanism which restricts VM
+\noindent $\bullet$ DTRIM, a translation mechanism which restricts VM
 associativity so that a virtual address uniquely identifies a memory
 chip/partition, allowing memory accesses to be issued as soon as the
 virtual address is known. Each memory partition features an MMU with a
@@ -116,7 +116,7 @@ misses). Each MMU's TLB hierarchy serves only its memory partition,
 enabling graceful performance scaling across memory chip/partition
 counts.
 
-\noindent $\bullet$ A comparison of spryVM with well-known translation
-mechanisms. SpryVM improves performance by up to $26\%$ and $15\%$ for
+\noindent $\bullet$ A comparison of DTRIM with well-known translation
+mechanisms. DTRIM improves performance by up to $26\%$ and $15\%$ for
 in-memory and out-of-memory scenarios respectively, achieving
 almost-perfect zero-overhead address translation.

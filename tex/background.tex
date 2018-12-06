@@ -11,7 +11,7 @@
 
 \begin{table*}[]
 \centering
-\caption{Comparison of SpryVM with previous approaches for reducing
+\caption{Comparison of DTRIM with previous approaches for reducing
   virtual memory overhead. For protection/security, we show
   tick/cross-marks for each of those cases. Coarse-grained protection
   is indicated with a cross, as is lower entropy in virtual address
@@ -31,7 +31,7 @@
 \multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Direct Segments~\cite{basu:efficient}}           & \xmark              & \cmark                          & \xmark           & \xmark \ \xmark      \\ \hline
 \multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Redundant Memory Mappings~\cite{karakostas:redundant}}  & \cmark             & \xmark                          & \xmark           & \xmark \ \xmark      \\ \hline
 \multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}Direct-mapped Mappings~\cite{picorel:near-memory, haria:devirtualizing}}         & \cmark       & \cmark                          & \xmark           & \xmark \ \xmark     \\ \hline
-\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}SpryVM (Our Approach)}                    & \cmark                       & \cmark               & \cmark           & \cmark \ \cmark     \\ \hline
+\multicolumn{1}{|l|}{\cellcolor[HTML]{FFFFFF}DTRIM (Our Approach)}                    & \cmark                       & \cmark               & \cmark           & \cmark \ \cmark     \\ \hline
 \end{tabular}
 \end{table*}
 
@@ -198,7 +198,7 @@ translation. Table \ref{table:vms} summarizes these techniques as well
 as their programmbility and flexibility attributes. We detail these
 techniques further but note that in general, all approaches change VM
 software and sacrifice aspects of traditional VM flexibility (to
-varying degrees) to achieve effective address translation. SpryVM's
+varying degrees) to achieve effective address translation. DTRIM's
 goal is to find a better compromise between retaining traditional VM
 benefits at the software level, while also enabling more efficient TLB
 hardware.

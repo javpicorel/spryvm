@@ -1,7 +1,7 @@
 \section{Evaluation}
 \label{sec:evalation}
 
-In this section, we evaluate various aspects of SpryVM and compare it with the conventional translation.
+In this section, we evaluate various aspects of DTRIM and compare it with the conventional translation.
 
 \begin{comment}
 \begin{figure*}[t]
@@ -21,7 +21,7 @@ In this section, we evaluate various aspects of SpryVM and compare it with the c
 		\includegraphics[width=0.3\textwidth,clip]{graphs/BSTE_32GB.pdf}}
 
 	
-	\caption{TLB sensitivity study for 32GB working set for conventional translation with 4KB and 2MB pages and SpryVM.
+	\caption{TLB sensitivity study for 32GB working set for conventional translation with 4KB and 2MB pages and DTRIM.
 		\label{fig:miss_ratio_32GB}}
 \end{figure*}
 
@@ -42,39 +42,39 @@ In this section, we evaluate various aspects of SpryVM and compare it with the c
 		\includegraphics[width=0.3\textwidth,clip]{graphs/BSTE_128GB.pdf}}
 	
 	
-	\caption{TLB sensitivity study for 128GB working set for conventional translation with 4KB and 2MB pages and SpryVM.
+	\caption{TLB sensitivity study for 128GB working set for conventional translation with 4KB and 2MB pages and DTRIM.
 		\label{fig:miss_ratio_128GB}}
 \end{figure*}
 
 \subsection{TLB Sensitivity}
-~\subsubsection{32GB working set.} Figure~\ref{fig:miss_ratio_32GB} shows the TLB miss ratio as we increase the number of entries, of the four data structure traversals, hash table, skip list, binary search tree internal, and binary search tree external, with a working set size of $32$GBs. Each graph plots three lines. The blue line represents the conventional translation mechanism using 4KB pages. The orange line the same mechanism but using $2$MB pages. The gray bar represent the TLB miss ratio of SpryVM, which uses $4$KB pages.
+~\subsubsection{32GB working set.} Figure~\ref{fig:miss_ratio_32GB} shows the TLB miss ratio as we increase the number of entries, of the four data structure traversals, hash table, skip list, binary search tree internal, and binary search tree external, with a working set size of $32$GBs. Each graph plots three lines. The blue line represents the conventional translation mechanism using 4KB pages. The orange line the same mechanism but using $2$MB pages. The gray bar represent the TLB miss ratio of DTRIM, which uses $4$KB pages.
 
-\noindent\textbf{4KB pages:} For all four data structures, SpryVM
+\noindent\textbf{4KB pages:} For all four data structures, DTRIM
 systematically beats conventional translation with $4$KB pages given
 the same TLB size. For example, for the hash table, conventional
-translation requires a 128-entry TLB to match the miss ratio of SpryVM
+translation requires a 128-entry TLB to match the miss ratio of DTRIM
 with 8 entries, a $16\times$ difference. Furthermore, we see that the
 gap between the efficiency of TLBs worsens with the absence of data
 locality. For the skip list, which is the workload with the lowest
 data locality, conventional translation requires around $2048$ entries
-to match the miss ratio of SpryVM with 16 entries.
+to match the miss ratio of DTRIM with 16 entries.
 
 \noindent\textbf{2MB pages:} Using $2$MB pages improves the TLB
 behavior of conventional translation. For example, for the hash table,
 with 2MB pages, conventional translation only need 8 entries to match
-the miss ratio of 4 entries in SpryVM, a $2\times difference$. In
+the miss ratio of 4 entries in DTRIM, a $2\times difference$. In
 contrast, in workloads where there exist data locality, like in the
 trees, in which there is data reuse for the higher levels of the tree,
 the per-region $4KB$ pages are not able to beat $2$MB pages. However,
 note that $2$MB are not always available (as explained in the
-background section) and we could also employ $2MB$ pages for SpryVM;
+background section) and we could also employ $2MB$ pages for DTRIM;
 we defer that approach for future work. Furthermore, in workloads
 where there exists no locality, such as in the skip list data
 structure, $2$MB deliver an almost negligible improvement with respect
 to $4KB$ pages (also shown in prior work for other data structure with
 low data locality like graphs~\cite{haria:devirtualizing}). Hence, for
 the skip list, the number of TLB entries still needs to be $16\times$
-bigger to match SpryVM's TLB area efficiency.
+bigger to match DTRIM's TLB area efficiency.
 
 ~\subsubsection{128GB working set.} Figure~\ref{fig:miss_ratio_128GB}
 shows the TLB miss ratio as we increase the number of entries of the
@@ -83,18 +83,18 @@ $128$GBs. Similarly to the previous set of graphs, each graph plots
 three lines: conventional translation with 4KB pages, the same
 mechanism but using $2$MB pages, and SryVM, which uses $4$KB pages.
 
-\noindent\textbf{4KB pages:} For all four data structures, SpryVM
+\noindent\textbf{4KB pages:} For all four data structures, DTRIM
 systematically beats conventional translation with $4$KB pages given
 the same TLB size. Furthermore, the area-efficiency gap is more
 pronounced as the working set is larger.
 
 \noindent\textbf{2MB pages:} Although $2$MB pages helps to reduce the
-area-efficiency gap with respect to $4$KB and SpryVM, the increase in
+area-efficiency gap with respect to $4$KB and DTRIM, the increase in
 the working set worses the benefits. For example, in the hash table,
 $2$MB pages now requires $8\times$ the number of TLB entries to match
-the miss ratio of 4 TLB entries in SpryVM. Furthermore, in the cases
+the miss ratio of 4 TLB entries in DTRIM. Furthermore, in the cases
 where there is more data locality, the situation also worsens, and in
-fact, for the binary search tree external, now $2$MB pages and SpryVM,
+fact, for the binary search tree external, now $2$MB pages and DTRIM,
 behave almost identically.
 \end{comment}
 
@@ -102,28 +102,28 @@ behave almost identically.
     \centering
     \subfloat{
         \includegraphics[width=1 \textwidth,clip]{graphs/all_128G_entries.png}}
-    \caption{TLB sensitivity study for 128GB working set for conventional translation with 4KB and 2MB pages and SpryVM.}
+    \caption{TLB sensitivity study for 128GB working set for conventional translation with 4KB and 2MB pages and DTRIM.}
     \label{fig:miss_ratio_128GB}
 \end{figure*}
 
 
 \subsection{TLB Sensitivity}
-Figure~\ref{fig:miss_ratio_128GB} shows the TLB miss ratio for the four data traversal benchmarks: hash table, skip lists, internal and external binary search trees, as we vary the number of TLB entries. The working set size of all workloads is $128$GBs, and the TLB associativity is fixed to 4 ways. Each graph plots six lines. The full black line shows the TLB miss ratio for the conventional translation with 4KB pages, while the dotted black line shows the TLB miss ratio for conventional translation with 2MB pages. The red lines show TLB miss ratio for SpryVM, assuming only four memory partitions; the full red line shows the SpryVM with 4KB pages, while the dotted red line shows SpryVM with 2MB pages. It is important to note that the use of huge pages is orthogonal and fully compatible with our approach. Finally, the blue lines show the TLB miss ratio for SpryVM with 128 memory partitions, with the full blue lines showing the case with 4KB pages, and blue dotted lines showing the case with 2MB pages. 
+Figure~\ref{fig:miss_ratio_128GB} shows the TLB miss ratio for the four data traversal benchmarks: hash table, skip lists, internal and external binary search trees, as we vary the number of TLB entries. The working set size of all workloads is $128$GBs, and the TLB associativity is fixed to 4 ways. Each graph plots six lines. The full black line shows the TLB miss ratio for the conventional translation with 4KB pages, while the dotted black line shows the TLB miss ratio for conventional translation with 2MB pages. The red lines show TLB miss ratio for DTRIM, assuming only four memory partitions; the full red line shows the DTRIM with 4KB pages, while the dotted red line shows DTRIM with 2MB pages. It is important to note that the use of huge pages is orthogonal and fully compatible with our approach. Finally, the blue lines show the TLB miss ratio for DTRIM with 128 memory partitions, with the full blue lines showing the case with 4KB pages, and blue dotted lines showing the case with 2MB pages. 
 
-For all workloads, the SpryVM configuration with only 4 memory partitions (full red line) significantly outperforms the conventional translation with 4KB pages (full black line). On average, the memory-side TLB require about 4x fewer TLB entries to match the performance of conventional execution-side TLBs. This efficiency of memory-side TLBs is attributed to their distributed nature: they cover only a fraction of the physical memory space. As expected, conventional TLBs with 2MB pages (black dotted line) perform strictly better compared to the TLBs with 4KB page sizes (full black line), often outperforming the SpryVM configuration with 4KB pages (red full line) as well. However, for some workloads with poor spatial locality, such as skip lists, the memory-side TLBs with 4KB pages (full red line) are even able to outperform conventional TLBs with 2MB pages (black dotted line) with the same number of entries. 
+For all workloads, the DTRIM configuration with only 4 memory partitions (full red line) significantly outperforms the conventional translation with 4KB pages (full black line). On average, the memory-side TLB require about 4x fewer TLB entries to match the performance of conventional execution-side TLBs. This efficiency of memory-side TLBs is attributed to their distributed nature: they cover only a fraction of the physical memory space. As expected, conventional TLBs with 2MB pages (black dotted line) perform strictly better compared to the TLBs with 4KB page sizes (full black line), often outperforming the DTRIM configuration with 4KB pages (red full line) as well. However, for some workloads with poor spatial locality, such as skip lists, the memory-side TLBs with 4KB pages (full red line) are even able to outperform conventional TLBs with 2MB pages (black dotted line) with the same number of entries. 
 
-SpryVM is not bound to any page size and can be implemented with 2MB pages as well. Red dotted line shows TLB miss ratio with 2MB pages for SpryVM with 4 partitions. Not surprisingly, this configuration greatly outperforms the conventional designs with both 4KB and 2MB pages, as well as the SpryVM configuration with 4KB pages. An interesting case is the SpryVM configuration with 128 partitions and 4KB pages (full blue line). It outperforms all other configurations with 4KB pages, but also the configurations with 2MB pages for some workloads, such as skip lists. This shows that for workloads with low spatial locality, the benefits of further memory partitioning is much more significant than the impact of increasing the page size. However, the two techniques, partitioning and huge pages, are orthogonal and mutually compatible. Finally, the SpryVM configuration with 128 partitions and 2MB pages (blue dotted line) offers unmatched performance. With only 4 entries this configuration is able to outperform the conventional configurations with 2048 TLB entries for most of the workloads and page sizes.
+DTRIM is not bound to any page size and can be implemented with 2MB pages as well. Red dotted line shows TLB miss ratio with 2MB pages for DTRIM with 4 partitions. Not surprisingly, this configuration greatly outperforms the conventional designs with both 4KB and 2MB pages, as well as the DTRIM configuration with 4KB pages. An interesting case is the DTRIM configuration with 128 partitions and 4KB pages (full blue line). It outperforms all other configurations with 4KB pages, but also the configurations with 2MB pages for some workloads, such as skip lists. This shows that for workloads with low spatial locality, the benefits of further memory partitioning is much more significant than the impact of increasing the page size. However, the two techniques, partitioning and huge pages, are orthogonal and mutually compatible. Finally, the DTRIM configuration with 128 partitions and 2MB pages (blue dotted line) offers unmatched performance. With only 4 entries this configuration is able to outperform the conventional configurations with 2048 TLB entries for most of the workloads and page sizes.
 
 \subsection{TLB Miss Penalty}
 
-SpryVM does not only improve the area-efficiency of TLBs but also reduces the TLB miss penalty. Figure~\ref{fig:penalty} shows the TLB miss penalty of a memory reference, including the data access to memory, normalized to the ideal translation mechanism where only the data access of the memory references is required. We decided to be conservative and assume perfect MMU caches, and therefore page walks requires only one memory reference. The reason is because we want to decouple the TLB miss penalty benefits from the page table implementation, since in our case, with an inverted page table of $1/4x$ of load factor, we are able to guarantee one memory reference per page walk, whereas the hierarchical four-level page table requires a very significant MMU cache hierarchy. Furthermore, we consider two systems, a conventional two-socket machine and a large-memory eight-socket machine.
+DTRIM does not only improve the area-efficiency of TLBs but also reduces the TLB miss penalty. Figure~\ref{fig:penalty} shows the TLB miss penalty of a memory reference, including the data access to memory, normalized to the ideal translation mechanism where only the data access of the memory references is required. We decided to be conservative and assume perfect MMU caches, and therefore page walks requires only one memory reference. The reason is because we want to decouple the TLB miss penalty benefits from the page table implementation, since in our case, with an inverted page table of $1/4x$ of load factor, we are able to guarantee one memory reference per page walk, whereas the hierarchical four-level page table requires a very significant MMU cache hierarchy. Furthermore, we consider two systems, a conventional two-socket machine and a large-memory eight-socket machine.
 
 As the figure shows, page walks in a conventional VM mechanism requires a memory reference to locate the page table entry, and hence a memory reference requires two memory accesses. In contrast, and as explain in Figure~\ref{fig:pagewalk_partition_miss}, the virtual address uniquely identifies the memory region, and hence the time it takes to locate the region, traversing the NoC and off-chip interconnects is overlapped with the data path. Furthermore, the larger the memory systems, the larger the contribution of the network time in the page walk time, and hence the large the reduction in page walk time with respect with conventional translation. 
 
 \begin{figure}[t]
 	\centering
 	\includegraphics[width=0.8\columnwidth]{graphs/penalty.pdf}
-	\caption{TLB miss penalty for conventional and SpryVM.}
+	\caption{TLB miss penalty for conventional and DTRIM.}
 	\label{fig:penalty}
 \end{figure}
 
@@ -131,6 +131,15 @@ As the figure shows, page walks in a conventional VM mechanism requires a memory
 
 \begin{figure*}[t]
 	\centering
+	\subfloat[BST External]{
+		\label{fig:test4}
+	%	\includegraphics[width=0.24\textwidth,clip]{graphs/spry_lf-bst-aravind_mem33554432_4.png}}
+		\includegraphics[width=0.24\textwidth,clip]{graphs/spry_y_scaled_lf-bst-aravind_mem33554432_4.png}}
+	\subfloat[BST Internal]{
+		\label{fig:test3}
+	%	\includegraphics[width=0.24\textwidth,clip]{graphs/spry_lf-bst-howley_mem33554432_4.png}}
+		\includegraphics[width=0.24\textwidth,clip]{graphs/spry_y_scaled_lf-bst-howley_mem33554432_4.png}}
+	\hspace{.01in}
 	\subfloat[Hash Table]{
 		\label{fig:test1}
 	%	\includegraphics[width=0.24 \textwidth,clip]{graphs/spry_lb-ht_java_mem33554432_4.png}}
@@ -139,22 +148,13 @@ As the figure shows, page walks in a conventional VM mechanism requires a memory
 		\label{fig:test2}
 	%	\includegraphics[width=0.24\textwidth,clip]{graphs/spry_lf-sl_fraser_mem8388608_4.png}}
 		\includegraphics[width=0.24\textwidth,clip]{graphs/spry_y_scaled_lf-sl_fraser_mem8388608_4.png}}
-	\hspace{.01in}
-	\subfloat[BST Internal]{
-		\label{fig:test3}
-	%	\includegraphics[width=0.24\textwidth,clip]{graphs/spry_lf-bst-howley_mem33554432_4.png}}
-		\includegraphics[width=0.24\textwidth,clip]{graphs/spry_y_scaled_lf-bst-howley_mem33554432_4.png}}
-	\subfloat[BST External]{
-		\label{fig:test4}
-	%	\includegraphics[width=0.24\textwidth,clip]{graphs/spry_lf-bst-aravind_mem33554432_4.png}}
-		\includegraphics[width=0.24\textwidth,clip]{graphs/spry_y_scaled_lf-bst-aravind_mem33554432_4.png}}
 	\caption{The impact of thread contention on TLB miss rates.}
 	\label{fig:contention}
 \end{figure*}
 
 Partitioning of the physical address space through set-associativity enables effective memory-side address translation with significantly reduced TLB miss rates.  However, a major consequence moving the translation from the place of execution to the memory partitions is that the per-partition TLBs become shared by all threads in the system that are accessing a given partition. A large system with many cores and accelerators could have hundreds of threads, which can create two potential problems related to TLB contention, which do not exist in conventional TLBs. The first problem is the limited TLB bandwidth, and the second problem is the interference among threads. 
 
-The first problem arises when TLBs cannot serve the volume of accesses generated by all threads. Fortunately, this problem does not occur in SpryVM. The reason is that even conventional TLBs are designed to sustain the L1 cache bandwidth of a single core, which is in the order of 100s of GB/s. In the case of SpryVM, the TLB bandwidth needs to be adequate to sustain the memory bandwidth of the local DRAM partition, which is an order of magnitude less. Furthermore, the size of memory partitions could arbitrarily reduced. The second problem arises when different threads compete for the limited capacity of the shared per-partition TLB. To quantify this problem, we measure the TLB miss rates in SpryVM while varying the number of threads and the number of memory partitions. The results are shown in Figure~\ref{fig:contention}. In this experiment, the memory footprint of all applications is 64GB, the size of TLBs is 128 entries, and their associativity is fixed to four. The first thing to notice is that, in the single-threaded case, the TLB miss rates drop dramatically with the number of partitions as a result of physical address space partitioning, corroborating our real hardware experiments in Figure~\ref{fig:pagewalks}. The next thing to notice is that, in the case of a single memory partition, most application exhibit a noticeable increase in TLB miss rates as we add more threads, as many threads contend for the capacity of a single shared TLB that covers the entire memory (a similar effect could be observed with hyper-threading, when multiple threads share the same TLB). However, once we start increasing the number of memory partitions, the impact of thread contention virtually disappears, showing that the benefits of partitioning significantly outweighs the impact of contention. This becomes most obvious when comparing (1 partition, 1 thread) and (16 partitions, 16 threads) data  points, because they have the same number of aggregate TLB entries per thread and the reduction in miss rates in entirely contributed to SpryVM's organization. 
+The first problem arises when TLBs cannot serve the volume of accesses generated by all threads. Fortunately, this problem does not occur in DTRIM. The reason is that even conventional TLBs are designed to sustain the L1 cache bandwidth of a single core, which is in the order of 100s of GB/s. In the case of DTRIM, the TLB bandwidth needs to be adequate to sustain the memory bandwidth of the local DRAM partition, which is an order of magnitude less. Furthermore, the size of memory partitions could arbitrarily reduced. The second problem arises when different threads compete for the limited capacity of the shared per-partition TLB. To quantify this problem, we measure the TLB miss rates in DTRIM while varying the number of threads and the number of memory partitions. The results are shown in Figure~\ref{fig:contention}. In this experiment, the memory footprint of all applications is 64GB, the size of TLBs is 128 entries, and their associativity is fixed to four. The first thing to notice is that, in the single-threaded case, the TLB miss rates drop dramatically with the number of partitions as a result of physical address space partitioning, corroborating our real hardware experiments in Figure~\ref{fig:pagewalks}. The next thing to notice is that, in the case of a single memory partition, most application exhibit a noticeable increase in TLB miss rates as we add more threads, as many threads contend for the capacity of a single shared TLB that covers the entire memory (a similar effect could be observed with hyper-threading, when multiple threads share the same TLB). However, once we start increasing the number of memory partitions, the impact of thread contention virtually disappears, showing that the benefits of partitioning significantly outweighs the impact of contention. This becomes most obvious when comparing (1 partition, 1 thread) and (16 partitions, 16 threads) data  points, because they have the same number of aggregate TLB entries per thread and the reduction in miss rates in entirely contributed to DTRIM's organization. 
 
 \subsection{Associativity study of VM}
 
@@ -237,11 +237,11 @@ We successfully ran all server workloads on modified linux with 32 memory region
 		\label{fig:memcached_4p_assoc}
 		\includegraphics[width=0.25\textwidth,clip]{graphs/speedup_128GB.pdf}}
 
-	\caption{Speedup of conventional translation with $2$MB pages and SpryVM, with respect to conventional $4$KB pages.
+	\caption{Speedup of conventional translation with $2$MB pages and DTRIM, with respect to conventional $4$KB pages.
 		\label{fig:perf}}
 \end{figure}
 
 \subsection{Performance}
 
-Figure~\ref{fig:perf} compares the performance of $2$MB pages and SpryVM, with respect to a conventional translation mechanism using $4$KB pages, for $32$GB and $128$GB cases. SpryVM clearly outperforms $4$KB pages in both working set scenarios, by up to $1.8\times$ with $32$GB and $1.7\times$ on average. Furthermore, in $128$GB scenarios, SpryVM outperforms $4$KB pages by up to $2.36\times$ and $2.18\times$ on average. Compared to conventional translation with $2$MB pages, SpryVM outperforms it by up to $1.7\times$ and $1.2\times$ on average for $32$GBs, and by up to $2.15\times$ and $1.6\times$ on average for $128$GB. Furthermore, there is no case in which $2$MB pages outperforms SpryVM in the large-memory scenario.
+Figure~\ref{fig:perf} compares the performance of $2$MB pages and DTRIM, with respect to a conventional translation mechanism using $4$KB pages, for $32$GB and $128$GB cases. DTRIM clearly outperforms $4$KB pages in both working set scenarios, by up to $1.8\times$ with $32$GB and $1.7\times$ on average. Furthermore, in $128$GB scenarios, DTRIM outperforms $4$KB pages by up to $2.36\times$ and $2.18\times$ on average. Compared to conventional translation with $2$MB pages, DTRIM outperforms it by up to $1.7\times$ and $1.2\times$ on average for $32$GBs, and by up to $2.15\times$ and $1.6\times$ on average for $128$GB. Furthermore, there is no case in which $2$MB pages outperforms DTRIM in the large-memory scenario.
 

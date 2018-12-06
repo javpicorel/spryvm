@@ -1,11 +1,11 @@
-\section{SpryVM: Operating System Support}
+\section{DTRIM: Operating System Support}
 \label{sec:os}
 
-One of SpryVM's advantages is that is is readily-implementable and
+One of DTRIM's advantages is that is is readily-implementable and
 compatible with commodity OSes. To demonstrate this, we have
-prototyped SpryVM in stock Linux (4.10) by implementing set-associativity in
+prototyped DTRIM in stock Linux (4.10) by implementing set-associativity in
 the memory management sections of the kernel. Additionally, we have
-implemented SpryVM's page table in the kernel as an inverted page table,
+implemented DTRIM's page table in the kernel as an inverted page table,
 although other implementations are also just as readily possible. 
 Overall, these and other ancillary
 modifications were compatible with the existing kernel. A measure of
@@ -22,9 +22,9 @@ mapping only a fixed set of physical frames to a virtual page is
 analogous to the idea of assigning physical frames from only select
 NUMA nodes. Consequently, to build a system with only slightly reduced associativity, 
 we conceptually treat subsets of the virtual address space as being bound to specific
-NUMA nodes. Therefore SpryVM can be implemented in a manner that
+NUMA nodes. Therefore DTRIM can be implemented in a manner that
 reuses {\it membind} code paths such that each memory set is treated
-as a NUMA node. Note that this implementation is only possible because SpryVM
+as a NUMA node. Note that this implementation is only possible because DTRIM
 reduces associativity only \textit{by a small factor}, as opposed to reducing it
 \textit{to a small number} (e.g., direct mapped or 4-way associative~\cite{picorel:near-memory}). 
 
@@ -101,11 +101,11 @@ reading).
 
   
 \begin{comment}
-Although end-to-end performance evaluation requires a full implementation of spryVM in a modern OS (e.g., Linux, FreeBSD), like prior work which require OS changes \cite{talluri:surpassing, talluri:tradeoffs, talluri:pagetable}, we note that such implementation is a multi-man-year project. Consequently, like those studies, we instead inspect an open-source OS (i.e., Linux) and qualitatively discuss our proposed modifications.  
+Although end-to-end performance evaluation requires a full implementation of DTRIM in a modern OS (e.g., Linux, FreeBSD), like prior work which require OS changes \cite{talluri:surpassing, talluri:tradeoffs, talluri:pagetable}, we note that such implementation is a multi-man-year project. Consequently, like those studies, we instead inspect an open-source OS (i.e., Linux) and qualitatively discuss our proposed modifications.  
 
 Fortunately, our two main modifications (i.e., memory-set matching and managing multiple page tables) are currently implemented in modern OS's. For instance, FreeBSD implements page coloring to avoid consecutive virtual pages mapping to the same cache set. FreeBSB does this with a free list of pages per cache set~\cite{mckusick:design}, guaranteeing that two consecutive virtual pages map to different cache sets. We can similarly extend the page placement policy to make both the VPN and PFN map to the same memory set. Further, the Linux Heterogeneous Memory Management (HMM) patch sets up multiple page tables and maintains the consistency~\cite{glisse:hmm}. We can leverage the lessons learned from these patches.
 
-Table~\ref{tab:table_modifications} and Table~\ref{tab:table_overheads} shed more light on the OS changes and the potential overheads respectively. Although set associative VM is beneficial for a wide range of workloads, there might be cases for which full associative VM is required. Hence, we envision spryVM to be an optional optimization (i.e., a process, set of processes, or the whole system can fall back to the conventional translation). This is conceptually similar to the way OSes support superpages, for which large portions of the OS required modifications along with their associated overheads with respect to supporting a single page size~\cite{talluri:surpassing, navarro:practical, kwon:coordinated}. Analogously, when super pages are not beneficial or impossible to generate, processes fall back to base pages. 
+Table~\ref{tab:table_modifications} and Table~\ref{tab:table_overheads} shed more light on the OS changes and the potential overheads respectively. Although set associative VM is beneficial for a wide range of workloads, there might be cases for which full associative VM is required. Hence, we envision DTRIM to be an optional optimization (i.e., a process, set of processes, or the whole system can fall back to the conventional translation). This is conceptually similar to the way OSes support superpages, for which large portions of the OS required modifications along with their associated overheads with respect to supporting a single page size~\cite{talluri:surpassing, navarro:practical, kwon:coordinated}. Analogously, when super pages are not beneficial or impossible to generate, processes fall back to base pages. 
  
  %MIPS OS searched the free list of pages to find a page frame that maps to the same first-level cache set as the virtual page (i.e., page coloring)~\cite{taylor:tlb}.
 
@@ -115,12 +115,12 @@ Table~\ref{tab:table_modifications} and Table~\ref{tab:table_overheads} shed mor
 
 %RMM requires modest operating system (OS) modifications.The OS must create and manage range table entries in softwareand coordinate them with the page table. We modify the OS to increase the size of ranges with an eager paging allocation mechanism. We prototype these changes in Linux, but thedesign is applicable to other OSes.
 
-%The really big concern that we have to hit out of the park is the last MICRO reviewer's concern of OS changes. I agree that fully implementing this in Linux/FreeBSD/sv6/etc. would instill more confidence that spryVM/spryVM works effectively. However, I also don't think that this is a reasonable bar for an academic paper. To address this, my first instinct is to go the following route:
+%The really big concern that we have to hit out of the park is the last MICRO reviewer's concern of OS changes. I agree that fully implementing this in Linux/FreeBSD/sv6/etc. would instill more confidence that DTRIM/DTRIM works effectively. However, I also don't think that this is a reasonable bar for an academic paper. To address this, my first instinct is to go the following route:
 \end{comment}
 
 \begin{comment}
-\subsection{Support spryVM with NUMA page allocation policy}
-In Linux,  mapping only a subset of physical pages to given virtual addresses is very similar to a scenario existing in NUMA systems — binding the memory of processes to a specific NUMA nodes. With NUMA memory bind policy (i.e. \textit{membind}), a process is only able to get physical pages coming from the NUMA node assigned by the policy, where, with spryVM, each subset of a process’s virtual address space can be seen as being bound to a certain NUMA node. As a result, to implement spryVM in operating systems, we are able to reuse most of existing NUMA-related code. In a spryVM system, each memory set can be treated as a NUMA node and all processes have \verb|membind| as their default memory allocation policy.
+\subsection{Support DTRIM with NUMA page allocation policy}
+In Linux,  mapping only a subset of physical pages to given virtual addresses is very similar to a scenario existing in NUMA systems — binding the memory of processes to a specific NUMA nodes. With NUMA memory bind policy (i.e. \textit{membind}), a process is only able to get physical pages coming from the NUMA node assigned by the policy, where, with DTRIM, each subset of a process’s virtual address space can be seen as being bound to a certain NUMA node. As a result, to implement DTRIM in operating systems, we are able to reuse most of existing NUMA-related code. In a DTRIM system, each memory set can be treated as a NUMA node and all processes have \verb|membind| as their default memory allocation policy.
 
 In Linux, there are two types of pages, anonymous pages and file-backed pages. The former
 is generally private to each process and the latter can be shared between different processes.
@@ -145,7 +145,7 @@ Algorithm~\ref{alg:file-backed}.
 
 \textbf{Inverted page table} Not all architectures use inverted page tables, but they are commonly used in IBM Power systems as hashed page tables. Thus, we adopt the same operation model as hashed page tables in IBM Power systems: reserving memory for each inverted page table in individual NUMA node and inserting/invalidating/updating inverted page table entries whenever CPU page tables change in the same hook functions (e.g. \verb|update_mmu_cache()|). To guarantee the translation information is coherent between CPUs and accelerators, each inverted page table entry has a valid bit, which is atomically accessed by both CPUs (for inverted page table modification) and accelerators (for reading). Alternatively, if accelerators, e.g. GPUs, want to maintain their own page tables instead of using the inverted page table, additional hook functions, like  \verb|mmu_notifier| mechanism in Linux, could be used to keep the page tables of accelerators coherent with CPU page tables.
 
-All these modifications are very simple and not intrusive to operating systems. \verb|git diff| shows the summary of our changes, \texttt{20 files changed, 266 insertions(+), 43 deletions(-)}, in Linux to achieve the required functionality for spryVM. 
+All these modifications are very simple and not intrusive to operating systems. \verb|git diff| shows the summary of our changes, \texttt{20 files changed, 266 insertions(+), 43 deletions(-)}, in Linux to achieve the required functionality for DTRIM. 
 \end{comment}
 
 \begin{algorithm}

@@ -6,14 +6,14 @@ benefits of fully-flexible VM, or one can get away with smaller TLBs
 as long as software flexibility is sacrificed. In the first scenario,
 large TLBs are essential because VM is fully associative. In the
 second scenario, software flexibility is sacrificed because VM imposes
-restrictions reminiscent of direct mapping. SpryVM's contribution is
+restrictions reminiscent of direct mapping. DTRIM's contribution is
 to showcase, however, that there is a third regime of operation
 between these two extremes, where we implement set-associative VM to
 continue enjoying the benefits of flexible VM without requiring large
 TLBs. 
 
-The core idea behind SpryVM is (partly) captured in Figure~\ref{fig:overview}. With
-SpryVM, VM associativity is restricted in that a virtual page is
+The core idea behind DTRIM is (partly) captured in Figure~\ref{fig:overview}. With
+DTRIM, VM associativity is restricted in that a virtual page is
 guaranteed to map to a physical page in a specific memory
 ``region'', but could reside anywhere within the region. This memory region could be a socket or a memory
 channel. This effective set-associativity provides two
@@ -33,10 +33,10 @@ commodity OS requires only modest changes to existing memory
 allocation/management code-paths. Furthermore, we have found that in
 practice, we can achieve good address translation performance by only
 modestly reducing associativity from the default fully-associative VM
-approach. Consequently, SpryVM implements unified CPU-accelerator
+approach. Consequently, DTRIM implements unified CPU-accelerator
 address spaces without forcing coarser-grained memory protection,
 compromising on entropy in virtual address bits, or requiring
-power/area-hungry TLBs. The fact that SpryVM does not rely on
+power/area-hungry TLBs. The fact that DTRIM does not rely on
 contiguity also means that it can continue to operate efficiently in
 fragmented memory settings where translation contiguity or identity
 mappings may be hard to generate. Furthermore, having only a modest drop

@@ -2,7 +2,7 @@
 
 
 %\section{Associativity in Virtual Memory}
-\section{SpryVM: Hardware Support}
+\section{DTRIM: Hardware Support}
 \label{sec:associativity}
 
 %\javier{ Points to come across:
@@ -15,10 +15,10 @@
 
 %}
 
-We compare the hardware necessary for SpryVM with conventional
+We compare the hardware necessary for DTRIM with conventional
 TLBs. We first walk the reader through a translation operation in a
 conventional memory management mechanism and then we present the same
-operation in SpryVM.
+operation in DTRIM.
 
 \subsection{Baseline Address Translation}
 
@@ -54,8 +54,8 @@ translation and data paths cannot not overlap, and as a result, the entire page 
 latency is on the critical path. Note that accelerators are often not be equipped with hardware page-table walkers, but instead would
 ask the IOMMU to perform the walk. In such a case, the miss penalty would be increased even further by the time it takes to communicate with the IOMMU.
 
-\subsection{SpryVM Address Translation}
-SpryVM's set-associative organization means that a virtual page can
+\subsection{DTRIM Address Translation}
+DTRIM's set-associative organization means that a virtual page can
 map to a physical frame from specific memory regions only. This
 permits us to relieve the accelerator from having to translate virtual
 pages to physical frames and instead, requires that accelerators only
@@ -71,7 +71,7 @@ memory. Per-region page tables reduce page table walk latency as
 they are co-located in the same region as the data.
 
 Figure~\ref{fig:timeline}c shows the timeline of events
-in case of a TLB hit in SpryVM. The virtual address uniquely identifies a
+in case of a TLB hit in DTRIM. The virtual address uniquely identifies a
 memory region and traverses the NoC and off-chip interconnect to
 locate the appropriate memory channel. Then, a simple multiplexer (not
 shown in the figure) distinguishes virtual and physical address
@@ -79,12 +79,12 @@ requests, and sends the former to the memory channel's TLB. The TLB
 holds the translation. From this page frame, we can calculate the
 physical address of the data, completing the translation path. Once
 this completes, data fetch commences. Unlike the baseline case, note
-that spryVM can overlap translation with data fetch because
+that DTRIM can overlap translation with data fetch because
 both the TLB and data are co-located in the same region. As a result, although 
 translation itself takes longer time, the overhead of translation in case of a TLB hit 
 amounts to the TLB probe latency, as in the conventional case.
 
-With SpryVM, TLB misses occur much less frequently. When they do, as
+With DTRIM, TLB misses occur much less frequently. When they do, as
 shown in Figure~\ref{fig:timeline}d, the virtual address
 identifies the appropriate memory controller, which can be reached by
 traversing the NoC and off-chip interconnects. The key difference is that
@@ -97,14 +97,14 @@ piece of data. When data returns from the DRAM array, it is sent back
 to the accelerator by traversing the networks, finishing the data
 path.
 
-With SpryVM, page walks are cheaper than in conventional translation
+With DTRIM, page walks are cheaper than in conventional translation
 as the time to locate the appropriate memory channel is part of both
 the translation path and data path (essentially removing this part of
 the cost of address translation). Page table walks do not involve
 network communication as the page table entries are all located in the
 same memory channel. The longer the latency of the network is with
 respect to the DRAM accesses, the lower overhead of page table walks
-in SpryVM relative to the conventional architecture. This behavior particularly 
+in DTRIM relative to the conventional architecture. This behavior particularly 
 benefits large memory systems, as the need
 for scaling out the memory for large-memory machines increase the
 average distance to the memory channels, as well as systems with lower DRAM
@@ -113,7 +113,7 @@ latencies (e.g., 3D-stacked memories).
 
 \begin{figure*}
 	\includegraphics[width=\textwidth]{figures/Fig345.png}
-	\caption{Timeline of events of an accelerator's memory reference in conventional translation and and SpryVM .}
+	\caption{Timeline of events of an accelerator's memory reference in conventional translation and and DTRIM .}
 	\label{fig:timeline}
 \end{figure*}
 
@@ -126,13 +126,13 @@ latencies (e.g., 3D-stacked memories).
 
 %\begin{figure*}
 %	\includegraphics[width=\textwidth]{figures/time_event_partition_hit.pdf}
-%	\caption{Timeline of events of an accelerator's memory reference that hits in the TLB on SpryVM.}
+%	\caption{Timeline of events of an accelerator's memory reference that hits in the TLB on DTRIM.}
 %	\label{fig:pagewalk_partition_hit}
 %\end{figure*}
 
 %\begin{figure*}
 %	\includegraphics[width=\textwidth]{figures/time_event_partition_miss.pdf}
-%	\caption{Timeline of events of an accelerator's memory reference that misses in the TLB on SpryVM.}
+%	\caption{Timeline of events of an accelerator's memory reference that misses in the TLB on DTRIM.}
 %	\label{fig:pagewalk_partition_miss}
 %\end{figure*}
 
