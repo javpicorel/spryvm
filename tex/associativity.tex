@@ -22,45 +22,46 @@ operation in SpryVM.
 
 \subsection{Baseline Address Translation}
 
-Figure \ref{fig:pagewalk_base} illustrates the timeline of
-conventional address translation. In the conventional case, a TLB is
-first probed by the accelerator it resides in. Consider the case of a
-TLB miss in an accelerator without caches residing close to memory, as
-considered in recent work \cite{haria:devirtualizing,
-  picorel:near-memory}. The accelerator's hardware page table walker
+Figure~\ref{fig:timeline}a and Figure~\ref{fig:timeline}b illustrate the timeline of
+conventional address translation. For simplicity, consider the case 
+where the accelerator without caches resides close to memory, as
+assumed in recent work \cite{haria:devirtualizing, picorel:near-memory}. In the conventional case, a TLB is
+first probed by the accelerator it resides in. In case of a TLB hit (Figure~\ref{fig:timeline}a), the translation finishes quickly and 
+data fetch starts. Because data can be anywhere in the memory system, in the average case it requires NoC and off-chip network 
+traversals to reach the target memory controller. Then the DRAM access is performed and data is routed back through the networks.
+
+In case of a TLB miss (Figure~\ref{fig:timeline}b),  the accelerator's hardware page table walker
 identifies the physical address of the page table and initiates a
 lookup of it. Page tables can be implemented in many ways, e.g., radix
-tree, inverted, hashed, etc. Consider the scenario where either
-because of the page table structure or the presence of perfect MMU caches, the entire page
+tree, inverted, hashed, etc. Consider the best-case scenario where either
+because of the page table structure or due to the presence of perfect MMU caches, the entire page
 table walk amounts to a single memory access\cite{bhattacharjee:large-reach, barr:translation}. This access, however, can 
 go to any memory location. Consequently, we may
 need to traverse the NoC and off-chip interconnect to reach the
 memory channel and memory chip hosting the desired page table entry (PTE). Once the memory
 channel is reached, its memory controller reads the PTE from DRAM and sends it to the accelerator, again prompting NoC and
 off-chip interconnect traversal. Once the PTE reaches the accelerator, TLB fill occurs. This part of the timeline
-constitutes the translation path.
-
-Upon successful translation, the accelerator uses the PTE to calculate
-the physical address and issues the data fetch. A set of NoC and off-chip
+constitutes the translation path. Upon successful translation, the accelerator issues the data fetch. A set of NoC and off-chip
 interconnects are traversed to reach the memory chip that holds
 the requested data. Once the data is read from DRAM, the response has to traverse the same
 NoC and off-chip interconnects to reach the accelerator. Th described part of the timeline constitutes the data fetch.
 
-As Figure~\ref{fig:pagewalk_base} shows, conventional address
+As Figure~\ref{fig:timeline}b shows, conventional address
 translation is expensive. First, the TLB's accelerator-side
 integration means that it must address all of physical memory, which
 elevates its miss rate. Second, when misses occur,
 translation and data paths cannot not overlap, and as a result, the entire page walk
-latency is on the critical path.
+latency is on the critical path. Note that accelerators are often not be equipped with hardware page-table walkers, but instead would
+ask the IOMMU to perform the walk. In such a case, the miss penalty would be increased even further by the time it takes to communicate with the IOMMU.
 
 \subsection{SpryVM Address Translation}
 SpryVM's set-associative organization means that a virtual page can
 map to a physical frame from specific memory regions only. This
 permits us to relieve the accelerator from having to translate virtual
 pages to physical frames and instead, requires that accelerators only
-calculate the physical memory region that a virtual page maps to. 
+calculate the physical memory region that a virtual page resides in. 
 This can be accomplished using a simple hash function (e.g., as simple as using
-a subset of the address bits) and the request can be routed to the particular region. This means that rather than
+a subset of the address bits) and the request can be routed to the target region. This means that rather than
 placing per-accelerator TLBs, we only need per-region TLBs mapping the
 physical frames within that region. Similarly, we can also place a
 page table within the memory region for physical pages only belonging
@@ -69,7 +70,7 @@ per-accelerator TLBs, which have to cover all of physical
 memory. Per-region page tables reduce page table walk latency as
 they are co-located in the same region as the data.
 
-Figuer \ref{fig:pagewalk_partition_hit} shows the timeline of events
+Figure~\ref{fig:timeline}c shows the timeline of events
 in case of a TLB hit in SpryVM. The virtual address uniquely identifies a
 memory region and traverses the NoC and off-chip interconnect to
 locate the appropriate memory channel. Then, a simple multiplexer (not
@@ -78,18 +79,18 @@ requests, and sends the former to the memory channel's TLB. The TLB
 holds the translation. From this page frame, we can calculate the
 physical address of the data, completing the translation path. Once
 this completes, data fetch commences. Unlike the baseline case, note
-that spryVM can overlap translation with data fetch completely because
-both the TLB and data are co-located in the same region. This means
-that the translation overhead is exactly zero, equal to an ideal
-translation mechanism.
+that spryVM can overlap translation with data fetch because
+both the TLB and data are co-located in the same region. As a result, although 
+translation itself takes longer time, the overhead of translation in case of a TLB hit 
+amounts to the TLB probe latency, as in the conventional case.
 
 With SpryVM, TLB misses occur much less frequently. When they do, as
-shown in Figure \ref{fig:pagewalk_partition_miss}, the virtual address
+shown in Figure~\ref{fig:timeline}d, the virtual address
 identifies the appropriate memory controller, which can be reached by
 traversing the NoC and off-chip interconnects. The key difference is that
 the PTE also resides in the same memory region. Therefore, unlike conventional translation, there is no need
 to traverse the NoC and off-chip interconnects for page table
-lookup. Once the PTE arrives from DRAM and the
+lookups. Once the PTE arrives from the local DRAM partition and the
 TLB fill operation completes, translation finishes. Then, the memory
 controller issues the complete physical address to locate the target
 piece of data. When data returns from the DRAM array, it is sent back
@@ -103,30 +104,37 @@ the cost of address translation). Page table walks do not involve
 network communication as the page table entries are all located in the
 same memory channel. The longer the latency of the network is with
 respect to the DRAM accesses, the lower overhead of page table walks
-in SpryVM. This behavior particularly benefits large memory systems, as the need
+in SpryVM relative to the conventional architecture. This behavior particularly 
+benefits large memory systems, as the need
 for scaling out the memory for large-memory machines increase the
 average distance to the memory channels, as well as systems with lower DRAM
 latencies (e.g., 3D-stacked memories).
 
 
 \begin{figure*}
-	\includegraphics[width=\textwidth]{figures/time_event_base.pdf}
-	\caption{Timeline of events of an accelerator's memory reference that misses in the TLB on conventional translation.}
-	\label{fig:pagewalk_base}
+	\includegraphics[width=\textwidth]{figures/Fig345.png}
+	\caption{Timeline of events of an accelerator's memory reference in conventional translation and and SpryVM .}
+	\label{fig:timeline}
 \end{figure*}
 
-\begin{figure*}
-	\includegraphics[width=\textwidth]{figures/time_event_partition_hit.pdf}
-	\caption{Timeline of events of an accelerator's memory reference that hits in the TLB on SpryVM.}
-	\label{fig:pagewalk_partition_hit}
-\end{figure*}
 
-\begin{figure*}
-	\includegraphics[width=\textwidth]{figures/time_event_partition_miss.pdf}
-	\caption{Timeline of events of an accelerator's memory reference that misses in the TLB on SpryVM.}
-	\label{fig:pagewalk_partition_miss}
-\end{figure*}
+%\begin{figure*}
+%	\includegraphics[width=\textwidth]{figures/time_event_base.pdf}
+%	\caption{Timeline of events of an accelerator's memory reference that misses in the TLB on conventional translation.}
+%	\label{fig:pagewalk_base}
+%\end{figure*}
 
+%\begin{figure*}
+%	\includegraphics[width=\textwidth]{figures/time_event_partition_hit.pdf}
+%	\caption{Timeline of events of an accelerator's memory reference that hits in the TLB on SpryVM.}
+%	\label{fig:pagewalk_partition_hit}
+%\end{figure*}
+
+%\begin{figure*}
+%	\includegraphics[width=\textwidth]{figures/time_event_partition_miss.pdf}
+%	\caption{Timeline of events of an accelerator's memory reference that misses in the TLB on SpryVM.}
+%	\label{fig:pagewalk_partition_miss}
+%\end{figure*}
 
  
 %In modern page-based VM, a virtual page is mapped on demand into a page frame. Modern systems place no restrictions on the virtual-to-physical mapping; a virtual page can potentially map to any page frame. Though flexible, this fully associative approach places translation on the critical path of every memory access, because a memory access cannot begin until the translation operation finishes.
