@@ -101,7 +101,7 @@ behave almost identically.
 \begin{figure*}[t]
     \centering
     \subfloat{
-        \includegraphics[width=1 \textwidth,clip]{graphs/all_128G_entries.png}}
+        \includegraphics[width=1 \textwidth,clip]{graphs/all_128G_entries.pdf}}
     \caption{TLB sensitivity study for 128GB working set for conventional translation with 4KB and 2MB pages and DTRIM.}
     \label{fig:miss_ratio_128GB}
 \end{figure*}
@@ -129,28 +129,15 @@ As the figure shows, page walks in a conventional VM mechanism requires a memory
 
 \subsection{Thread Contention}
 
+
 \begin{figure*}[t]
-	\centering
-	\subfloat[BST External]{
-		\label{fig:test4}
-	%	\includegraphics[width=0.24\textwidth,clip]{graphs/spry_lf-bst-aravind_mem33554432_4.png}}
-		\includegraphics[width=0.24\textwidth,clip]{graphs/spry_y_scaled_lf-bst-aravind_mem33554432_4.png}}
-	\subfloat[BST Internal]{
-		\label{fig:test3}
-	%	\includegraphics[width=0.24\textwidth,clip]{graphs/spry_lf-bst-howley_mem33554432_4.png}}
-		\includegraphics[width=0.24\textwidth,clip]{graphs/spry_y_scaled_lf-bst-howley_mem33554432_4.png}}
-	\hspace{.01in}
-	\subfloat[Hash Table]{
-		\label{fig:test1}
-	%	\includegraphics[width=0.24 \textwidth,clip]{graphs/spry_lb-ht_java_mem33554432_4.png}}
-		\includegraphics[width=0.24 \textwidth,clip]{graphs/spry_y_scaled_lb-ht_java_mem33554432_4.png}}
-	\subfloat[Skip List]{
-		\label{fig:test2}
-	%	\includegraphics[width=0.24\textwidth,clip]{graphs/spry_lf-sl_fraser_mem8388608_4.png}}
-		\includegraphics[width=0.24\textwidth,clip]{graphs/spry_y_scaled_lf-sl_fraser_mem8388608_4.png}}
-	\caption{The impact of thread contention on TLB miss rates.}
-	\label{fig:contention}
+    \centering
+    \subfloat{
+        \includegraphics[width=1 \textwidth,clip]{graphs/multithreading.pdf}}
+    \caption{The impact of thread contention on TLB miss rates.}
+    \label{fig:contention}
 \end{figure*}
+
 
 Partitioning of the physical address space through set-associativity enables effective memory-side address translation with significantly reduced TLB miss rates.  However, a major consequence moving the translation from the place of execution to the memory partitions is that the per-partition TLBs become shared by all threads in the system that are accessing a given partition. A large system with many cores and accelerators could have hundreds of threads, which can create two potential problems related to TLB contention, which do not exist in conventional TLBs. The first problem is the limited TLB bandwidth, and the second problem is the interference among threads. 
 
