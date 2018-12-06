@@ -31,9 +31,9 @@ reduces associativity only \textit{by a small factor}, as opposed to reducing it
 
 \vspace{2mm}
 \noindent {\bf Virtual page and physical page allocation.} In our OS design, 
-the key issue we need to solve is that how to ensure each virtual page 
+the key problem we need to solve is ensuring that each virtual page 
 maps to a physical page in the right memory set based on our MEM\_SET\_INDEX\_HASH() function. 
-The issue can happen at two situations: 1) a virtual page maps to a 
+The issue can happen in two situations: 1) a virtual page maps to a 
 physical page that is not present in the memory, which mostly happens
 when this physical page is \textit{private} and a subsequent
 page fault will allocate a physical page to this virtual page; 
