@@ -174,7 +174,7 @@ As the figure shows, page walks in a conventional VM requires a minimum of one m
 
 
 
-\subsection{Performance}
+\subsection{Translation Performance}
 
 \begin{comment}
 \begin{figure}[t]
@@ -198,4 +198,4 @@ As the figure shows, page walks in a conventional VM requires a minimum of one m
 	\label{fig:perf}
 \end{figure}
 
-Figure~\ref{fig:perf} shows the performance improvements of DTRIM-8 (one partition per socket) and DTRIM-32 (one partition per memory channel) for an 8-socket machine with 128GB of memory (4 channels per socket as in Figure~\ref{fig:overview}). We consider both 4KB and 2MB page sizes for both DTRIM and conventional translation and normalize the results to the conventional $4$KB case. Even the weakest DTRIM configuration (DTRIM-8 4KB) clearly outperforms the conventional $4$KB design by around 2x on average, as well as the conventional 2MB design. When comparing DTRIM-8 and DTRIM-32 designs at 4KB and 2MB, for all workloads except for Skip Lists, increasing the page size has more impact than further partitioning. For SkipLists, increasing the page size does not provide as much benefit due to low spatial locality, and therefore, further partitioning is more beneficial. We also ran simulations for DTRIM-128 4KB (2MB), but do not plot the results for space reasons and instead report them in text; BST-E: 2.7x (12.9x), BST-I: 2.8x (14.5x), Hash Table: 1.9x (3.6x), Skip Lists 2.5x (3.3x).
+Figure~\ref{fig:perf} shows the translation speedup of DTRIM-8 (one partition per socket) and DTRIM-32 (one partition per memory channel) for an 8-socket machine with 128GB of memory (4 channels/socket as in Figure~\ref{fig:overview}). We consider both 4KB and 2MB page sizes for both DTRIM and conventional translation and normalize the results to conventional $4$KB. The conventional 2MB design on average reduces the translation time by only 1.47x. In contrast, the weakest DTRIM configuration (DTRIM-8 4KB) outperforms the conventional $4$KB design by around 7.36x on average, outperforming the conventional 2MB design for every workload individually. When comparing DTRIM-8 2MB and DTRIM-32 4KB designs, for all workloads except for Skip Lists, increasing the page size has more impact than further partitioning. For SkipLists, increasing the page size does not provide as much benefit due to low spatial locality. DTRIM-32 reduces the translation time by 8.1x and 17x for 4KB and 2MB pages, respectively. We also ran simulations for DTRIM-128 (not plotted for space reasons). DTRIM-128 4KB improves translation performance by 9.1x (up to 10.2x), while  DTRIM-128 2MB by 31.5x on average (up to 47x).
