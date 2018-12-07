@@ -116,7 +116,7 @@ For in-memory scenarios ($8\times$--$1\times$ cases), once the associativity equ
 For the cases where the working sets do not fit in memory, the trends are similar to the single-process scenarios. Capacity misses become more significant as the working set sizes grow, making conflict and compulsory misses less important. Similar to the in-memory case, once the associativity equals the number of processes, the fraction of conflict misses matches the single-process results. Conflicts drop rapidly as in the other cases and with 4 ways per process, conflict misses remain within $1\%$ of the total misses for all the workloads. The results for TPC-H, TPC-DS, and MySQL are identical.
 
 \subsubsection{Summary}
-As shown in Fig.~\ref{fig:miss_ratio} and Fig.~\ref{fig:miss_ratio_procs}, for all workloads and scenarios even a tiny amount of associativity (32) is enough to virtually eliminate all conflict-related page faults. The consequence is that, as far as page faults are concerned, a memory system with $N$ pages could be partitioned into up to $p=N/32$ partitions (on the order of millions). However, such a high number of partitions is neither practical (to many memory-side TLBs) nor necessary, as only a few dozens of partitions are enough virtually eliminate translation overhead from the execution time. 
+We have seen that for all workloads and scenarios even a tiny amount of associativity (32) is enough to virtually eliminate all conflict-related page faults. The consequence is that, as far as page faults are concerned, a memory system with $N$ pages could be partitioned into up to $p=N/32$ partitions (on the order of millions). However, such a high number of partitions is neither practical (to many memory-side TLBs) nor necessary, as only a few dozens of partitions are sufficient to virtually eliminate translation overhead. 
 
 
 \subsection{Linux Prototype}
@@ -161,7 +161,7 @@ The first problem arises when TLBs cannot serve the volume of accesses generated
 
 \subsection{TLB Miss Penalty}
 
-DTRIM does not only improve the area-efficiency of TLBs but also reduces the TLB miss penalty. Figure~\ref{fig:penalty} shows the average TLB miss penalty for two systems, a two-socket machine and a large-memory eight-socket one. The numbers are normalized to the conventional design. We decided to be highly conservative and assume that in the baseline case 1) the accelerators have a private MMU instead of relying on a shared IOMMU, thus excluding the IOMMU communication latency, and 2) the accelerator's MMU includes perfect MMU caches, and therefore page walks require only one memory reference. This also helps us isolate our primary TLB miss penalty benefits stemming from translation/data fetch overlap from the additional benefits our particular page table implementation provides, since in our case, with an inverted page table ($1/4x$ load factor), we are able to guarantee one memory reference per page walk, whereas the conventional hierarchical four-level page table requires a complex MMU cache hierarchy.
+DTRIM does not only improve the area-efficiency of TLBs but also reduces the TLB miss penalty. Figure~\ref{fig:penalty} shows the average TLB miss penalty for two systems, a two-socket machine and a large-memory eight-socket one. The numbers are normalized to the conventional design. We decided to be highly conservative and assume that in the baseline case 1) the accelerators have a private MMU instead of relying on a shared IOMMU, thus excluding the IOMMU communication latency, and 2) the accelerator's MMU includes perfect MMU caches, and therefore page walks require only one memory reference. This also helps us isolate our primary TLB miss penalty benefits stemming from translation/data fetch overlap from the additional benefits our particular page table implementation provides, since in our case, with an inverted page table ($1/4x$ load factor), we are able to guarantee one memory reference per page walk, whereas the conventional four-level page table requires may require multiple memory accesses despite having a complex MMU cache hierarchy.
 
 As the figure shows, page walks in a conventional VM requires a minimum of one memory reference to locate the page table entry, the latency of which is fully exposed and comprises of a DRAM access and two network traversals (request and response), as explained in Figure~\ref{fig:timeline}b. In contrast, in the DTRIM design the virtual address uniquely identifies the memory partition, and hence the time it takes to locate the partition, traversing the NoC and off-chip interconnects is overlapped with the data path (Figure~\ref{fig:timeline}d). As a result, the TLB miss latency only includes a DRAM access. As Figure~\ref{fig:penalty} shows, the larger the memory system, the larger the contribution of the network time in the page walk time, and hence the larger the DTRIM's reduction in page walk time with respect to the conventional translation. This makes DTRIM particularly attractive for future memory systems, which are, due to the end of Moore's law, likely to be physically larger and organized in a NUMA fashion.
 
@@ -175,6 +175,8 @@ As the figure shows, page walks in a conventional VM requires a minimum of one m
 
 
 \subsection{Performance}
+
+\begin{comment}
 \begin{figure}[t]
 	\centering
 	\subfloat[32GB]{
@@ -187,5 +189,15 @@ As the figure shows, page walks in a conventional VM requires a minimum of one m
 	\caption{Speedup of conventional translation with $2$MB pages and DTRIM, with respect to conventional $4$KB pages.
 		\label{fig:perf}}
 \end{figure}
+\end{comment}
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=1.0\columnwidth]{graphs/speedup.pdf}
+	\caption{Speedup over conv. translation with  $4$KB pages.}
+	\label{fig:perf}
+\end{figure}
+
+
 Figure~\ref{fig:perf} compares the performance of $2$MB pages and DTRIM, with respect to a conventional translation mechanism using $4$KB pages, for $32$GB and $128$GB cases. DTRIM clearly outperforms $4$KB pages in both working set scenarios, by up to $1.8\times$ with $32$GB and $1.7\times$ on average. Furthermore, in $128$GB scenarios, DTRIM outperforms $4$KB pages by up to $2.36\times$ and $2.18\times$ on average. Compared to conventional translation with $2$MB pages, DTRIM outperforms it by up to $1.7\times$ and $1.2\times$ on average for $32$GBs, and by up to $2.15\times$ and $1.6\times$ on average for $128$GB. Furthermore, there is no case in which $2$MB pages outperforms DTRIM in the large-memory scenario.
 

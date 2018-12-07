@@ -1,8 +1,9 @@
-\section{Discussion}
+\section{Discussion \& Future Work}
 \label{sec:discussion}
 
+Following the prior work, we assumed that the accelerators do not have caches~\cite{haria:devirtualizing, picorel:near-memory}, as they are usually tailored for acceleration of data traversals that are not cache friendly. However, DTRIM is equally applicable to systems with caches, as well as the systems with execution-side TLBs and MMUs. In such cases, DTRIM would be very useful in accelerating the handling of TLB misses. Recent practical designs for virtual cache hierarchies~\cite{yoon:revisiting, park:efficient} would also be a great fit for DTRIM, obviating the need for execution-side TLB hardware. Also note that DTRIM could be used for accelerating CPU TLB misses, which we plan to explore in the future. 
 
-We now discuss possible concerns and further considerations.
+DTRIM's memory-side translation hardware could be looked at as a fully distributed IOMMUs. The key difference is that IOMMUs serve translation/TLB miss requests for the devices attached to the local socket, but in doing so they cache translations and perform page walks across the entire memory system, while DTRIM's translations and page walks are confined within the local memory partition, which is a key to scalability. 
 
 %\noindent\textbf{Page faults.} Upon a page fault triggered by an MPU, we choose to interrupt the CPU to run a handler, as MPUs may not be capable of running an OS. The memory-side MMU notifies the MPU of the fault, and then the MPU places a request in a memory-mapped queue indicating the faulting virtual address and MPU's id. Then, it raises an interrupt on the CPU. The handler running on the CPU resolves the page fault and updates both the CPU's and memory-side MMU's page table. All MMU state is exposed through memory-mapped IO with an uncacheable memory policy. Once the fault is serviced, the handler notifies the appropriate MMU, which resumes execution and retries the faulting address. Such page fault processing is also employed in today's integrated GPUs~\cite{vesely:observation}.\\
 
