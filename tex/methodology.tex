@@ -36,7 +36,16 @@
 Like most recent work on VM~\cite{basu:efficient, pham:increasing, pham:colt, bhattacharjee:large-reach, barr:spectlb, papadopoulou:prediction-based, saulsbury:recently-based}, we use a combination of real-hardware measurements, trace-driven functional simulation, analytical models, and Linux kernel prototypes.
 
 \subsection{Workloads}
-To study the impact of VM associativity on general-purpose software, we use a suite of popular server workloads, shown in Table~\ref{table:workload}, in a variety of setups. First, we use them to study the very limits of reducing associativity (which determines the limits on memory partitioning) using a 3C page fault model and Pin traces. For practical reasons these workloads are tuned to fit in 8GB memory for this experiment. Then we study the behavior of the server workloads on real hardware with our modified linux kernel (v4.10) with set-associative memory (which we plan to open-source), using more realistic dataset sizes (16-32GB), in both in-memory and out-of-memory setups.
+To study the impact of VM associativity on general-purpose software,
+we use a suite of popular server workloads, shown in
+Table~\ref{table:workload}, in a variety of setups. First, we use them
+to study the limits of reducing associativity (which determines the
+limits on memory partitioning) using a 3C page fault model and Pin
+traces. For practical reasons these workloads are tuned to fit in 8GB
+memory. Then we study the behavior of the server workloads on real
+hardware with our modified linux kernel (v4.10) with set-associative
+memory (which we plan to open-source), using more realistic dataset
+sizes (16-32GB), in both in-memory and out-of-memory setups.
 
 To study the TLB behavior at very large datasets (128GB), we use  data traversal applications present in the ASCYLIB~\cite{david:asynchronized} suite, which contains state-of-the-art implementations of hash tables, external and internal binary trees, and skip lists, which are the core of many of the server workloads, such as Memcached and RocksDB. We choose these workloads because of their minimal data locality and instruction-level parallelism, and the fact that they are stressing conventional general-purpose CPU architectures and hence favor custom memory-side hardware~\cite{ haria:devirtualizing, picorel:near-memory, kocberber:meet, hsieh:accelerating}. Similar to prior work~\cite{picorel:near-memory}, we present the results for four representative implementations for space reasons. 
 
