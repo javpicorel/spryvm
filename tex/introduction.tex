@@ -14,14 +14,14 @@ becoming increasingly important. One such question is that of how to
 expose the VM abstraction to accelerators. While initial solutions
 allow accelerators to have direct physical access to memory, the
 consequent lack of protection, isolation and paging significantly
-complicates the software stack and creates vulnerabilities. More
-recent studies have argued that the conventional VM abstraction and a
-global address space programming model is best for software
-development, enabling "a pointer is a pointer everywhere"
-semantics~\cite{pichai:architectural, power:supporting,
-  haria:devirtualizing, vesely:observation, ausavarungnirun:mosaic},
-extending memory protection to accelerators, and obviating the need
-for manual inter-CPU-accelerator data marshalling.
+complicates the software stack. More recent studies have argued that
+the conventional VM abstraction and a global address space programming
+model is best for software development, enabling "a pointer is a
+pointer everywhere" semantics~\cite{pichai:architectural,
+  power:supporting, haria:devirtualizing, vesely:observation,
+  ausavarungnirun:mosaic}, extending memory protection to
+accelerators, and obviating the need for manual inter-CPU-accelerator
+data marshalling.
 
 Unfortunately, it is challenging to extend conventional VM to
 accelerators in an efficient manner. While general-purpose cores rely
