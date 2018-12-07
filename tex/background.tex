@@ -36,10 +36,8 @@
 \end{table*}
 
 \subsection{Goals for VM in Large Heterogeneous Systems}
-When building VM support for accelerators, it is important to identify
-design goals for the its operation. Like prior work
-\cite{haria:devirtualizing}, we identify the following as key goals in
-our design:
+Like prior work \cite{haria:devirtualizing}, we identify the following
+as key goals in our design:
 
 \begin{itemize}
         \item \textbf{Programmability.} The widespread adoption of
@@ -52,13 +50,15 @@ our design:
           like memory protection and isolation, and flexibility of
           sharing parts of the address space among processes.
 
-        \item \textbf{Flexibility.} Traditional VM imposes no
+        \item \textbf{Flexibility.} Traditional VM imposes few
           restrictions on virtual-to-physical page mapping
-          relationships. This flexibility is valuable to support any level of
-          system memory fragmentation, application multi-tenancy,
-          memory allocation strategies transparent to programmers, as
-          well as the integration of features such as paging and
-          copy-on-write (CoW).
+          relationships. This flexibility is valuable to support any
+          level of system memory fragmentation, application
+          multi-tenancy, memory allocation strategies transparent to
+          programmers, as well as the integration of features such as
+          paging and copy-on-write (CoW). Recent approaches like
+          devirtualized VM \cite{haria:devirtualizing} do reduce this
+          flexibiliy.
 
         \item \textbf{Safety and Security.} Direct access to physical
           memory is generally not acceptable nor desirable. Such
@@ -83,8 +83,8 @@ our design:
 
 \subsection{Shortcomings of Modern MMU Hardware}
 The ever-increasing memory needs of modern software has given rise to
-scale-out systems with large memories with low-latency access to data
-\cite{ferdman:clearing, karakostas:performance, volos:fat,
+scale-out systems with large memories that provide low-latency access
+to data \cite{ferdman:clearing, karakostas:performance, volos:fat,
   basu:efficient}. The advent of increasing memory sizes is
 problematic for both address translation reach and latency, as we next
 discuss.
@@ -107,23 +107,24 @@ larger memory footprints, corroborating results from prior work
 \cite{basu:efficient}. Naturally, this poses problems for accelerator
 TLBs; for example, GPUs integrate massive multi-thousand-entry TLBs
 too \cite{vesely:observation, lowepower:inferring}, but there is
-widespread consensus that this approach is not viable for other more
+widespread consensus that this approach is not viable for more
 area-constrained accelerators \cite{haria:devirtualizing,
   picorel:near-memory}. Perhaps even more troublingly, while other
 techniques like large pages can offer partial relief in some cases,
 they present their own set of challenges because they offer only
-coarse-grained protection \cite{pham:large}, they can be hard to form
-on fragmented systems \cite{kwon:coordinated}, they have poor NUMA
-support \cite{gaud:large}, and they require complex TLB hardware for
-concurrent page size support \cite{cox:efficient}. For all these
-reasons, transparent support for large pages in OSes like Linux only
-apply to 2MB pages (and not other sizes like 1GB) even after decades
-of research \cite{arcangeli:transparent}. Practically, vendors
-implement multi-thousand-entry TLBs for the worst-case scenario when
-base 4KB pages dominate. For the successful adoption, we concur with
-recent work \cite{pham:colt, basu:efficient, karakostas:redundant,
-  haria:devirtualizing} that alternate approaches (complementary to
-large pages) are needed.
+coarse-grained protection \cite{pham:large}, can be hard to form on
+fragmented systems \cite{kwon:coordinated}, have poor NUMA support
+\cite{gaud:large}, and require complex TLB hardware for concurrent
+page size support \cite{cox:efficient}. For all these reasons,
+transparent support for large pages in OSes like Linux only apply to
+2MB pages (and not other sizes like 1GB) even after decades of
+research \cite{arcangeli:transparent}. Practically, vendors implement
+multi-thousand-entry TLBs for the worst-case scenario when base 4KB
+pages dominate. For the successful adoption, we concur with recent
+work \cite{pham:colt, basu:efficient, karakostas:redundant,
+  haria:devirtualizing} while large pages should certainly be improved
+and can be effective, other orthogonal approaches (like ours) are
+needed to operate in a complementary manner.
 
 \begin{comment}
 As the memory capacity keeps increasing, TLB hit ratios decrease
@@ -192,16 +193,15 @@ dramatically exacerbate address translation costs for accelerators
 
 \subsection{Prior Approaches}
 
-In response to the problems detailed in the last section, several
-studies have proposed a range of techniques to improve address
-translation. Table \ref{table:vms} summarizes these techniques as well
-as their programmbility and flexibility attributes. We detail these
-techniques further but note that in general, all approaches change VM
-software and sacrifice aspects of traditional VM flexibility (to
-varying degrees) to achieve effective address translation. DTRIM's
-goal is to find a better compromise between retaining traditional VM
-benefits at the software level, while also enabling more efficient TLB
-hardware.
+In response, several studies have proposed a range of techniques to
+improve address translation. Table \ref{table:vms} summarizes these
+techniques as well as their programmbility and flexibility
+attributes. We detail these techniques further but note that in
+general, all approaches change VM software and sacrifice aspects of
+traditional VM flexibility (to varying degrees) to achieve effective
+address translation. DTRIM's goal is to find a better compromise
+between retaining traditional VM benefits at the software level, while
+also enabling more efficient TLB hardware.
 
 \vspace{2mm}
 \noindent\textbf{Multi-page mappings.} Studies have exploited
@@ -211,10 +211,10 @@ TLBs coalesce 4-8 page translations into a single TLB entry, as long
 as their physical locations are contiguous. Although TLB reach
 improves, they cannot cover the entirety of a large memory system of
 tens or hundreds of GBs~\cite{gandhi:range}.  Equally problematically,
-these techniques rely on contiguity that {\it might} be generated but
-does not have to be. Achieving such contiguity is challenging in
-highly-loaded cloud systems where memory can be fragmented
-\cite{pham:colt}.
+these techniques rely on contiguity that {\it might} be
+serendipitously generated but does not have to be. Achieving such
+contiguity is challenging in highly-loaded cloud systems where memory
+can be fragmented \cite{pham:colt}.
 
 \begin{comment}
 \noindent\textbf{Huge pages.} The most common approach to increase the
@@ -258,7 +258,7 @@ segment. While address translation overheads are largely eliminated
 with this approach, identity mappings may be optimistic in
 highly-loaded multi-tenant cloud scenarios with memory
 fragmentation. Similar restrictions apply to other ``direct-mapped''
-approaches propsed for near-memory accelerators
+approaches proposed for near-memory accelerators
 \cite{picorel:near-memory}. Moreover, these approaches preclude
 mechanisms like copy-on-write (COW), which are widely used in fork
 system calls, and their impact on schemes that require address bit
