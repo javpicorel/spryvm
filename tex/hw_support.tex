@@ -103,19 +103,30 @@ piece of data. When data returns from the DRAM array, it is sent back
 to the accelerator by traversing the networks, finishing the data
 path.
 
-With DTRIM, page walks are cheaper than in conventional translation
-as the time to locate the appropriate memory channel is part of both
-the translation path and data path (essentially removing this part of
-the cost of address translation). Page table walks do not involve
-network communication as the page table entries are all located in the
-same memory channel. The longer the latency of the network is with
-respect to the DRAM accesses, the lower overhead of page table walks
-in DTRIM relative to the conventional architecture. This behavior particularly 
-benefits large memory systems, as the need
-for scaling out the memory for large-memory machines increase the
-average distance to the memory channels, as well as systems with lower DRAM
-latencies (e.g., 3D-stacked memories).
+With DTRIM, page walks are cheaper than in conventional translation as
+the time to locate the appropriate memory channel is part of both the
+translation path and data path (essentially removing this part of the
+cost of address translation). Page table walks do not involve network
+communication as the page table entries are all located in the same
+memory channel. The longer the latency of the network is with respect
+to the DRAM accesses, the lower overhead of page table walks in DTRIM
+relative to the conventional architecture. This behavior particularly
+benefits large memory systems, as the need for scaling out the memory
+for large-memory machines increase the average distance to the memory
+channels, as well as systems with lower DRAM latencies (e.g.,
+3D-stacked memories).
 
+Finally, DTRIM's memory-side translation hardware could conceptually
+be looked at as a fully distributed IOMMUs. The key difference is that
+IOMMUs serve translation/TLB miss requests for the devices attached to
+the local socket, but in doing so they cache translations and perform
+page walks across the entire memory system, while DTRIM's translations
+and page walks are confined within the local memory partition, which
+is a key to scalability. In fact, as shown in Figure
+\ref{fig:overview}, we anticipate using DTRIM in conjunction with a
+standard monolithic IOMMU in platforms where conventional accelerators
+like GPUs (which are on as close to the memory side as our
+accelerators) may need access to them. 
 
 \begin{figure*}
 	\includegraphics[width=\textwidth]{figures/Fig345.pdf}
