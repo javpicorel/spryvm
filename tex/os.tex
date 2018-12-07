@@ -1,13 +1,13 @@
 \section{DTRIM: Operating System Support}
 \label{sec:os}
 
-One of DTRIM's advantages is that is is readily-implementable and
+One of DTRIM's advantages is that is is readily-implement\-able and
 compatible with commodity OSes. To demonstrate this, we have
-prototyped DTRIM in stock Linux (4.10) by implementing set-associativity in
-the memory management sections of the kernel. Additionally, we have
-implemented DTRIM's page table in the kernel as an inverted page table,
-although other implementations are also just as readily possible. 
-Overall, these and other ancillary
+prototyped DTRIM in stock Linux (4.10) by implementing
+set-associativity in the memory management sections of the
+kernel. Additionally, we have implemented DTRIM's page table in the
+kernel as an inverted page table, although other implementations are
+also just as readily possible.  Overall, these and other ancillary
 modifications were compatible with the existing kernel. A measure of
 this is that when use \verb|git diff| to track our changes, we find
 the following: \texttt{20 files changed, 266 insertions(+), 43
@@ -15,68 +15,84 @@ the following: \texttt{20 files changed, 266 insertions(+), 43
 
 \vspace{2mm}
 \noindent {\bf Set-associativity using NUMA page allocation.} We were
-able to greatly simplify our set-associativity implementation by
-leveraging existing Linux code built to bind processes to NUMA nodes
-(i.e., {\it membind}). In other words, we observed that the notion of
-mapping only a fixed set of physical frames to a virtual page is
-analogous to the idea of assigning physical frames from only select
-NUMA nodes. Consequently, to build a system with only slightly reduced associativity, 
-we conceptually treat subsets of the virtual address space as being bound to specific
-NUMA nodes. Therefore DTRIM can be implemented in a manner that
-reuses {\it membind} code paths such that each memory set is treated
-as a NUMA node. Note that this implementation is only possible because DTRIM
-reduces associativity only \textit{by a small factor}, as opposed to reducing it
-\textit{to a small number} (e.g., direct mapped or 4-way associative~\cite{picorel:near-memory}). 
+able to simplify our set-associativity implementation by leveraging
+existing Linux code built to bind processes to NUMA nodes (i.e., {\it
+  membind}). In other words, we observed that the notion of mapping
+only a fixed set of physical frames to a virtual page is analogous to
+the idea of assigning physical frames from only select NUMA
+nodes. Consequently, to build a system with only slightly reduced
+associativity, we conceptually treat subsets of the virtual address
+space as being bound to specific NUMA nodes. Therefore DTRIM can be
+implemented in a manner that reuses {\it membind} code paths. Note
+that this implementation is only possible because DTRIM reduces
+associativity only \textit{by a small factor}, as opposed to reducing
+it \textit{to a small number} (e.g., direct mapped or 4-way
+associative~\cite{picorel:near-memory}). We will show, however, that
+only a small reduction in associativity is practically needed for
+significant performance improvements.
 
 
 \vspace{2mm}
-\noindent {\bf Virtual page and physical page allocation.} In our OS design, 
-the key problem we need to solve is ensuring that each virtual page 
-maps to a physical page in the right memory set based on our MEM\_SET\_INDEX\_HASH() function. 
-The issue can happen in two situations: 1) a virtual page maps to a 
-physical page that is not present in the memory, which mostly happens
-when this physical page is \textit{private} and a subsequent
-page fault will allocate a physical page to this virtual page; 
-2) a virtual page maps to a physical page that is already present in the memory,
-which means either this physical page is \textit{shared} between processes via this
-virtual page or this virtual page is a \textit{remap} of this physical page.
-The principle of the solution is to adjust virtual pages or physical pages 
-according to the existing memory information. If no physical page is present 
-in the memory, we allocate physical pages according to the memory set index 
-based on virtual addresses. If a physical page is present, we assign a virtual 
-address that maps to the memory set, which the existing physical page 
-resides, based on our memory set index scheme. Concrete examples are discussed below:
+\noindent {\bf Virtual page and physical page allocation.} When
+implementing DTRIM in Linux, we needed to ensure that each virtual
+page mapped to a physical page in the right memory set based on our
+{\it MEM\_SET\_INDEX\_HASH()} function.  Two situations are possible:
+1) a virtual page maps to a physical page that is not present in the
+memory, which mostly happens when this physical page is
+\textit{private} and a subsequent page fault will allocate a physical
+page to this virtual page; 2) a virtual page maps to a physical page
+that is already present in the memory, which means either this
+physical page is \textit{shared} between processes via the virtual
+page or the virtual page is a \textit{remap} of this physical page.
+Our solution is to adjust virtual pages or physical pages according to
+the existing memory information. If no physical page is present in the
+memory, we allocate physical pages according to the memory set index
+based on virtual addresses. If a physical page is present, we assign a
+virtual address that maps to the memory set, which the existing
+physical page resides in, based on our memory set index
+scheme. Concrete examples are discussed below:
 
 \begin{itemize}
-  \item \textbf{Private physical pages.} In this case, because no physical page is in the memory
-  before any page fault, we have no restriction on virtual address assignment. 
-  This means we use Linux’s existing \verb|get_unmap_area|() kernel function to 
-  get a free virtual address region and assign it to a user space application whenever
-  the user space application request virtual address space regions via malloc or such.
-  When page faults happen, since there is no corresponding physical page in the memory, 
-  we first calculate the memory set index from the faulting virtual address and allocate 
-  a physical page, using Linux's NUMA page allocation function, from the corresponding 
-  memory set. This is shown in Algorithm~\ref{alg:private}.
+  \item \textbf{Private physical pages.} In this case, because no
+    physical page is in the memory before any page fault, we place no
+    restriction on virtual address assignment.  This means we use
+    Linux’s existing \verb|get_unmap_area|() kernel function to get a
+    free virtual address region and assign it to a user space
+    application whenever the user space application request virtual
+    address space regions via malloc or such.  When page faults
+    happen, since there is no corresponding physical page in the
+    memory, we first calculate the memory set index from the faulting
+    virtual address and allocate a physical page, using Linux's NUMA
+    page allocation function, from the corresponding memory set. This
+    is shown in Algorithm~\ref{alg:private}.
   
-  \item \textbf{Shared physical pages.} In this case, because a physical page is already 
-  present in a specific memory set, we have to restrict our virtual address assignment. 
-  This means after we get a free virtual address region upon a request from user space applications
-  by using the kernel function \verb|get_unmap_area|(), we need to adjust the starting
-  and ending addresses of the virtual address region, so that all the virtual pages 
-  in the region map to the existing physical pages and conform to our MEM\_SET\_INDEX\_HASH()
-  function. For example, in a system with 4 memory sets, whose physical page regions are [P0...P9], 
-  [P10...P19], [P20...P29], [P30...P39], and our memory set index hash function is VPN mod 4.
-  At the beginning, a process Proc1 maps its virtual memory region [$V3_{Proc1}$ ... $V7_{Proc1}$] to a group of 
-  physical pages [P30, P0, P10, P20, P31] from memory sets 3, 0, 1, 2, 3, respectively. 
-  Next a second process Proc2 is calling \verb|mmap|() to 
-  share the same set of physical pages with P1. At that moment, the \verb|get_unmap_area|() 
-  kernel function can give [$V5_{Proc2}$ ... $V9_{Proc2}$] to P2 as its virtual memory region pointing to the
-  shared physical pages. But this virtual memory region maps to a sequence of physical pages from memory
-  sets 1, 2, 3, 0, 1, which does not match the memory set sequence of the existing physical pages.
-  In that case, inside the kernel, we need to adjust the region 
-  from [$V5_{Proc2}...V9_{Proc2}$] to [$V7_{Proc2}...V11_{Proc2}$] or other analogous regions, so that the adjusted
-  virtual memory region maps to a sequence of physical pages from memory sets 3, 0, 1, 2, 3,
-  which is the same sequence as the shared physical pages.
+  \item \textbf{Shared physical pages.} In this case, because a
+    physical page is already present in a specific memory set, we have
+    to restrict our virtual address assignment.  This means after we
+    get a free virtual address region upon a request from user space
+    applications by using the kernel function \verb|get_unmap_area|(),
+    we need to adjust the starting and ending addresses of the virtual
+    address region, so that all the virtual pages in the region map to
+    the existing physical pages and conform to our {\it
+      MEM\_SET\_INDEX\_HASH()} function. For example, in a system with
+    4 memory sets, whose physical page regions are [P0...P9],
+    [P10...P19], [P20...P29], [P30...P39], and our memory set index
+    hash function is VPN mod 4.  At the beginning, a process Proc1
+    maps its virtual memory region [$V3_{Proc1}$ ... $V7_{Proc1}$] to
+    a group of physical pages [P30, P0, P10, P20, P31] from memory
+    sets 3, 0, 1, 2, 3, respectively.  Next a second process Proc2 is
+    calling \verb|mmap|() to share the same set of physical pages with
+    P1. At that moment, the \verb|get_unmap_area|() kernel function
+    can give [$V5_{Proc2}$ ... $V9_{Proc2}$] to P2 as its virtual
+    memory region pointing to the shared physical pages. But this
+    virtual memory region maps to a sequence of physical pages from
+    memory sets 1, 2, 3, 0, 1, which does not match the memory set
+    sequence of the existing physical pages.  In that case, inside the
+    kernel, we need to adjust the region from
+    [$V5_{Proc2}...V9_{Proc2}$] to [$V7_{Proc2}...V11_{Proc2}$] or
+    other analogous regions, so that the adjusted virtual memory
+    region maps to a sequence of physical pages from memory sets 3, 0,
+    1, 2, 3, which is the same sequence as the shared physical pages.
 
   \item \textbf{Remapped physical pages.} This case is almost the same as the shared memory case, 
   since it basically assigns a new virtual address region to an existing set of physical pages. 
@@ -98,6 +114,15 @@ translation information between CPUs and accelerators, each inverted
 page table entry has a valid bit atomically accessed by both CPUs (for
 inverted page table modification) and accelerators (for
 reading). 
+
+\vspace{2mm}{\noindent \bf Summary:} Overall, all these changes can be
+subsumed in the kernel's code paths without requiring any changes to
+the memory management API exposed to programmers. Moreover, every
+single memory management function provided by stock Linux (e.g., {\it
+  malloc}, {\it mmap}, {\it remap}, etc.) maintains the same
+functionality to the end-user. Therefore, set-associativity is
+achieved completely transparently to application developers and/or
+system administrators.
 
   
 \begin{comment}
