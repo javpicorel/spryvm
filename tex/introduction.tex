@@ -118,6 +118,7 @@ enabling graceful performance scaling across memory chip/partition
 counts.
 
 \noindent $\bullet$ A comparison of DTRIM with well-known translation
-mechanisms. DTRIM improves performance by up to $26\%$ and $15\%$ for
-in-memory and out-of-memory scenarios respectively, achieving
-almost-perfect zero-overhead address translation.
+mechanisms. With small TLBs, DTRIM reduces the translation overhead 
+by 31.5x on average (up to 47x) over conventional translation, and by 19x over huge 
+pages (up to 28x). Unlike conventional translation, DTRIM can entirely eliminate TLB 
+misses with even moderately sized TLBs.

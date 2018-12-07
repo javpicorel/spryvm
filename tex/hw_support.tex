@@ -122,7 +122,7 @@ IOMMUs serve translation/TLB miss requests for the devices attached to
 the local socket, but in doing so they cache translations and perform
 page walks across the entire memory system, while DTRIM's translations
 and page walks are confined within the local memory partition, which
-is a key to scalability. In fact, as shown in Figure
+is a key to scalability. As shown in Figure
 \ref{fig:overview}, we anticipate using DTRIM in conjunction with a
 standard monolithic IOMMU in platforms where conventional accelerators
 like GPUs (which are on as close to the memory side as our
