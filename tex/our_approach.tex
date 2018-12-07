@@ -12,36 +12,37 @@ between these two extremes, where we implement set-associative VM to
 continue enjoying the benefits of flexible VM without requiring large
 TLBs. 
 
-The core idea behind DTRIM is (partly) captured in Figure~\ref{fig:overview}. With
-DTRIM, VM associativity is restricted in that a virtual page is
-guaranteed to map to a physical page in a specific memory
-``region'', but could reside anywhere within the region. This memory region could be a socket or a memory
-channel. This effective set-associativity provides two
-benefits. First, it enables us to replace large per-CPU/accelerator
-TLB that need to address the entire physical address space with
-memory-side TLBs responsible for mapping only their specific memory
-regions. Because memory regions represent just a subset of the total
-physical address space, memory-side TLBs can achieve high hit rates
-despite being smaller in size. Second, set-associativity also permits
-us to dramatically reduce TLB miss penalty by allowing co-location of data and
-the corresponding translations in the same memory regions, overlapping their
-lookup. The confluence of these two benefits is a combination of
-better performance and reduction in TLB resources. 
+The core idea behind DTRIM is (partly) captured in
+Figure~\ref{fig:overview}. With DTRIM, VM associativity is restricted
+in that a virtual page is guaranteed to map to a physical page in a
+specific memory ``region'', but could reside anywhere within the
+region. This memory region could be a socket or a memory channel. This
+effective set-associativity provides two benefits. First, it enables
+us to replace large per-CPU/accelerator TLB that need to address the
+entire physical address space with memory-side TLBs responsible for
+mapping only their specific memory regions. Because memory regions
+represent just a subset of the total physical address space,
+memory-side TLBs can achieve high hit rates despite being smaller in
+size. Second, set-associativity also permits us to dramatically reduce
+TLB miss penalty by allowing co-location of data and the corresponding
+translations in the same memory regions, overlapping their lookup. The
+confluence of these two factors yields better performance and
+reduction in TLB resources.
 
-A factor in our approach is that implementing set-associativity in a
-commodity OS requires only modest changes to existing memory
-allocation/management code-paths. Furthermore, we have found that in
-practice, we can achieve good address translation performance by only
-modestly reducing associativity from the default fully-associative VM
+Our approach of implementing set-associativity in a commodity OS
+requires only modest changes to existing memory allocation/management
+code-paths. Furthermore, we have found that in practice, we can
+achieve good address translation performance by only modestly reducing
+associativity from the default fully-associative VM
 approach. Consequently, DTRIM implements unified CPU-accelerator
 address spaces without forcing coarser-grained memory protection,
-compromising on entropy in virtual address bits, or requiring
+compromising entropy in virtual address bits, or requiring
 power/area-hungry TLBs. The fact that DTRIM does not rely on
 contiguity also means that it can continue to operate efficiently in
 fragmented memory settings where translation contiguity or identity
-mappings may be hard to generate. Furthermore, having only a modest drop
-from fully-associative designs means that optimizations like
-copy-on-write can, for all practical purposes, can be supported (we will
+mappings may be hard to generate. Furthermore, having only a modest
+drop from fully-associative designs means that optimizations like
+copy-on-write can, for all practical purposes, be supported (we will
 show that the number of CoW pages is limited only by the size of the
 memory region, which can be thousands of pages in practice).
 

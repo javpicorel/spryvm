@@ -18,29 +18,39 @@ operation in DTRIM.
 
 \subsection{Baseline Address Translation}
 
-Figure~\ref{fig:timeline}a and Figure~\ref{fig:timeline}b illustrate the timeline of
-conventional address translation. For simplicity, consider the case 
-where the accelerator without caches resides close to memory, as
-assumed in recent work \cite{haria:devirtualizing, picorel:near-memory}. In the conventional case, a TLB is
-first probed by the accelerator it resides in. In case of a TLB hit (Figure~\ref{fig:timeline}a), the translation finishes quickly and 
-data fetch starts. Because data can be anywhere in the memory system, in the average case it requires NoC and off-chip network 
-traversals to reach the target memory controller. Then the DRAM access is performed and data is routed back through the networks.
+Figure~\ref{fig:timeline}a and Figure~\ref{fig:timeline}b illustrate
+the timeline of conventional address translation. For simplicity,
+consider an accelerator without caches residing close to memory
+(similar to accelerators in recent work \cite{haria:devirtualizing,
+  picorel:near-memory}). In the conventional case, a TLB is first
+probed by the accelerator it resides in. In case of a TLB hit
+(Figure~\ref{fig:timeline}a), the translation finishes quickly and
+data fetch starts. Because data can be anywhere in the memory system,
+in the average case it requires NoC and off-chip network traversals to
+reach the target memory controller. Then the DRAM access is performed
+and data is routed back through the networks.
 
-In case of a TLB miss (Figure~\ref{fig:timeline}b),  the accelerator's hardware page table walker
-identifies the physical address of the page table and initiates a
-lookup of it. Page tables can be implemented in many ways, e.g., radix
-tree, inverted, hashed, etc. Consider the best-case scenario where either
-because of the page table structure or due to the presence of perfect MMU caches, the entire page
-table walk amounts to a single memory access\cite{bhattacharjee:large-reach, barr:translation}. This access, however, can 
-go to any memory location. Consequently, we may
-need to traverse the NoC and off-chip interconnect to reach the
-memory channel and memory chip hosting the desired page table entry (PTE). Once the memory
-channel is reached, its memory controller reads the PTE from DRAM and sends it to the accelerator, again prompting NoC and
-off-chip interconnect traversal. Once the PTE reaches the accelerator, TLB fill occurs. This part of the timeline
-constitutes the translation path. Upon successful translation, the accelerator issues the data fetch. A set of NoC and off-chip
-interconnects are traversed to reach the memory chip that holds
-the requested data. Once the data is read from DRAM, the response has to traverse the same
-NoC and off-chip interconnects to reach the accelerator. Th described part of the timeline constitutes the data fetch.
+In the case of a TLB miss (Figure~\ref{fig:timeline}b), the
+accelerator's hardware page table walker identifies the physical
+address of the page table and initiates a lookup of it. Page tables
+can be implemented in many ways, e.g., radix tree, inverted, hashed,
+etc. Consider the best-case scenario where either because of the page
+table structure or due to the presence of perfect MMU caches, the
+entire page table walk amounts to a single memory access
+\cite{bhattacharjee:large-reach, barr:translation}. This access,
+however, can go to any memory location. Consequently, we may need to
+traverse the NoC and off-chip interconnect to reach the memory channel
+and memory chip hosting the desired page table entry (PTE). Once the
+memory channel is reached, its memory controller reads the PTE from
+DRAM and sends it to the accelerator, again prompting NoC and off-chip
+interconnect traversal. Once the PTE reaches the accelerator, TLB fill
+occurs. This part of the timeline constitutes the translation
+path. Upon successful translation, the accelerator issues the data
+fetch. A set of NoC and off-chip interconnects are traversed to reach
+the memory chip that holds the requested data. Once the data is read
+from DRAM, the response has to traverse the same NoC and off-chip
+interconnects to reach the accelerator. The described part of the
+timeline constitutes the data fetch.
 
 As Figure~\ref{fig:timeline}b shows, conventional address
 translation is expensive. First, the TLB's accelerator-side
