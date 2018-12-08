@@ -35,7 +35,7 @@ significant performance improvements.
 \vspace{2mm}
 \noindent {\bf Virtual page and physical page allocation.} When
 implementing DTRIM in Linux, we needed to ensure that each virtual
-page mapped to a physical page in the right memory set based on our
+page maps to a physical page in the right memory set based on our
 {\it MEM\_SET\_INDEX\_HASH()} function.  Two situations are possible:
 1) a virtual page maps to a physical page that is not present in the
 memory, which mostly happens when this physical page is

@@ -77,9 +77,9 @@ of page frames. We dub this approach DTRIM (Divide \& Translate In Memory).
 DTRIM {\it slightly} restricts VM associativity so that a virtual
 address uniquely identifies the region of the physical address space
 (a memory chip or partition of arbitrary size) that holds the
-data. Once the target memory region is identified, DTRIM performs
-translation on the memory side, using local per-region TLBs situated
-next the corresponding memory region. In doing so, DTRIM solves two
+data. Once the target memory partition is identified, DTRIM performs
+translation on the memory side, using local per-partition TLBs situated
+next to the corresponding memory partition. In doing so, DTRIM solves two
 key problems. First, it facilitates area-efficient TLBs with high hit
 rates because separate TLBs are responsible for disjoint parts of the
 physical address space, reducing each individual TLB's reach
