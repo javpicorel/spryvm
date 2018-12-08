@@ -23,8 +23,8 @@ memory partition that holds the data, where memory-side per-partition
 TLBs and MMUs can locally translate addresses at lower latency and
 with higher efficiency. In doing so, DTRIM significantly improves TLB
 hit rates and breaks page walk-data fetch serialization upon TLB
-misses. DTRIM virtually eliminates the translation overhead 
-by reducing it by over 30x on average (up to 47x). Finally, we implement DTRIM
+misses. DTRIM reduces translation overhead by over 30x on average (up to 47x)
+ with small TLB sizes, and entirely eliminates TLB misses with moderately sized TLBs. Finally, we implement DTRIM
 in stock Linux, showing that these benefits are achievable while
 retaining conventional VM abstractions and with only modest changes to
 existing VM software stacks.
