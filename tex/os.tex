@@ -1,7 +1,7 @@
 \section{DTRIM: Operating System Support}
 \label{sec:os}
 
-One of DTRIM's advantages is that is is readily-implement\-able and
+One of DTRIM's advantages is that it is readily-implement\-able and
 compatible with commodity OSes. To demonstrate this, we have
 prototyped DTRIM in stock Linux (4.10) by implementing
 set-associativity in the memory management sections of the
@@ -58,9 +58,9 @@ scheme. Concrete examples are discussed below:
     restriction on virtual address assignment.  This means we use
     Linux’s existing \verb|get_unmap_area|() kernel function to get a
     free virtual address region and assign it to a user space
-    application whenever the user space application request virtual
-    address space regions via malloc or such.  When page faults
-    happen, since there is no corresponding physical page in the
+    application whenever user space applications request virtual
+    address space regions via malloc or such.  When a page fault
+    happens, since there is no corresponding physical page in the
     memory, we first calculate the memory set index from the faulting
     virtual address and allocate a physical page, using Linux's NUMA
     page allocation function, from the corresponding memory set. This

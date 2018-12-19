@@ -56,8 +56,8 @@ As Figure~\ref{fig:timeline}b shows, conventional address
 translation is expensive. First, the TLB's accelerator-side
 integration means that it must address all of physical memory, which
 elevates its miss rate. Second, when misses occur,
-translation and data paths cannot not overlap, and as a result, the entire page walk
-latency is on the critical path. Note that accelerators are often not be equipped with hardware page-table walkers, but instead would
+translation and data paths cannot overlap, and as a result, the entire page walk
+latency is on the critical path. Note that accelerators are often not equipped with hardware page-table walkers, but instead would
 ask the IOMMU to perform the walk. In such a case, the miss penalty would be increased even further by the time it takes to communicate with the IOMMU.
 
 \subsection{DTRIM Address Translation}
@@ -110,7 +110,7 @@ memory channel. The longer the latency of the network is with respect
 to the DRAM accesses, the lower overhead of page table walks in DTRIM
 relative to the conventional architecture. This behavior particularly
 benefits large memory systems, as the need for scaling out the memory
-for large-memory machines increase the average distance to the memory
+for large-memory machines increases the average distance to the memory
 channels, as well as systems with lower DRAM latencies (e.g.,
 3D-stacked memories).
 
@@ -123,7 +123,7 @@ and page walks are confined within the local memory partition, which
 is a key to scalability. As shown in Figure
 \ref{fig:overview}, we anticipate using DTRIM in conjunction with a
 standard monolithic IOMMU in platforms where conventional accelerators
-like GPUs (which are on as close to the memory side as our
+like GPUs (which are as close to the memory side as our
 accelerators) may need access to them. 
 
 \begin{figure*}
